@@ -3,56 +3,56 @@ const { Types } = require("mongoose");
 const jwt = require("jsonwebtoken");
 
 class USER_SERVICE {
-  //check vailidateEmail
-  async validateEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }
-  async validateUsername(username) {
-     // Check if the username is empty
-     if (!username.trim()) {
-      return { valid: false, error: 'Username cannot be blank' };
-    }
-    // Check if user name contains spaces
-    if (/\s/.test(username)) {
-        return { valid: false, error: 'Username cannot contain spaces' };
-    }
+//   //check vailidateEmail
+//   async validateEmail(email) {
+//     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+//     return emailRegex.test(email);
+//   }
+//   async validateUsername(username) {
+//      // Check if the username is empty
+//      if (!username.trim()) {
+//       return { valid: false, error: 'Username cannot be blank' };
+//     }
+//     // Check if user name contains spaces
+//     if (/\s/.test(username)) {
+//         return { valid: false, error: 'Username cannot contain spaces' };
+//     }
     
-    // Check the length of the username
-    const minLength = 8;
-    const maxLength = 32;
-    const usernameLength = username.length;
-    if (usernameLength < minLength || usernameLength > maxLength) {
-        return { valid: false, error: 'Username must be between 8 and 32 characters' };
-    }
+//     // Check the length of the username
+//     const minLength = 8;
+//     const maxLength = 32;
+//     const usernameLength = username.length;
+//     if (usernameLength < minLength || usernameLength > maxLength) {
+//         return { valid: false, error: 'Username must be between 8 and 32 characters' };
+//     }
 
-    return { valid: true };
-}
+//     return { valid: true };
+// }
 
-async validatePassword(password) {
-  //// // Check if password is empty
-  if (!password.trim()) {
-    return { valid: false, error: 'Mật khẩu không được để trống' };
-}
-    // Check if the password contains spaces
-    if (/\s/.test(password)) {
-        return { valid: false, error: 'Password must not contain spaces' };
-    }
+// async validatePassword(password) {
+//   //// // Check if password is empty
+//   if (!password.trim()) {
+//     return { valid: false, error: 'Mật khẩu không được để trống' };
+// }
+//     // Check if the password contains spaces
+//     if (/\s/.test(password)) {
+//         return { valid: false, error: 'Password must not contain spaces' };
+//     }
 
-    // Check the length of the password
-    const minLength = 8;
-    const maxLength = 32;
-    const passwordLength = password.length;
-    if (passwordLength < minLength || passwordLength > maxLength) {
-        return { valid: false, error: 'Password must be from 8 to 32 characters' };
-    }
+//     // Check the length of the password
+//     const minLength = 8;
+//     const maxLength = 32;
+//     const passwordLength = password.length;
+//     if (passwordLength < minLength || passwordLength > maxLength) {
+//         return { valid: false, error: 'Password must be from 8 to 32 characters' };
+//     }
 
-    return { valid: true };
-}
+//     return { valid: true };
+// }
 
-  async checkUsernameExists(username) {
-    return await USER_MODEL.findOne({ USERNAME: username }).lean();
-  }
+  // async checkUsernameExists(username) {
+  //   return await USER_MODEL.findOne({ USERNAME: username }).lean();
+  // }
 
   async registerUser(userData) {
     try {
@@ -85,7 +85,7 @@ async validatePassword(password) {
     return await USER_MODEL.find({});
   }
   async login (username,pass){
-
+    
   }
 }
 

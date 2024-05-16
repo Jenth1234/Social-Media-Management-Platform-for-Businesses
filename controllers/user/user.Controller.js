@@ -9,7 +9,11 @@ exports.registerUser = async (req, res) => {
         const payload = req.body;
         
         // CHECK VALIDATE
+        const {error} = checkUsernameExists.validate(payload)
         
+        if(error){
+          return res.status(400).json({ error: error.message });
+        }
         // Kiểm tra xem username đã tồn tại chưa
         const existingUser = await USER_SERVICE.checkUsernameExists(payload.USERNAME);
         
