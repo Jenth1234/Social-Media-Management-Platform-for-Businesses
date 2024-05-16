@@ -50,9 +50,9 @@ class USER_SERVICE {
 //     return { valid: true };
 // }
 
-  // async checkUsernameExists(username) {
-  //   return await USER_MODEL.findOne({ USERNAME: username }).lean();
-  // }
+  async checkUsernameExists(username) {
+    return await USER_MODEL.findOne({ USERNAME: username }).lean();
+  }
 
   async registerUser(userData) {
     try {
