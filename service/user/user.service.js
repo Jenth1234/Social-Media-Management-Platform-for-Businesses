@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 class USER_SERVICE {
 
+
   async checkUsernameExists(username) {
     return await USER_MODEL.findOne({ USERNAME: username }).lean();
   }
