@@ -6,4 +6,4 @@ router.put('/editUser/:id',user_controller.editUser);
 router.delete('/deleteUser/:id',user_controller.deleteUser);
 router.get('/getUsers',user_controller.getUsers);
 
-module.exports = router;
+module.exports = router;////
