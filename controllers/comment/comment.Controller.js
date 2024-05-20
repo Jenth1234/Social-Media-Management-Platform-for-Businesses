@@ -2,7 +2,8 @@
 const { createSchema } = require('../../models/comment/validate/index');
 const Comment = require('../../models/comment/comment.model');
 const commentService = require('../../service/comment/comment.service');
-exports.createComment = async (req, res) => {
+class COMMENT_CONTROLLER{
+createComment = async (req, res) => {
     try {
         const payload = req.body;
         const { error } = createSchema.validate(payload, { abortEarly: false });
@@ -30,7 +31,7 @@ exports.createComment = async (req, res) => {
     }
 };
 
-exports.getCommentsByUser = async (req, res) => {
+getCommentsByUser = async (req, res) => {
     try {
         const { userId } = req.params;
         const comments = await commentService.getCommentsByUser(userId);
@@ -47,7 +48,7 @@ exports.getCommentsByUser = async (req, res) => {
         });
     }
 };
-exports.getCommentsByProduct = async (req, res) => {
+getCommentsByProduct = async (req, res) => {
     try {
         const { productId } = req.params;
         const comments = await commentService.getCommentsByProduct(productId);
@@ -65,7 +66,7 @@ exports.getCommentsByProduct = async (req, res) => {
     }
 };
 
-exports.deleteComment = async (req, res) => {
+deleteComment = async (req, res) => {
     try {
         const { commentId } = req.params;
         const deletedComment = await Comment.findByIdAndDelete(commentId);
@@ -77,4 +78,7 @@ exports.deleteComment = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-//////
+}
+
+module.exports = new COMMENT_CONTROLLER();
+

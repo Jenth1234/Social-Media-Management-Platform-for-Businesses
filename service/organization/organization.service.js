@@ -13,4 +13,4 @@ class ORGANIZATION_SERVICE {
 };
 }
 
-module.exports = new ORGANIZATION_SERVICE_SERVICE();
+module.exports = new ORGANIZATION_SERVICE();

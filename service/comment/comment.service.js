@@ -32,3 +32,4 @@ deleteComment = async (commentId) => {
     return await Comment.findByIdAndDelete(commentId);
 };
 }
+module.exports = new COMMENT_SERVICE();

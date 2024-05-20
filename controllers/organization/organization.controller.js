@@ -1,7 +1,7 @@
 const { organizationSchema } = require('../../models/organization/validate/index');
 const organizationService = require('../../service/organization/organization.service');
-
-exports.createOrganization = async (req, res) => {
+class ORGANIZATION_CONTROLLER{
+createOrganization = async (req, res) => {
     try {
         const payload = req.body;
 
@@ -32,3 +32,5 @@ exports.createOrganization = async (req, res) => {
         });
     }
 };///
+}
+module.exports = new ORGANIZATION_CONTROLLER();
