@@ -14,6 +14,15 @@ var ORGANIZATION = new Schema({
         type: Boolean
     },
     IS_APPROVED: {
-        type: String
+        TIME: {
+            type: Date
+          },
+          CHECK: {
+            type: Boolean
+          },
+          BLOCK_BY_USER_ID: {
+            type: Schema.Types.ObjectId
+          }
     }
 });
+module.exports = mongoose.model("ORGANIZATION", ORGANIZATION);
