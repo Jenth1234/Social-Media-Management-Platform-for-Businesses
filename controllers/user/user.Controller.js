@@ -1,18 +1,18 @@
 const user = require("../../models/user/user.model");
 const USER_SERVICE = require("../../service/user/user.service");
-const { checkUsernameExists } = require("../../models/user/validate/index");
+const { registerSchema } = require("../../models/user/validate/index");
 
 exports.registerUser = async (req, res) => {
   try {
     const payload = req.body;
 
     // CHECK VALIDATE
-    const { error } = checkUsernameExists.validate(payload);
+    const { error } = registerSchema.validate(payload);
 
     if (error) {
       return res.status(400).json({ error: error.message });
     }
-    // Kiểm tra xem username đã tồn tại chưa
+    // Check if the username already exists
     const existingUser = await USER_SERVICE.checkUsernameExists(
       payload.USERNAME
     );
@@ -21,7 +21,7 @@ exports.registerUser = async (req, res) => {
       return res.status(400).json({ error: "Username already exists" });
     }
 
-    // Nếu không tồn tại, tiếp tục tạo người dùng mới
+    // If it doesn't exist, continue creating a new user
     const newUser = await USER_SERVICE.registerUser(payload);
     res.status(201).json(newUser);
   } catch (err) {
@@ -55,6 +55,14 @@ exports.getUsers = async (req, res) => {
     const users = await USER_SERVICE.getUsers();
     res.status(200).json(users);
   } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+exports.login_admin = async (req,res) => {
+    try {
+
+    } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };

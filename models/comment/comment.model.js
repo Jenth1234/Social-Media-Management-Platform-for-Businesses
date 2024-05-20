@@ -1,6 +1,6 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-var COMMENT = new Schema({
+var CommentSchema = new Schema({
     ORGANIZATION_ID: {
         type: Schema.Types.ObjectId
     },
@@ -20,3 +20,4 @@ var COMMENT = new Schema({
         type: Number
     }
 });
+module.exports = mongoose.model('Comment', CommentSchema);
