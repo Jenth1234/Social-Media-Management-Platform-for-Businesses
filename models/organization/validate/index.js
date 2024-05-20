@@ -1,7 +1,7 @@
 const Joi = require('joi');
 const { model } = require('mongoose');
 
-const organizationSchema = Joi.object({
+const RegisterOrganValiddate = Joi.object({
     ORGANIZATION_NAME: Joi.string()
         .min(3)
         .max(100)
@@ -58,6 +58,30 @@ const organizationSchema = Joi.object({
     })
 });
 
+const loginOrganValidate = Joi.Object({
+    ORGANIZATION_NAME: Joi.string()
+        .min(3)
+        .max(100)
+        .required()
+        .messages({
+            'string.base': 'Organization name must be a string.',
+            'string.empty': 'Organization name cannot be empty.',
+            'string.min': 'Organization name must be at least {#limit} characters long.',
+            'string.max': 'Organization name cannot exceed {#limit} characters.',
+            'any.required': 'Organization name is required.'
+        }),
+
+    ORGANIZATION_PHONE: Joi.string()
+        .pattern(/^\d{10,15}$/)
+        .required()
+        .messages({
+            'string.base': 'Phone number must be a string.',
+            'string.empty': 'Phone number cannot be empty.',
+            'string.pattern.base': 'Please provide a valid phone number.',
+            'any.required': 'Organization phone number is required.'
+        }),
+});
+
 module.exports = {
-    organizationSchema
+    RegisterOrganValiddate
 };
