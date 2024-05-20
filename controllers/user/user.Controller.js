@@ -1,14 +1,11 @@
 const user = require("../../models/user/user.model");
 const USER_SERVICE = require("../../service/user/user.service");
-<<<<<<< HEAD
 const {
   registerValidate,
   editUserValidate,
   loginValidate,
+  registerSchema,
 } = require("../../models/user/validate/index");
-=======
-const { registerSchema } = require("../../models/user/validate/index");
->>>>>>> 26c81c8e54c6250ef8fa7a2de50cfdd0f7411878
 
 exports.registerUser = async (req, res) => {
   const payload = req.body;
@@ -30,10 +27,6 @@ exports.registerUser = async (req, res) => {
   }
 
   try {
-<<<<<<< HEAD
-    const response = await USER_SERVICE.registerUser(payload);
-    return res.status(200).json({ message: "Success", data: response });
-=======
     const payload = req.body;
 
     // CHECK VALIDATE
@@ -54,7 +47,6 @@ exports.registerUser = async (req, res) => {
     // If it doesn't exist, continue creating a new user
     const newUser = await USER_SERVICE.registerUser(payload);
     res.status(201).json(newUser);
->>>>>>> 26c81c8e54c6250ef8fa7a2de50cfdd0f7411878
   } catch (err) {
     return res.status(401).json({ message: "Fails to register user" });
   }
@@ -102,7 +94,6 @@ exports.getUsers = async (req, res) => {
   }
 };
 
-<<<<<<< HEAD
 exports.login = async (req, res) => {
   const payload = req.body;
 
@@ -137,12 +128,10 @@ exports.login = async (req, res) => {
     message: "Đăng nhập thành công!!",
     metadata: accessToken,
   });
-=======
-exports.login_admin = async (req,res) => {
-    try {
-
-    } catch (err) {
+};
+exports.login_admin = async (req, res) => {
+  try {
+  } catch (err) {
     res.status(400).json({ error: err.message });
   }
->>>>>>> 26c81c8e54c6250ef8fa7a2de50cfdd0f7411878
 };
