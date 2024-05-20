@@ -1,6 +1,6 @@
 const Comment = require('../../models/comment/comment.model');
-
-exports.createComment = async (commentData) => {
+class COMMENT_SERVICE {
+createComment = async (commentData) => {
     try {
         const comment = new Comment(commentData);
         await comment.save();
@@ -9,7 +9,7 @@ exports.createComment = async (commentData) => {
         throw new Error(`Error creating comment: ${error.message}`);
     }
 };
-exports.getCommentsByUser = async (userId) => {
+getCommentsByUser = async (userId) => {
     try {
         // Tìm tất cả các bình luận mà người dùng đã thực hiện
         const comments = await Comment.find({ "LIST_COMMENT.USER_ID": userId });
@@ -20,7 +20,7 @@ exports.getCommentsByUser = async (userId) => {
         throw new Error(`Error getting comments by user: ${error.message}`);
     }
 };
-exports.getCommentsByProduct = async (productId) => {
+getCommentsByProduct = async (productId) => {
     try {
         const comments = await Comment.find({ PRODUCT_ID: productId });
         return comments;
@@ -28,6 +28,7 @@ exports.getCommentsByProduct = async (productId) => {
         throw new Error(`Error getting comments by product: ${error.message}`);
     }
 };
-exports.deleteComment = async (commentId) => {
+deleteComment = async (commentId) => {
     return await Comment.findByIdAndDelete(commentId);
 };
+}
