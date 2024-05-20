@@ -3,7 +3,8 @@ const { Types } = require("mongoose");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 class USER_SERVICE {
- 1
+
+
   async checkUsernameExists(username) {
     return await USER_MODEL.findOne({ USERNAME: username }).lean();
   }

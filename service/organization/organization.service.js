@@ -1,6 +1,6 @@
 const Organization = require('../../models/organization/organization.model');
-
-const createOrganization = async (payload) => {
+class ORGANIZATION_SERVICE {
+    reateOrganization = async (payload) => {
     try {
         // Create a new organization
         const newOrganization = new Organization(payload);
@@ -11,7 +11,6 @@ const createOrganization = async (payload) => {
         throw new Error('Unable to create organization: ' + error.message);
     }
 };
+}
 
-module.exports = {
-    createOrganization,
-};
+module.exports = new ORGANIZATION_SERVICE();

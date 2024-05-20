@@ -6,8 +6,8 @@ const {
   loginValidate,
   registerSchema,
 } = require("../../models/user/validate/index");
-
-exports.registerUser = async (req, res) => {
+class USER_CONTROLLER{
+registerUser = async (req, res) => {
   const payload = req.body;
   const { error, value } = registerValidate.validate(payload);
   if (error) {
@@ -52,7 +52,7 @@ exports.registerUser = async (req, res) => {
   }
 };
 
-exports.editUser = async (req, res) => {
+editUser = async (req, res) => {
   const payload = req.body;
   const { error, value } = editUserValidate.validate(payload);
   if (error) {
@@ -75,7 +75,7 @@ exports.editUser = async (req, res) => {
   }
 };
 
-exports.deleteUser = async (req, res) => {
+deleteUser = async (req, res) => {
   try {
     const userId = req.params.id;
     await USER_SERVICE.deleteUser(userId);
@@ -85,7 +85,7 @@ exports.deleteUser = async (req, res) => {
   }
 };
 
-exports.getUsers = async (req, res) => {
+getUsers = async (req, res) => {
   try {
     const users = await USER_SERVICE.getUsers();
     res.status(200).json(users);
@@ -94,7 +94,7 @@ exports.getUsers = async (req, res) => {
   }
 };
 
-exports.login = async (req, res) => {
+login = async (req, res) => {
   const payload = req.body;
 
   const { error, value } = loginValidate.validate(payload);
@@ -108,7 +108,7 @@ exports.login = async (req, res) => {
   if (!existingUser) {
     return res
       .status(401)
-      .json({ message: "Tài khoản hoặc mật khẩu không hợp lệ !!!" });
+      .json({ message: "Invalid account or password!!!" });
   }
 
   const passwordValid = await USER_SERVICE.checkPassword(
@@ -118,20 +118,23 @@ exports.login = async (req, res) => {
   if (!passwordValid) {
     return res
       .status(401)
-      .json({ message: "Tài khoản hoặc mật khẩu không hợp lệ !!!" });
+      .json({ message: "Invalid account or password !!!" });
   }
 
   const accessToken = await USER_SERVICE.login(existingUser.USER_ID);
 
   return res.status(200).json({
     errorCode: 0,
-    message: "Đăng nhập thành công!!",
+    message: "Logged in successfully!!",
     metadata: accessToken,
   });
 };
-exports.login_admin = async (req, res) => {
+login_admin = async (req, res) => {
   try {
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
+
+}
+module.exports = new USER_CONTROLLER();
