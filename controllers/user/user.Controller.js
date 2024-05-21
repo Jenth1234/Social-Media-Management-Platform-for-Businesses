@@ -121,7 +121,7 @@ login = async (req, res) => {
       .json({ message: "Invalid account or password !!!" });
   }
 
-  const accessToken = await USER_SERVICE.login(existingUser.USER_ID);
+  const accessToken = await USER_SERVICE.login(existingUser._id);
 
   return res.status(200).json({
     errorCode: 0,
