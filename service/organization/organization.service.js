@@ -39,7 +39,7 @@ class Organization_Service {
         };   
         
     async checkOrganExists(username) {
-        return await USER_MODEL.findOne({ USERNAME: username }).lean();
+        return await Organization.findOne({ ORGANIZATION_NAME: username }).lean();
     }
 
 }
@@ -47,4 +47,6 @@ class Organization_Service {
 
 module.exports = {
   createOrganization,
+  checkOrganExists,
+  checkPassword
 };

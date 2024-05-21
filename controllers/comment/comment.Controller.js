@@ -1,7 +1,9 @@
+
 const { createSchema } = require('../../models/comment/validate/index');
 const Comment = require('../../models/comment/comment.model');
-
-exports.createComment = async (req, res) => {
+const commentService = require('../../service/comment/comment.service');
+class COMMENT_CONTROLLER{
+createComment = async (req, res) => {
     try {
         const payload = req.body;
         const { error } = createSchema.validate(payload, { abortEarly: false });
@@ -13,8 +15,7 @@ exports.createComment = async (req, res) => {
                 errors: error.details.map(detail => detail.message)
             });
         }
-        const newComment = new Comment(payload);
-        await newComment.save();
+        const newComment = await commentService.createComment(payload);
 
         return res.status(201).json({
             success: true,
@@ -29,15 +30,8 @@ exports.createComment = async (req, res) => {
         });
     }
 };
-exports.getCommentsByUser = async (userId) => {
-    try {
-        const comments = await Comment.find({ userId: userId });
-        return comments;
-    } catch (err) {
-        throw new Error('Không thể lấy các bình luận của người dùng: ' + err.message);
-    }
-};
-exports.getCommentsByUser = async (req, res) => {
+
+getCommentsByUser = async (req, res) => {
     try {
         const { userId } = req.params;
         const comments = await commentService.getCommentsByUser(userId);
@@ -49,8 +43,42 @@ exports.getCommentsByUser = async (req, res) => {
     } catch (err) {
         return res.status(500).json({
             success: false,
-            message: 'Lỗi máy chủ nội bộ',
+            message: 'Internal server error',
             error: err.message
         });
     }
 };
+getCommentsByProduct = async (req, res) => {
+    try {
+        const { productId } = req.params;
+        const comments = await commentService.getCommentsByProduct(productId);
+        
+        return res.status(200).json({
+            success: true,
+            data: comments
+        });
+    } catch (err) {
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: err.message
+        });
+    }
+};
+
+deleteComment = async (req, res) => {
+    try {
+        const { commentId } = req.params;
+        const deletedComment = await Comment.findByIdAndDelete(commentId);
+        if (!deletedComment) {
+            return res.status(404).json({ message: 'Comment not found' });
+        }
+        res.status(200).json({ message: 'Comment deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+}
+
+module.exports = new COMMENT_CONTROLLER();
+
