@@ -44,8 +44,29 @@ class COMMENT_SERVICE {
       throw new Error(`Error getting comments by product: ${error.message}`);
     }
   };
-  deleteComment = async (commentId) => {
-    return await Comment.findByIdAndDelete(commentId);
+
+  deleteComment = async (commentId, userId) => {
+    try {
+      const commentDoc = await Comment.findOne({ 'LIST_COMMENT._id': commentId });  
+      if (!commentDoc) {
+        throw new Error('Comment not found');
+      }
+      
+      const comment = commentDoc.LIST_COMMENT.id(commentId);
+      if (!comment) {
+        throw new Error('Comment not found');
+      }
+  
+      if (comment.USER_ID.toString() !== userId) {
+        throw new Error('You do not have permission to delete this comment');
+      }
+      comment.remove();
+      await commentDoc.save();
+  
+      return { message: 'Comment deleted successfully', updatedDocument: commentDoc };
+    } catch (error) {
+      throw new Error(error.message);
+    }
   };
 
 }

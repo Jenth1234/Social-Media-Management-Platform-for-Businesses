@@ -68,7 +68,7 @@ class USER_SERVICE {
 
   login = async (userId) => {
     const secret = process.env.ACCESS_TOKEN_SECRECT;
-    const expiresIn = "1h";
+    const expiresIn = "5h";
     const accessToken = jwt.sign({ userId }, secret, { expiresIn });
     return accessToken;
   };
