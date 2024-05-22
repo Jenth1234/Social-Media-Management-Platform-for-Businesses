@@ -20,9 +20,13 @@ const createCommentValidate = Joi.object({
         'string.base': 'Product ID must be a string.',
         'any.required': 'Product ID is required.'
     }),
-    
+});
+
+const updateCommentValidate = Joi.object({
+    CONTENT: Joi.string().required().trim().min(1).max(255) 
 });
 
 module.exports = {
-    createCommentValidate
+    createCommentValidate,
+    updateCommentValidate
 };

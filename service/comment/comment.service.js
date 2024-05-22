@@ -1,6 +1,6 @@
 const Comment = require("../../models/comment/comment.model");
 class COMMENT_SERVICE {
-    createComment = async (payload) => {
+  createComment = async (payload) => {
         const countCMT = 5
          const query = { PRODUCT_ID: payload.PRODUCT_ID,  ORGANIZATION_ID: payload.ORGANIZATION_ID, LIST_COMMENT_MAX_NUMBER: { $lt: countCMT }}; 
 
@@ -48,5 +48,26 @@ class COMMENT_SERVICE {
     return await Comment.findByIdAndDelete(commentId);
   };
 
+  updateCommentContent = async (commentId, content) => {
+    try {
+      const result = await Comment.findOneAndUpdate(
+        { "LIST_COMMENT._id": commentId },
+        {
+          $set: { "LIST_COMMENT.$.CONTENT": content }
+        },
+        { new: true }
+      );
+      
+      if (result) {
+        // Tìm bình luận đã được cập nhật
+        const updatedComment = result.LIST_COMMENT.find(comment => comment._id.toString() === commentId);
+        return updatedComment;
+      }
+      
+      return null;
+    } catch (error) {
+      throw new Error(`Error updating comment content: ${error.message}`);
+    }
+  };
 }
 module.exports = new COMMENT_SERVICE();

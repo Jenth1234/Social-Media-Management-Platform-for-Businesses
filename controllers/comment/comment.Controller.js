@@ -1,5 +1,6 @@
 
 const { createCommentValidate } = require('../../models/comment/validate/index');
+const { updateCommentValidate } = require('../../models/comment/validate/index');
 const Comment = require('../../models/comment/comment.model');
 const commentService = require('../../service/comment/comment.service');
 class COMMENT_CONTROLLER{
@@ -71,8 +72,44 @@ getCommentsByProduct = async (req, res) => {
     }
 };
 
+//update comment
+updateComment = async (req, res) => {
+    try {
+      const { commentId } = req.params;
+      const { CONTENT } = req.body;
+      
 
+      const { error } = updateCommentValidate.validate({ CONTENT }, { abortEarly: false });
+      if (error) {
+        return res.status(400).json({
+          success: false,
+          message: 'Dữ liệu không hợp lệ',
+          errors: error.details
+        });
+      }
+
+      const updatedComment = await commentService.updateCommentContent(commentId, CONTENT);
+
+      if (!updatedComment) {
+        return res.status(404).json({
+          success: false,
+          message: 'Không tìm thấy bình luận'
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: 'Bình luận đã được cập nhật thành công.',
+        data: updatedComment
+      });
+    } catch (err) {
+      return res.status(500).json({
+        success: false,
+        message: 'Lỗi máy chủ nội bộ',
+        error: err.message
+      });
+    }
+  };
 }
-
 module.exports = new COMMENT_CONTROLLER();
 
