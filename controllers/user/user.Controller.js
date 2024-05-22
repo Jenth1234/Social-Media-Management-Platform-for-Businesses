@@ -4,7 +4,6 @@ const {
   registerValidate,
   editUserValidate,
   loginValidate,
-  registerSchema,
 } = require("../../models/user/validate/index");
 class USER_CONTROLLER{
 registerUser = async (req, res) => {
@@ -27,23 +26,6 @@ registerUser = async (req, res) => {
   }
 
   try {
-    const payload = req.body;
-
-    // CHECK VALIDATE
-    const { error } = registerSchema.validate(payload);
-
-    if (error) {
-      return res.status(400).json({ error: error.message });
-    }
-    // Check if the username already exists
-    const existingUser = await USER_SERVICE.checkUsernameExists(
-      payload.USERNAME
-    );
-
-    if (existingUser) {
-      return res.status(400).json({ error: "Username already exists" });
-    }
-
     // If it doesn't exist, continue creating a new user
     const newUser = await USER_SERVICE.registerUser(payload);
     res.status(201).json(newUser);
