@@ -5,25 +5,25 @@ const {
   editUserValidate,
   loginValidate,
 } = require("../../models/user/validate/index");
-class USER_CONTROLLER{
-registerUser = async (req, res) => {
-  const payload = req.body;
-  const { error, value } = registerValidate.validate(payload);
-  if (error) {
-    return res.status(401).json({ message: error.details[0].message });
-  }
-  const { USERNAME } = value;
+class USER_CONTROLLER {
+  registerUser = async (req, res) => {
+    const payload = req.body;
+    const { error, value } = registerValidate.validate(payload);
+    if (error) {
+      return res.status(401).json({ message: error.details[0].message });
+    }
+    const { USERNAME } = value;
 
-  const existingUser = await USER_SERVICE.checkUsernameExists(USERNAME);
-  if (existingUser) {
-    return res.status(401).json({ message: "User already exists!!!" });
-  }
+    const existingUser = await USER_SERVICE.checkUsernameExists(USERNAME);
+    if (existingUser) {
+      return res.status(401).json({ message: "User already exists!!!" });
+    }
 
-  const { EMAIL } = value;
-  const existingEmail = await USER_SERVICE.checkEmailExists(EMAIL);
-  if (existingEmail) {
-    return res.status(401).json({ message: "User email already exists" });
-  }
+    const { EMAIL } = value;
+    const existingEmail = await USER_SERVICE.checkEmailExists(EMAIL);
+    if (existingEmail) {
+      return res.status(401).json({ message: "User email already exists" });
+    }
 
   try {
     // If it doesn't exist, continue creating a new user
