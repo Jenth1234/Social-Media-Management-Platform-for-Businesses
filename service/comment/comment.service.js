@@ -45,29 +45,36 @@ class COMMENT_SERVICE {
     }
   };
 
-  deleteComment = async (commentId, userId) => {
+  deleteComment = async (commentIdOb, userIdOb) => {
     try {
-      const commentDoc = await Comment.findOne({ 'LIST_COMMENT._id': commentId });  
-      if (!commentDoc) {
-        throw new Error('Comment not found');
-      }
-      
-      const comment = commentDoc.LIST_COMMENT.id(commentId);
-      if (!comment) {
-        throw new Error('Comment not found');
-      }
+      const result = await Comment.findOneAndUpdate(
+        {
+          LIST_COMMENT : {$elemMatch: {
+          '_id': commentIdOb,
+          'USER_ID': userIdOb
+          }}
+          
+        },
+        {
+          $pull: {
+            'LIST_COMMENT': {
+              _id: commentIdOb,
+              USER_ID: userIdOb
+            }
+          },
+          $inc: {
+            LIST_COMMENT_MAX_NUMBER: -1
+          }
+        },
+        { new: true }
+      );
   
-      if (comment.USER_ID.toString() !== userId) {
-        throw new Error('You do not have permission to delete this comment');
-      }
-      comment.remove();
-      await commentDoc.save();
+    
   
-      return { message: 'Comment deleted successfully', updatedDocument: commentDoc };
+      return result;
     } catch (error) {
       throw new Error(error.message);
     }
   };
-
 }
 module.exports = new COMMENT_SERVICE();

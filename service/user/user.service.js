@@ -2,6 +2,8 @@ const USER_MODEL = require("../../models/user/user.model");
 const { Types } = require("mongoose");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const dotenv = require('dotenv'); 
+dotenv.config();
 class USER_SERVICE {
 
 
@@ -68,10 +70,11 @@ class USER_SERVICE {
 
   login = async (userId) => {
     const secret = process.env.ACCESS_TOKEN_SECRECT;
-    const expiresIn = "5h";
+    const expiresIn = "1h";
     const accessToken = jwt.sign({ userId }, secret, { expiresIn });
     return accessToken;
   };
+
 }
 
 module.exports = new USER_SERVICE();

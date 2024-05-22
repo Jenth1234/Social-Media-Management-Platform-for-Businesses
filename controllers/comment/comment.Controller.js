@@ -76,7 +76,7 @@ deleteComment = async (req, res) => {
     const userId = req.user_id;
   
     try {
-      const response = await deleteComment(commentId, userId);
+      const response = await commentService.deleteComment(commentId, userId);
       res.status(200).json(response);
     } catch (error) {
       res.status(400).json({ message: error.message });

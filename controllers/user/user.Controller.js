@@ -78,7 +78,7 @@ getUsers = async (req, res) => {
 
 login = async (req, res) => {
   const payload = req.body;
-  console.log(req.header['organ_id'])
+
   const { error, value } = loginValidate.validate(payload);
   if (error) {
     return res.status(401).json({ message: error.details[0].message });
