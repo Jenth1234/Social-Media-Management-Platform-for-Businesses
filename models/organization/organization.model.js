@@ -16,13 +16,13 @@ var ORGANIZATION = new Schema({
     IS_APPROVED: {
         TIME: {
             type: Date
-          },
-          CHECK: {
+        },
+        CHECK: {
             type: Boolean
-          },
-          BLOCK_BY_USER_ID: {
+        },
+        BLOCK_BY_USER_ID: {
             type: Schema.Types.ObjectId
-          }
+        }
     }
 });
 module.exports = mongoose.model("ORGANIZATION", ORGANIZATION);

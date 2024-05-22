@@ -1,5 +1,6 @@
 const { registerOrganization } = require('../../models/organization/validate/index');
 const organizationService = require('../../service/organization/organization.service');
+
 class ORGANIZATION_CONTROLLER {
     registerOrganization = async (req, res) => {
         try {
@@ -15,18 +16,38 @@ class ORGANIZATION_CONTROLLER {
                     errors: error.details.map(detail => detail.message)
                 });
             }
-            const UserID = req.user_id;
+
+            const organizationName = payload.ORGANIZATION_NAME;
+
+            // Kiểm tra xem Organization_name đã tồn tại hay chưa
+            const organizationNameExists = await organizationService.checkOrganizationNameExists(organizationName);
+            if (organizationNameExists) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Organization name already exists',
+                });
+            }
+
+            const UserId = req.user_id;
+
+            // Kiểm tra xem UserId đã có ORGANIZATION_ID hay chưa
+            // const userIdHasOrganizationId = await organizationService.checkUserIdHasOrganizationId(UserId);
+            // if (userIdHasOrganizationId) {
+            //     return res.status(400).json({
+            //         success: false,
+            //         message: 'User already has an OrganizationId',
+            //     });
+            // }
 
             const newOrganization = await organizationService.registerOrganization(payload);
-            if (
-                newOrganization
 
-            ) {
-                const data_update = {
-                    ORGANIZATION_ID: newOrganization._id
-                }
-                await organizationService.UpdateUser(UserID, data_update);
-            }
+            const data_update = {
+                ORGANIZATION_ID: newOrganization._id,
+                "ROLE.IS_ORGANIZATION": true
+            };
+
+            await organizationService.UpdateUser(UserId, data_update);
+
             return res.status(201).json({
                 success: true,
                 message: 'The organization has been created successfully.',
@@ -39,9 +60,7 @@ class ORGANIZATION_CONTROLLER {
                 error: err.message
             });
         }
-
-
-    };///
+    };
 }
 
 module.exports = new ORGANIZATION_CONTROLLER();
