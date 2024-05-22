@@ -1,7 +1,7 @@
 const Joi = require('joi');
 const { model } = require('mongoose');
 
-const organizationSchema = Joi.object({
+const createOrganizationValidate = Joi.object({
     ORGANIZATION_NAME: Joi.string()
         .min(3)
         .max(100)
@@ -59,5 +59,5 @@ const organizationSchema = Joi.object({
 });
 
 module.exports = {
-    organizationSchema
+    createOrganizationValidate
 };
