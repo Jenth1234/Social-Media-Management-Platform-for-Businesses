@@ -69,5 +69,27 @@ class COMMENT_SERVICE {
       throw new Error(`Error updating comment content: ${error.message}`);
     }
   };
+  deleteComment = async (commentId, userId) => {
+    try {
+      const commentDoc = await Comment.findOne({ 'LIST_COMMENT._id': commentId });  
+      if (!commentDoc) {
+        throw new Error('Comment not found');
+      }
+      
+      const comment = commentDoc.LIST_COMMENT.id(commentId);
+      if (!comment) {
+        throw new Error('Comment not found');
+      }
+  
+     
+      comment.remove();
+      await commentDoc.save();
+  
+      return { message: 'Comment deleted successfully', updatedDocument: commentDoc };
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  };
 }
+
 module.exports = new COMMENT_SERVICE();

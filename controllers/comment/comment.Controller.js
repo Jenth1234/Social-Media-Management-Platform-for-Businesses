@@ -110,6 +110,18 @@ updateComment = async (req, res) => {
       });
     }
   };
+  deleteComment = async (req, res) => {
+    const { commentId } = req.params;
+    const userId = req.user_id;
+  
+    try {
+      const response = await commentService.deleteComment(commentId, userId);
+      res.status(200).json(response);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  };
+  
 }
 module.exports = new COMMENT_CONTROLLER();
 
