@@ -1,7 +1,7 @@
 const Joi = require('joi');
 const { model } = require('mongoose');
 
-const createOrganizationValidate = Joi.object({
+const registerOrganization = Joi.object({
     ORGANIZATION_NAME: Joi.string()
         .min(3)
         .max(100)
@@ -31,33 +31,33 @@ const createOrganizationValidate = Joi.object({
             'string.pattern.base': 'Please provide a valid phone number.',
             'any.required': 'Organization phone number is required.'
         }),
-    ORGANIZATION_ACTIVE: Joi.boolean()
-        .required()
-        .messages({
-            'boolean.base': 'Active status must be a boolean.',
-            'any.required': 'Organization active status is required.'
-        }),
-    IS_APPROVED: Joi.object({
-        TIME: Joi.date()
-            .default(Date.now)
-            .messages({
-                'date.base': 'Time must be a valid date.'
-            }),
-        CHECK: Joi.boolean()
-            .required()
-            .messages({
-                'boolean.base': 'Approval check status must be a boolean.',
-                'any.required': 'Approval check status is required.'
-            }),
-        BLOCK_BY_USER_ID: Joi.string()
-            .required()
-            .messages({
-                'string.base': 'Blocked user ID must be a string.',
-                'any.required': 'Blocked user ID is required.'
-            })
-    })
+    // ORGANIZATION_ACTIVE: Joi.boolean()
+    //     .required()
+    //     .messages({
+    //         'boolean.base': 'Active status must be a boolean.',
+    //         'any.required': 'Organization active status is required.'
+    //     }),
+    // IS_APPROVED: Joi.object({
+    //     TIME: Joi.date()
+    //         .default(Date.now)
+    //         .messages({
+    //             'date.base': 'Time must be a valid date.'
+    //         }),
+    //     CHECK: Joi.boolean()
+    //         .required()
+    //         .messages({
+    //             'boolean.base': 'Approval check status must be a boolean.',
+    //             'any.required': 'Approval check status is required.'
+    //         }),
+    //     BLOCK_BY_USER_ID: Joi.string()
+    //         .required()
+    //         .messages({
+    //             'string.base': 'Blocked user ID must be a string.',
+    //             'any.required': 'Blocked user ID is required.'
+    //         })
+    //})
 });
 
 module.exports = {
-    createOrganizationValidate
+    registerOrganization,
 };
