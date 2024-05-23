@@ -4,6 +4,6 @@ const organizationController = require('../../controllers/organization/organizat
 const verifyToken = require('../../middleware/verifyToken');
 
 router.post('/register', verifyToken, organizationController.registerOrganization);
-
+//router.post('/login', verifyToken, organizationController.loginToOrganization);
 
 module.exports = router;

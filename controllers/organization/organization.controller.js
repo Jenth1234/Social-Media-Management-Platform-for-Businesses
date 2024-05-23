@@ -1,6 +1,5 @@
 const { registerOrganization } = require('../../models/organization/validate/index');
 const organizationService = require('../../service/organization/organization.service');
-
 class ORGANIZATION_CONTROLLER {
     registerOrganization = async (req, res) => {
         try {
@@ -18,14 +17,6 @@ class ORGANIZATION_CONTROLLER {
             }
 
             const UserId = req.user_id;
-
-            const userHasOrganization = await organizationService.checkUserHasOrganization(UserId);
-            if (userHasOrganization) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'User has already registered an organization',
-                });
-            }
 
             const organizationName = payload.ORGANIZATION_NAME;
 

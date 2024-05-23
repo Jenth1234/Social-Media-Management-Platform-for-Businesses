@@ -35,8 +35,12 @@ class ORGANIZATION_SERVICE {
 
     checkOrganizationNameExists = async (organizationName) => {
         try {
-            // Tìm tổ chức có Organization_name tương ứng
-            const organization = await Organization.findOne({ ORGANIZATION_NAME: organizationName });
+            // Chuyển organizationName sang chữ thường
+            const normalizedOrganizationName = organizationName.toLowerCase();
+            // Tìm tổ chức với Organization_name chuyển sang chữ thường
+            const organization = await Organization.findOne({
+                ORGANIZATION_NAME: { $regex: `^${normalizedOrganizationName}$`, $options: 'i' }
+            });
             // Nếu tổ chức tồn tại, trả về true, ngược lại trả về false
             return !!organization;
         } catch (error) {
@@ -45,16 +49,6 @@ class ORGANIZATION_SERVICE {
         }
     };
 
-    checkUserHasOrganization = async (UserId) => {
-        try {
-            const user = await User.findById(UserId);
-            // Kiểm tra nếu user đã có ORGANIZATION_ID thì trả về true
-            return !!user && !!user.toObject.ORGANIZATION_ID;
-        } catch (error) {
-            throw new Error('Unable to check if User has an organization: ' + error.message);
-        }
-    };
 }
 //abc
-
 module.exports = new ORGANIZATION_SERVICE();
