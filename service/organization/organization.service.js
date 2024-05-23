@@ -33,18 +33,6 @@ class ORGANIZATION_SERVICE {
         }
     };
 
-    // checkUserIdHasOrganizationId = async (UserId) => {
-    //     try {
-    //         // Tìm người dùng với UserId
-    //         const user = await User.findById({ _id: UserId });
-    //         // Kiểm tra nếu người dùng đã có ORGANIZATION_ID
-    //         return !!user && !!user.toObject.ORGANIZATION_ID;
-    //     } catch (error) {
-    //         // Xử lý lỗi nếu có
-    //         throw new Error('Unable to check if UserId has OrganizationId: ' + error.message);
-    //     }
-    // };
-
     checkOrganizationNameExists = async (organizationName) => {
         try {
             // Tìm tổ chức có Organization_name tương ứng
@@ -54,6 +42,16 @@ class ORGANIZATION_SERVICE {
         } catch (error) {
             // Xử lý lỗi nếu có
             throw new Error('Unable to check if Organization_name exists: ' + error.message);
+        }
+    };
+
+    checkUserHasOrganization = async (UserId) => {
+        try {
+            const user = await User.findById(UserId);
+            // Kiểm tra nếu user đã có ORGANIZATION_ID thì trả về true
+            return !!user && !!user.toObject.ORGANIZATION_ID;
+        } catch (error) {
+            throw new Error('Unable to check if User has an organization: ' + error.message);
         }
     };
 }

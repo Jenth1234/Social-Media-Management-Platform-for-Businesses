@@ -30,14 +30,13 @@ class ORGANIZATION_CONTROLLER {
 
             const UserId = req.user_id;
 
-            // Kiểm tra xem UserId đã có ORGANIZATION_ID hay chưa
-            // const userIdHasOrganizationId = await organizationService.checkUserIdHasOrganizationId(UserId);
-            // if (userIdHasOrganizationId) {
-            //     return res.status(400).json({
-            //         success: false,
-            //         message: 'User already has an OrganizationId',
-            //     });
-            // }
+            const userHasOrganization = await organizationService.checkUserHasOrganization(UserId);
+            if (userHasOrganization) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'User has already registered an organization',
+                });
+            }
 
             const newOrganization = await organizationService.registerOrganization(payload);
 
