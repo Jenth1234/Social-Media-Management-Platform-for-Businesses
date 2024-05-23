@@ -1,7 +1,5 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
 var CommentSchema = new Schema({
   ORGANIZATION_ID: {
     type: Schema.Types.ObjectId

@@ -44,9 +44,37 @@ class COMMENT_SERVICE {
       throw new Error(`Error getting comments by product: ${error.message}`);
     }
   };
-  deleteComment = async (commentId) => {
-    return await Comment.findByIdAndDelete(commentId);
-  };
 
+  deleteComment = async (commentIdOb, userIdOb) => {
+    try {
+      const result = await Comment.findOneAndUpdate(
+        {
+          LIST_COMMENT : {$elemMatch: {
+          '_id': commentIdOb,
+          'USER_ID': userIdOb
+          }}
+          
+        },
+        {
+          $pull: {
+            'LIST_COMMENT': {
+              _id: commentIdOb,
+              USER_ID: userIdOb
+            }
+          },
+          $inc: {
+            LIST_COMMENT_MAX_NUMBER: -1
+          }
+        },
+        { new: true }
+      );
+  
+    
+  
+      return result;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  };
 }
 module.exports = new COMMENT_SERVICE();
