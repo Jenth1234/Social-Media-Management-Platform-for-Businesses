@@ -2,6 +2,8 @@ const USER_MODEL = require("../../models/user/user.model");
 const { Types } = require("mongoose");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const dotenv = require('dotenv');
+dotenv.config();
 class USER_SERVICE {
 
 
@@ -71,6 +73,15 @@ class USER_SERVICE {
     const expiresIn = "1h";
     const accessToken = jwt.sign({ userId }, secret, { expiresIn });
     return accessToken;
+  };
+
+  checkUserHasOrganization = async (UserId) => {
+    try {
+      const user = await USER_MODEL.findById(UserId);
+      return user && user.ORGANIZATION_ID ? true : false;
+    } catch (error) {
+      throw new Error('Unable to check user organization: ' + error.message);
+    }
   };
 }
 

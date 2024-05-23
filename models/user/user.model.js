@@ -61,7 +61,8 @@ const UserSchema = new Schema({
     type: String
   },
   ORGANIZATION_ID: {
-    type: Schema.Types.ObjectId
+    type: Schema.Types.ObjectId,
+    ref: 'Organization'
   }
 });
 

@@ -10,6 +10,7 @@ class USER_CONTROLLER {
     const payload = req.body;
     const { error, value } = registerValidate.validate(payload);
 
+
     if (error) {
       return res.status(400).json({ message: error.details[0].message });
     }
@@ -47,16 +48,9 @@ class USER_CONTROLLER {
     if (existingUser) {
       return res.status(401).json({ message: "User already exists!!!" });
     }
+  }
 
-    try {
-      const userId = req.params.id;
-      // const userDataToUpdate = req.body;
-      const updatedUser = await USER_SERVICE.editUser(userId, payload);
-      res.status(200).json(updatedUser);
-    } catch (err) {
-      res.status(400).json({ message: "Fails to edit user" });
-    }
-  };
+
 
   deleteUser = async (req, res) => {
     try {

@@ -4,7 +4,6 @@ const User = require('../../models/user/user.model');
 class ORGANIZATION_SERVICE {
     registerOrganization = async (payload) => {
         try {
-            // Tạo một tổ chức mới
             const newOrganization = new Organization({
                 ORGANIZATION_NAME: payload.ORGANIZATION_NAME,
                 ORGANIZATION_EMAIL: payload.ORGANIZATION_EMAIL,
@@ -12,7 +11,6 @@ class ORGANIZATION_SERVICE {
                 ORGANIZATION_ACTIVE: false,
                 IS_APPROVED: null
             });
-            // Lưu vào cơ sở dữ liệu
             const result = await newOrganization.save();
             return result._doc;
         } catch (error) {
@@ -22,11 +20,17 @@ class ORGANIZATION_SERVICE {
 
     UpdateUser = async (UserId, data_update) => {
         try {
-            // Tiếp tục cập nhật thông tin người dùng
             const user = await User.findOneAndUpdate(
                 { _id: UserId },
-                data_update
+                data_update,
+                { new: true }
             );
+            if (data_update.ORGANIZATION_ID) {
+                await Organization.findByIdAndUpdate(
+                    data_update.ORGANIZATION_ID,
+                    { $push: { USERS: UserId } }
+                );
+            }
             return user;
         } catch (error) {
             return { message: error.message, status: 500 };
@@ -35,16 +39,12 @@ class ORGANIZATION_SERVICE {
 
     checkOrganizationNameExists = async (organizationName) => {
         try {
-            // Chuyển organizationName sang chữ thường
             const normalizedOrganizationName = organizationName.toLowerCase();
-            // Tìm tổ chức với Organization_name chuyển sang chữ thường
             const organization = await Organization.findOne({
                 ORGANIZATION_NAME: { $regex: `^${normalizedOrganizationName}$`, $options: 'i' }
             });
-            // Nếu tổ chức tồn tại, trả về true, ngược lại trả về false
             return !!organization;
         } catch (error) {
-            // Xử lý lỗi nếu có
             throw new Error('Unable to check if Organization_name exists: ' + error.message);
         }
     };
