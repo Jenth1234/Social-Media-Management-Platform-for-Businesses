@@ -52,5 +52,4 @@ class ORGANIZATION_CONTROLLER {
         }
     };
 }
-//abcd
 module.exports = new ORGANIZATION_CONTROLLER();

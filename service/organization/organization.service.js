@@ -48,7 +48,6 @@ class ORGANIZATION_SERVICE {
             throw new Error('Unable to check if Organization_name exists: ' + error.message);
         }
     };
-    //abcd
 }
 
 module.exports = new ORGANIZATION_SERVICE();
