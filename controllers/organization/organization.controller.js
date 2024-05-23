@@ -17,6 +17,16 @@ class ORGANIZATION_CONTROLLER {
                 });
             }
 
+            const UserId = req.user_id;
+
+            const userHasOrganization = await organizationService.checkUserHasOrganization(UserId);
+            if (userHasOrganization) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'User has already registered an organization',
+                });
+            }
+
             const organizationName = payload.ORGANIZATION_NAME;
 
             // Kiểm tra xem Organization_name đã tồn tại hay chưa
@@ -25,16 +35,6 @@ class ORGANIZATION_CONTROLLER {
                 return res.status(400).json({
                     success: false,
                     message: 'Organization name already exists',
-                });
-            }
-
-            const UserId = req.user_id;
-
-            const userHasOrganization = await organizationService.checkUserHasOrganization(UserId);
-            if (userHasOrganization) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'User has already registered an organization',
                 });
             }
 
