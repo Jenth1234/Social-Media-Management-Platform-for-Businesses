@@ -8,6 +8,6 @@ router.post('/create', verifyToken, commentController.createComment);
 // router.get('/', commentController.getAllComments);
 router.get('/:userId', commentController.getCommentsByUser);
 router.get('/:productId/comments', commentController.getCommentsByProduct);
-// router.delete('/:commentId', commentController.deleteComment);
+router.delete('/:commentId', commentController.deleteComment);
 router.put('/update/:commentId',verifyToken,commentController.updateComment);
 module.exports = router;
