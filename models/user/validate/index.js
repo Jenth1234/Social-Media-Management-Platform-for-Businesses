@@ -48,7 +48,7 @@ const registerValidate = Joi.object({
 });
 
 const editUserValidate = Joi.object({
-  USERNAME: Joi.string().trim().alphanum().min(7).max(32).required(),
+  USERNAME: Joi.string().trim().alphanum().min(5).max(32).required(),
 
   FULLNAME: Joi.string()
     .trim()
@@ -94,7 +94,6 @@ const loginValidate = Joi.object({
 
 
 module.exports = {
- 
   registerValidate,
   editUserValidate,
   loginValidate,

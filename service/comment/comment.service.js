@@ -1,5 +1,6 @@
-const Comment = require("../../models/comment/comment.model");
+const Comment = require('../../models/comment/comment.model');
 class COMMENT_SERVICE {
+<<<<<<< HEAD
   createComment = async (payload) => {
         const countCMT = 5
          const query = { PRODUCT_ID: payload.PRODUCT_ID,  ORGANIZATION_ID: payload.ORGANIZATION_ID, LIST_COMMENT_MAX_NUMBER: { $lt: countCMT }}; 
@@ -26,26 +27,39 @@ class COMMENT_SERVICE {
        return comment_obj
     };
   getCommentsByUser = async (userId) => {
+=======
+createComment = async (commentData) => {
+>>>>>>> 59de91e494eaf120ba4657e28336ff0110276486
     try {
-      // Tìm tất cả các bình luận mà người dùng đã thực hiện
-      const comments = await Comment.find({ "LIST_COMMENT.USER_ID": userId });
-
-      return comments;
+        const comment = new Comment(commentData);
+        await comment.save();
+        return comment;
     } catch (error) {
-      // Nếu có lỗi xảy ra, trả về một promise bị reject với thông báo lỗi
-      throw new Error(`Error getting comments by user: ${error.message}`);
+        throw new Error(`Error creating comment: ${error.message}`);
     }
-  };
-  getCommentsByProduct = async (productId) => {
+};
+getCommentsByUser = async (userId) => {
     try {
-      const comments = await Comment.find({ PRODUCT_ID: productId });
-      return comments;
+        // Tìm tất cả các bình luận mà người dùng đã thực hiện
+        const comments = await Comment.find({ "LIST_COMMENT.USER_ID": userId });
+        
+        return comments;
     } catch (error) {
-      throw new Error(`Error getting comments by product: ${error.message}`);
+        // Nếu có lỗi xảy ra, trả về một promise bị reject với thông báo lỗi
+        throw new Error(`Error getting comments by user: ${error.message}`);
     }
-  };
-  deleteComment = async (commentId) => {
+};
+getCommentsByProduct = async (productId) => {
+    try {
+        const comments = await Comment.find({ PRODUCT_ID: productId });
+        return comments;
+    } catch (error) {
+        throw new Error(`Error getting comments by product: ${error.message}`);
+    }
+};
+deleteComment = async (commentId) => {
     return await Comment.findByIdAndDelete(commentId);
+<<<<<<< HEAD
   };
 
   updateCommentContent = async (commentId, content) => {
@@ -93,3 +107,8 @@ class COMMENT_SERVICE {
 }
 
 module.exports = new COMMENT_SERVICE();
+=======
+};
+}
+module.exports = new COMMENT_SERVICE();
+>>>>>>> 59de91e494eaf120ba4657e28336ff0110276486

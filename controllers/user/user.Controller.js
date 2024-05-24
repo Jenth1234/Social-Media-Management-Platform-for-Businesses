@@ -9,45 +9,29 @@ class USER_CONTROLLER {
   registerUser = async (req, res) => {
     const payload = req.body;
     const { error, value } = registerValidate.validate(payload);
+
     if (error) {
-      return res.status(401).json({ message: error.details[0].message });
-    }
-    const { USERNAME } = value;
-
-    const existingUser = await USER_SERVICE.checkUsernameExists(USERNAME);
-    if (existingUser) {
-      return res.status(401).json({ message: "User already exists!!!" });
+      return res.status(400).json({ message: error.details[0].message });
     }
 
-    const { EMAIL } = value;
-    const existingEmail = await USER_SERVICE.checkEmailExists(EMAIL);
-    if (existingEmail) {
-      return res.status(401).json({ message: "User email already exists" });
-    }
+    const { USERNAME, EMAIL } = value;
 
     try {
-      const payload = req.body;
-
-      // CHECK VALIDATE
-      const { error } = registerValidate.validate(payload);
-
-      if (error) {
-        return res.status(400).json({ error: error.message });
-      }
-      // Check if the username already exists
-      const existingUser = await USER_SERVICE.checkUsernameExists(
-        payload.USERNAME
-      );
-
+      const existingUser = await USER_SERVICE.checkUsernameExists(USERNAME);
       if (existingUser) {
-        return res.status(400).json({ error: "Username already exists" });
+        return res.status(400).json({ message: "Tên người dùng đã tồn tại" });
       }
 
-      // If it doesn't exist, continue creating a new user
+      const existingEmail = await USER_SERVICE.checkEmailExists(EMAIL);
+      if (existingEmail) {
+        return res.status(400).json({ message: "Email đã tồn tại" });
+      }
+
       const newUser = await USER_SERVICE.registerUser(payload);
-      res.status(201).json(newUser);
+      return res.status(201).json(newUser);
+
     } catch (err) {
-      return res.status(401).json({ message: "Fails to register user" });
+      return res.status(500).json({ message: "Đăng ký người dùng thất bại" });
     }
   };
 
@@ -103,9 +87,7 @@ class USER_CONTROLLER {
 
     // Check for exiting user
 
-    const existingUser = await USER_SERVICE.checkUsernameExists(
-      payload.USERNAME
-    );
+    const existingUser = await USER_SERVICE.checkUsernameExists(payload.USERNAME);
     if (!existingUser) {
       return res
         .status(401)
@@ -136,5 +118,6 @@ class USER_CONTROLLER {
       res.status(400).json({ error: err.message });
     }
   };
+
 }
 module.exports = new USER_CONTROLLER();
