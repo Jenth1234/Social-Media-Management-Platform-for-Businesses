@@ -1,7 +1,6 @@
 const Comment = require('../../models/comment/comment.model');
 class COMMENT_SERVICE {
-<<<<<<< HEAD
-  createComment = async (payload) => {
+    createComment = async (payload) => {
         const countCMT = 5
          const query = { PRODUCT_ID: payload.PRODUCT_ID,  ORGANIZATION_ID: payload.ORGANIZATION_ID, LIST_COMMENT_MAX_NUMBER: { $lt: countCMT }}; 
 
@@ -27,18 +26,6 @@ class COMMENT_SERVICE {
        return comment_obj
     };
   getCommentsByUser = async (userId) => {
-=======
-createComment = async (commentData) => {
->>>>>>> 59de91e494eaf120ba4657e28336ff0110276486
-    try {
-        const comment = new Comment(commentData);
-        await comment.save();
-        return comment;
-    } catch (error) {
-        throw new Error(`Error creating comment: ${error.message}`);
-    }
-};
-getCommentsByUser = async (userId) => {
     try {
         // Tìm tất cả các bình luận mà người dùng đã thực hiện
         const comments = await Comment.find({ "LIST_COMMENT.USER_ID": userId });
@@ -59,56 +46,7 @@ getCommentsByProduct = async (productId) => {
 };
 deleteComment = async (commentId) => {
     return await Comment.findByIdAndDelete(commentId);
-<<<<<<< HEAD
   };
 
-  updateCommentContent = async (commentId, content) => {
-    try {
-      const result = await Comment.findOneAndUpdate(
-        { "LIST_COMMENT._id": commentId },
-        {
-          $set: { "LIST_COMMENT.$.CONTENT": content }
-        },
-        { new: true }
-      );
-      
-      if (result) {
-        // Tìm bình luận đã được cập nhật
-        const updatedComment = result.LIST_COMMENT.find(comment => comment._id.toString() === commentId);
-        return updatedComment;
-      }
-      
-      return null;
-    } catch (error) {
-      throw new Error(`Error updating comment content: ${error.message}`);
-    }
-  };
-  deleteComment = async (commentId, userId) => {
-    try {
-      const commentDoc = await Comment.findOne({ 'LIST_COMMENT._id': commentId });  
-      if (!commentDoc) {
-        throw new Error('Comment not found');
-      }
-      
-      const comment = commentDoc.LIST_COMMENT.id(commentId);
-      if (!comment) {
-        throw new Error('Comment not found');
-      }
-  
-     
-      comment.remove();
-      await commentDoc.save();
-  
-      return { message: 'Comment deleted successfully', updatedDocument: commentDoc };
-    } catch (error) {
-      throw new Error(error.message);
-    }
-  };
-}
-
-module.exports = new COMMENT_SERVICE();
-=======
-};
 }
 module.exports = new COMMENT_SERVICE();
->>>>>>> 59de91e494eaf120ba4657e28336ff0110276486

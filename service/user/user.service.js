@@ -18,7 +18,7 @@ class USER_SERVICE {
     const newUser = new USER_MODEL({
       USERNAME: body.USERNAME,
       PASSWORD: hash,
-      FULL_NAME: body.FULL_NAME,
+      FULLNAME: body.FULL_NAME,
       EMAIL: body.EMAIL,
       IS_BLOCKED: null,
       ROLE: {

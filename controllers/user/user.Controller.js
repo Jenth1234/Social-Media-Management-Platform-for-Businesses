@@ -106,18 +106,26 @@ class USER_CONTROLLER {
 
     const accessToken = await USER_SERVICE.login(existingUser._id);
 
+    let redirectUrl;
+    let loginMessage;
+    if (existingUser.ROLE.IS_ADMIN) {
+      redirectUrl = '/admin';
+      loginMessage = "Đăng nhập admin thành công";
+    } else if (existingUser.ROLE.IS_ORGANIZATION) {
+      redirectUrl = '/organization';
+      loginMessage = "Đăng nhập tổ chức thành công";
+    } else {
+      redirectUrl = '/user';
+      loginMessage = "Đăng nhập người dùng thành công";
+    }
+
     return res.status(200).json({
-      errorCode: 0,
-      message: "Logged in successfully!!",
-      metadata: accessToken,
+      message: loginMessage,
+      token,
+      redirectUrl,
     });
   };
-  login_admin = async (req, res) => {
-    try {
-    } catch (err) {
-      res.status(400).json({ error: err.message });
-    }
-  };
+  
 
 }
 module.exports = new USER_CONTROLLER();

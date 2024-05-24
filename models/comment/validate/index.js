@@ -31,17 +31,6 @@ const createSchema = Joi.object({
         'string.base': 'Product ID must be a string.',
         'any.required': 'Product ID is required.'
     }),
-<<<<<<< HEAD
-});
-
-const updateCommentValidate = Joi.object({
-    CONTENT: Joi.string().required().trim().min(1).max(255) 
-});
-
-module.exports = {
-    createCommentValidate,
-    updateCommentValidate
-=======
     LIST_COMMENT_MAX_NUMBER: Joi.number().required().messages({
         'number.base': 'List Comment Max Number must be a number.',
         'any.required': 'List Comment Max Number is required.'
@@ -50,5 +39,4 @@ module.exports = {
 
 module.exports = {
     createSchema
->>>>>>> 59de91e494eaf120ba4657e28336ff0110276486
 };
