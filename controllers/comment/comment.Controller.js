@@ -39,8 +39,23 @@ createComment = async (req, res) => {
 getCommentsByUser = async (req, res) => {
     try {
         const { userId } = req.params;
+
+        if (!userId) {
+            return res.status(404).json({
+                success: false,
+                message: 'UserID is required'
+            });
+        }
+
         const comments = await commentService.getCommentsByUser(userId);
         
+        if (comments.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'No comments found for this user'
+            });
+        }
+
         return res.status(200).json({
             success: true,
             data: comments

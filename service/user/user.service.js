@@ -20,7 +20,7 @@ class USER_SERVICE {
     const newUser = new USER_MODEL({
       USERNAME: body.USERNAME,
       PASSWORD: hash,
-      FULL_NAME: body.FULL_NAME,
+      FULLNAME: body.FULLNAME,
       EMAIL: body.EMAIL,
       IS_BLOCKED: null,
       ROLE: {
@@ -32,13 +32,18 @@ class USER_SERVICE {
     return result._doc;
   }
 
-  async editUser(userId, userDataToUpdate) {
-    const foundUser = await USER_MODEL.findById(userId);
-    if (!foundUser) {
-      throw new Error("User does not exist");
+  async updateUser(userId, userDataToUpdate) {
+    const condition = {
+      "_id": userId,
     }
-    foundUser.set(userDataToUpdate);
-    await foundUser.save();
+    const data = {};
+    if (userDataToUpdate.FULLNAME) {
+      data.FULLNAME = userDataToUpdate.FULLNAME;
+    }
+
+    const options = { new: true }; 
+    const foundUser = await USER_MODEL.findOneAndUpdate(condition, data, options);
+
     return foundUser;
   }
 

@@ -47,8 +47,7 @@ const registerValidate = Joi.object({
   }),
 });
 
-const editUserValidate = Joi.object({
-  USERNAME: Joi.string().trim().alphanum().min(7).max(32).required(),
+const updateUserValidate = Joi.object({
 
   FULLNAME: Joi.string()
     .trim()
@@ -69,6 +68,7 @@ const editUserValidate = Joi.object({
       "string.min": "Full name must be at least {#limit} characters long.",
       "string.max": "Full name must be at most {#limit} characters long.",
     }),
+
 });
 
 const loginValidate = Joi.object({
@@ -96,6 +96,6 @@ const loginValidate = Joi.object({
 module.exports = {
  
   registerValidate,
-  editUserValidate,
+  updateUserValidate,
   loginValidate,
 };

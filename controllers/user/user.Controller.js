@@ -2,7 +2,7 @@ const user = require("../../models/user/user.model");
 const USER_SERVICE = require("../../service/user/user.service");
 const {
   registerValidate,
-  editUserValidate,
+  updateUserValidate,
   loginValidate,
 } = require("../../models/user/validate/index");
 class USER_CONTROLLER {
@@ -34,23 +34,23 @@ class USER_CONTROLLER {
   }
 };
 
-editUser = async (req, res) => {
+updateUser = async (req, res) => {
   const payload = req.body;
-  const { error, value } = editUserValidate.validate(payload);
+  const { error, value } = updateUserValidate.validate(payload);
   if (error) {
     return res.status(401).json({ message: error.details[0].message });
   }
-  const { USERNAME } = value;
+  // const { USERNAME } = value;
 
-  const existingUser = await USER_SERVICE.checkUsernameExists(USERNAME);
-  if (existingUser) {
-    return res.status(401).json({ message: "User already exists!!!" });
-  }
+  // const existingUser = await USER_SERVICE.checkUsernameExists(USERNAME);
+  // if (existingUser) {
+  //   return res.status(401).json({ message: "User already exists!!!" });
+  // }
 
   try {
     const userId = req.params.id;
     // const userDataToUpdate = req.body;
-    const updatedUser = await USER_SERVICE.editUser(userId, payload);
+    const updatedUser = await USER_SERVICE.updateUser(userId, payload);
     res.status(200).json(updatedUser);
   } catch (err) {
     res.status(400).json({ message: "Fails to edit user" });
