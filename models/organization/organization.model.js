@@ -15,7 +15,7 @@ var ORGANIZATION = new Schema({
         type: Boolean,
         default: false
     },
-    IS_APPROVED: {
+    OBJECT_APPROVED: {
         TIME: {
             type: Date
         },
@@ -23,14 +23,10 @@ var ORGANIZATION = new Schema({
             type: Boolean,
             default: null
         },
-        BLOCK_BY_USER_ID: {
+        APPROVED_BY_USER_ID: {
             type: Schema.Types.ObjectId
         }
     },
-    USERS: [{
-        type: Schema.Types.ObjectId,
-        ref: 'User'
-    }]
 });
 
 module.exports = mongoose.model("ORGANIZATION", ORGANIZATION);
