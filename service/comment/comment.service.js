@@ -45,6 +45,44 @@ class COMMENT_SERVICE {
     }
   };
 
+  getCommentWithUserInfo = async (page, limit) => {
+    const skips = page ? (page - 1) * limit : 0;
+    const cmtWithUserInfo = await Comment.aggregate ([
+      {
+        $unwind: "$LIST_COMMENT"
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "LIST_COMMENT.USER_ID",
+          foreignField: "_id",
+          as: "user"
+        }
+      },
+      {
+        $unwind: "$user"
+      },
+      {
+        $project: {
+          "LIST_COMMENT.CONTENT": 1,
+          "LIST_COMMENT.FROM_DATE": 1,
+          "user.USERNAME": 1,
+          "user.EMAIL": 1
+        }
+      },
+      {
+        $sort: { "LIST_COMMENT.FROM_DATE": -1}
+      },
+      {
+        $skip: skips
+      },
+      {
+        $limit: limit
+      }
+    ]);
+    return cmtWithUserInfo;
+  };
+
   deleteComment = async (commentIdOb, userIdOb) => {
     try {
       const result = await Comment.findOneAndUpdate(

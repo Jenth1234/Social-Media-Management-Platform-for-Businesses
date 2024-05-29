@@ -86,6 +86,17 @@ getCommentsByProduct = async (req, res) => {
     }
 };
 
+getCommentWithUserInfo = async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 10;
+        const { page } = req.query;
+        const commentsWithUserInfo = await commentService.getCommentWithUserInfo(page, limit);
+        res.json(commentsWithUserInfo);
+    } catch (err) {
+        return res.status(500).json({error: err.message});
+    }
+};
+
 deleteComment = async (req, res) => {
     const { commentId } = req.params;
     const userId = req.user_id;
