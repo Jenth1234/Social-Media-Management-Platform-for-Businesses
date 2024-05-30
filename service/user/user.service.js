@@ -3,8 +3,6 @@ const ORGANIZATION_MODEL = require("../../models/organization/organization.model
 const { Types } = require("mongoose");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const dotenv = require('dotenv'); 
-dotenv.config();
 class USER_SERVICE {
 
 

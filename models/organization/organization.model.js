@@ -30,7 +30,7 @@ var ORGANIZATION = new Schema({
           },
         APPROVED_BY_USER_ID: {
             type: Schema.Types.ObjectId
-          }
+        }
     }
 });
 module.exports = mongoose.model("ORGANIZATION", ORGANIZATION);

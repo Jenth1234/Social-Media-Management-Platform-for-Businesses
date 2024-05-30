@@ -116,7 +116,6 @@ function validateOrganizationId(orgId) {
 }
 
 module.exports = {
- 
   registerValidate,
   updateUserValidate,
   loginValidate,
