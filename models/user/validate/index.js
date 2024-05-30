@@ -1,5 +1,6 @@
 const Joi = require("joi");
-const { model } = require("mongoose");
+// const { model } = require("mongoose");
+const { Types } = require("mongoose");
 
 const registerValidate = Joi.object({
   USERNAME: Joi.string().trim().alphanum().min(5).max(32).required(),
@@ -21,7 +22,7 @@ const registerValidate = Joi.object({
       "string.max": "Password should have a maximum length of {#limit}.",
     }),
 
-  FULLNAME: Joi.string()
+  FULL_NAME: Joi.string()
     .trim()
     .pattern(/^[A-Za-z\s]+$/)
     .min(5)
@@ -49,7 +50,7 @@ const registerValidate = Joi.object({
 
 const updateUserValidate = Joi.object({
 
-  FULLNAME: Joi.string()
+  FULL_NAME: Joi.string()
     .trim()
     .pattern(/^[A-Za-z\s]+$/)
     .min(5)
@@ -92,10 +93,33 @@ const loginValidate = Joi.object({
     }),
 });
 
+function validateUserId(userId) {
+  const schema = Joi.string().custom((value, helpers) => {
+      if (!Types.ObjectId.isValid(value)) {
+          return helpers.error('any.invalid');
+      }
+      return value;
+  }, 'ObjectId validation').required();
+
+  return schema.validate(userId);
+}
+
+function validateOrganizationId(orgId) {
+  const schema = Joi.string().custom((value, helpers) => {
+    if (!Types.ObjectId.isValid(value)) {
+      return helpers.error('any.invalid');
+    }
+    return value;
+  }, 'ObjectId validation').required();
+
+  return schema.validate(orgId);
+}
 
 module.exports = {
  
   registerValidate,
   updateUserValidate,
   loginValidate,
+  validateUserId,
+  validateOrganizationId
 };

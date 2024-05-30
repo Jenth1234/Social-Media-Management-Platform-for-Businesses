@@ -1,4 +1,5 @@
 const USER_MODEL = require("../../models/user/user.model");
+const ORGANIZATION_MODEL = require("../../models/organization/organization.model");
 const { Types } = require("mongoose");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
@@ -20,7 +21,7 @@ class USER_SERVICE {
     const newUser = new USER_MODEL({
       USERNAME: body.USERNAME,
       PASSWORD: hash,
-      FULLNAME: body.FULLNAME,
+      FULL_NAME: body.FULL_NAME,
       EMAIL: body.EMAIL,
       IS_BLOCKED: null,
       ROLE: {
@@ -45,13 +46,6 @@ class USER_SERVICE {
     const foundUser = await USER_MODEL.findOneAndUpdate(condition, data, options);
 
     return foundUser;
-  }
-
-  async deleteUser(userId) {
-    const deletedUser = await USER_MODEL.findByIdAndDelete(userId);
-    if (!deletedUser) {
-      throw new Error("User not found");
-    }
   }
 
   async getUsers() {
@@ -79,6 +73,55 @@ class USER_SERVICE {
     const accessToken = jwt.sign({ userId }, secret, { expiresIn });
     return accessToken;
   };
+
+// admin
+
+  async blockUser(userId, isBlocked, blocked_byuserid) {
+    const condition = { "_id": userId };
+    const data = {
+      IS_BLOCKED: {
+            "CHECK": isBlocked,
+            "TIME": Date.now(),
+            "BLOCK_BY_USER_ID": blocked_byuserid
+        }
+    };
+    const options = { new: true };
+    
+    const foundUser = await USER_MODEL.findOneAndUpdate(condition, data, options);
+    
+    return foundUser;
+}
+
+  async activeOrganization (organizationId, isActive, active_byuserid) {
+    const condition = { "_id": organizationId };
+    const data = {
+      ORGANIZATION_ACTIVE: {
+        "CHECK": isActive,
+        "TIME": Date.now(),
+        "ACTIVE_BY_USER_ID": active_byuserid
+      }
+    };
+
+    const options = { new: true };
+    const foundOrganization = await ORGANIZATION_MODEL.findOneAndUpdate(condition, data, options);
+
+    return foundOrganization;
+  }
+
+  async approvedOrganization (organizationId, isApproved, approved_byuserid) {
+    const condition = {"_id": organizationId};
+    const data = {
+      IS_APPROVED: {
+        "CHECK": isApproved,
+        "TIME": Date.now(),
+        "APPROVED_BY_USER_ID": approved_byuserid
+      }
+    }
+    const options = { new: true };
+    const foundOrganization = await ORGANIZATION_MODEL.findOneAndUpdate(condition, data, options);
+
+    return foundOrganization;
+  }
 
 }
 

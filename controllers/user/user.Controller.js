@@ -4,7 +4,10 @@ const {
   registerValidate,
   updateUserValidate,
   loginValidate,
+  validateUserId,
+  validateOrganizationId
 } = require("../../models/user/validate/index");
+const { response } = require("express");
 class USER_CONTROLLER {
   registerUser = async (req, res) => {
     const payload = req.body;
@@ -40,12 +43,6 @@ updateUser = async (req, res) => {
   if (error) {
     return res.status(401).json({ message: error.details[0].message });
   }
-  // const { USERNAME } = value;
-
-  // const existingUser = await USER_SERVICE.checkUsernameExists(USERNAME);
-  // if (existingUser) {
-  //   return res.status(401).json({ message: "User already exists!!!" });
-  // }
 
   try {
     const userId = req.params.id;
@@ -115,6 +112,77 @@ login_admin = async (req, res) => {
   try {
   } catch (err) {
     res.status(400).json({ error: err.message });
+  }
+};
+
+blockUser = async (req, res) => {
+  const payload = req.body;
+  const { userId } = payload;
+  const blocked_byuserid = req.user_id;
+
+  // Validate userId
+  const { error } = validateUserId(userId);
+  if (error) {
+      return res.status(400).json({ error: error.details[0].message });
+  }
+
+  try {
+      const updatedUser = await USER_SERVICE.blockUser(userId, payload.IS_BLOCKED, blocked_byuserid);
+
+      if (!updatedUser) {
+          return res.status(404).json({ error: 'User not found' });
+      }
+
+      res.json(updatedUser);
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+};
+
+activeOrganization = async (req, res) => {
+  const payload = req.body;
+  const { organizationId } = payload;
+  const active_byuserid = req.user_id;
+
+  const { error }= validateOrganizationId(organizationId);
+  if (error) {
+    return res.status(400).json({ error: error.message });
+  }
+
+  try {
+    const updatedOrganization = await USER_SERVICE.activeOrganization(organizationId, payload.IS_ACTIVE, active_byuserid);
+
+    if (!updatedOrganization) {
+      return res.status(404).json({ error: 'Organization not found'});
+    }
+
+    res.json(updatedOrganization);
+
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+}
+
+approvedOrganizations = async (req, res) => {
+  const payload = req.body;
+  const { organizationId } = payload;
+  const active_byuserid = req.user_id;
+
+  const { error } = validateOrganizationId(organizationId);
+  if (error) {
+    return res.status(400).json({ error: error.message });
+  }
+
+  try {
+    const approvedOrganization = await USER_SERVICE.approvedOrganization(organizationId, payload.IS_APPROVED, active_byuserid);
+
+    if (!approvedOrganization) {
+      return res.status(500).json({ error: error.message });
+    }
+
+    res.json(approvedOrganization);
+  } catch (error) {
+    return res.status(500).json({error: error.message});
   }
 };
 
