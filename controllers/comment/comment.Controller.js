@@ -34,8 +34,23 @@ createComment = async (req, res) => {
 getCommentsByUser = async (req, res) => {
     try {
         const { userId } = req.params;
+
+        if (!userId) {
+            return res.status(404).json({
+                success: false,
+                message: 'UserID is required'
+            });
+        }
+
         const comments = await commentService.getCommentsByUser(userId);
         
+        if (comments.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'No comments found for this user'
+            });
+        }
+
         return res.status(200).json({
             success: true,
             data: comments
@@ -63,6 +78,17 @@ getCommentsByProduct = async (req, res) => {
             message: 'Internal server error',
             error: err.message
         });
+    }
+};
+
+getCommentWithUserInfo = async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 10;
+        const { page } = req.query;
+        const commentsWithUserInfo = await commentService.getCommentWithUserInfo(page, limit);
+        res.json(commentsWithUserInfo);
+    } catch (err) {
+        return res.status(500).json({error: err.message});
     }
 };
 

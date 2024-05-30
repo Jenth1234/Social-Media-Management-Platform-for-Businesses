@@ -19,7 +19,47 @@ getCommentsByUser = async (userId) => {
         // Nếu có lỗi xảy ra, trả về một promise bị reject với thông báo lỗi
         throw new Error(`Error getting comments by user: ${error.message}`);
     }
-};
+  };
+
+  getCommentWithUserInfo = async (page, limit) => {
+    const skips = page ? (page - 1) * limit : 0;
+    const cmtWithUserInfo = await Comment.aggregate ([
+      {
+        $unwind: "$LIST_COMMENT"
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "LIST_COMMENT.USER_ID",
+          foreignField: "_id",
+          as: "user"
+        }
+      },
+      {
+        $unwind: "$user"
+      },
+      {
+        $project: {
+          "LIST_COMMENT.CONTENT": 1,
+          "LIST_COMMENT.FROM_DATE": 1,
+          "user.USERNAME": 1,
+          "user.EMAIL": 1
+        }
+      },
+      {
+        $sort: { "LIST_COMMENT.FROM_DATE": -1}
+      },
+      {
+        $skip: skips
+      },
+      {
+        $limit: limit
+      }
+    ]);
+    return cmtWithUserInfo;
+  };
+
+
 getCommentsByProduct = async (productId) => {
     try {
         const comments = await Comment.find({ PRODUCT_ID: productId });
