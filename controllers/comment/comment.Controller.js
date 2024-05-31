@@ -1,20 +1,25 @@
 
-const { createSchema } = require('../../models/comment/validate/index');
+const { createCommentValidate } = require('../../models/comment/validate/index');
 const Comment = require('../../models/comment/comment.model');
 const commentService = require('../../service/comment/comment.service');
 class COMMENT_CONTROLLER{
 createComment = async (req, res) => {
     try {
         const payload = req.body;
-        const { error } = createSchema.validate(payload, { abortEarly: false });
-
+        const user_id = req.user_id;
+        const _ID = req.header('_ID');
+        console.log(_ID)
+        payload.ORGANIZATION_ID = _ID
+        const { error } = createCommentValidate.validate(payload, { abortEarly: false });
         if (error) {
             return res.status(400).json({
                 success: false,
                 message: 'Invalid data',
-                errors: error.details.map(detail => detail.message)
+                errors: error.details
             });
         }
+        payload.USER_ID = user_id
+
         const newComment = await commentService.createComment(payload);
 
         return res.status(201).json({
@@ -93,17 +98,19 @@ getCommentWithUserInfo = async (req, res) => {
 };
 
 deleteComment = async (req, res) => {
+    const { commentId } = req.params;
+    const userId = req.user_id;
+  
     try {
-        const { commentId } = req.params;
-        const deletedComment = await Comment.findByIdAndDelete(commentId);
-        if (!deletedComment) {
-            return res.status(404).json({ message: 'Comment not found' });
-        }
-        res.status(200).json({ message: 'Comment deleted successfully' });
+      const response = await commentService.deleteComment(commentId, userId);
+      res.status(200).json(response);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+      res.status(400).json({ message: error.message });
     }
-};
+  };
+  
+
+
 }
 
 module.exports = new COMMENT_CONTROLLER();

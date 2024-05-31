@@ -41,7 +41,7 @@ class USER_SERVICE {
       data.FULL_NAME = userDataToUpdate.FULL_NAME;
     }
 
-    const options = { new: true }; 
+    const options = { new: true };
     const foundUser = await USER_MODEL.findOneAndUpdate(condition, data, options);
 
     return foundUser;
@@ -73,34 +73,47 @@ class USER_SERVICE {
     return accessToken;
   };
 
-  async getUserInfo (user_id) {
-      const user = await USER_MODEL.findById(user_id);
-  
-      if (!user) {
-        throw new Error('User not found');
-      }
-      return user;
+  async getUserInfo(user_id) {
+    const user = await USER_MODEL.findById(user_id);
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+    return user;
   };
 
-// admin
+  // admin
 
   async blockUser(userId, isBlocked, blocked_byuserid) {
     const condition = { "_id": userId };
     const data = {
       IS_BLOCKED: {
-            "CHECK": isBlocked,
-            "TIME": Date.now(),
-            "BLOCK_BY_USER_ID": blocked_byuserid
-        }
+        "CHECK": isBlocked,
+        "TIME": Date.now(),
+        "BLOCK_BY_USER_ID": blocked_byuserid
+      }
     };
     const options = { new: true };
-    
-    const foundUser = await USER_MODEL.findOneAndUpdate(condition, data, options);
-    
-    return foundUser;
-}
 
-  async activeOrganization (organizationId, isActive, active_byuserid) {
+    const foundUser = await USER_MODEL.findOneAndUpdate(condition, data, options);
+
+    return foundUser;
+  }
+
+  async activeOrganization(organizationId, isActive, active_byuserid) {
+    const data = {
+      "CHECK": isBlocked,
+      "TIME": Date.now(),
+      "BLOCK_BY_USER_ID": blocked_byuserid
+    };
+    const options = { new: true };
+
+    const foundUser = await USER_MODEL.findOneAndUpdate(condition, data, options);
+
+    return foundUser;
+  }
+
+  async activeOrganization(organizationId, isActive, active_byuserid) {
     const condition = { "_id": organizationId };
     const data = {
       ORGANIZATION_ACTIVE: {
@@ -116,8 +129,9 @@ class USER_SERVICE {
     return foundOrganization;
   }
 
-  async approvedOrganization (organizationId, isApproved, approved_byuserid) {
-    const condition = {"_id": organizationId};
+  async approvedOrganization(organizationId, isApproved, approved_byuserid) {
+    const condition = { "_id": organizationId };
+
     const data = {
       IS_APPROVED: {
         "CHECK": isApproved,
@@ -130,6 +144,66 @@ class USER_SERVICE {
 
     return foundOrganization;
   }
+
+  //organization
+
+  checkUserHasOrganization = async (UserId) => {
+
+    const user = await USER_MODEL.findById(UserId);
+    return user && user.ORGANIZATION_ID ? true : false;
+
+  };
+
+  findUserByIdAndOrganization = async (userId, organizationId) => {
+    try {
+      return await USER_MODEL.findOne({ _id: userId, ORGANIZATION_ID: organizationId });
+    } catch (error) {
+      throw new Error('Unable to find user: ' + error.message);
+    }
+  };
+
+  lockUserByOrganization = async (userId, organizationId, currentUserId) => {
+    try {
+      const user = await this.findUserByIdAndOrganization(userId, organizationId);
+
+      if (!user) {
+        throw new Error('Người dùng không tồn tại hoặc không thuộc về tổ chức này.');
+      }
+
+      user.IS_BLOCKED = {
+        TIME: new Date(),
+        CHECK: true,
+        BLOCK_BY_USER_ID: currentUserId
+      };
+
+      await user.save();
+      return user;
+    } catch (error) {
+      throw new Error('Không thể khóa người dùng: ' + error.message);
+    }
+  };
+
+  unlockUserByOrganization = async (userId, organizationId, currentUserId) => {
+    try {
+      const user = await this.findUserByIdAndOrganization(userId, organizationId);
+
+      if (!user) {
+        throw new Error('Người dùng không tồn tại hoặc không thuộc về tổ chức này.');
+      }
+
+      user.IS_BLOCKED = {
+        TIME: new Date(),
+        CHECK: false,
+        BLOCK_BY_USER_ID: currentUserId
+      };
+
+      await user.save();
+      return user;
+    } catch (error) {
+      throw new Error('Không thể mở khóa người dùng: ' + error.message);
+    }
+  };
+
 
 }
 

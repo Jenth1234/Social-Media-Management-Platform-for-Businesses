@@ -13,6 +13,7 @@ class USER_CONTROLLER {
     const payload = req.body;
     const { error, value } = registerValidate.validate(payload);
 
+
     if (error) {
       return res.status(400).json({ message: error.details[0].message });
     }
@@ -217,5 +218,5 @@ class USER_CONTROLLER {
     }
   };
 
-  }
+} 
 module.exports = new USER_CONTROLLER();
