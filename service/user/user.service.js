@@ -124,54 +124,62 @@ class USER_SERVICE {
   //organization
 
   checkUserHasOrganization = async (UserId) => {
-    try {
-      const user = await USER_MODEL.findById(UserId);
-      return user && user.ORGANIZATION_ID ? true : false;
-    } catch (error) {
-      throw new Error('Unable to check user organization: ' + error.message);
-    }
+
+    const user = await USER_MODEL.findById(UserId);
+    return user && user.ORGANIZATION_ID ? true : false;
+
   };
 
   findUserByIdAndOrganization = async (userId, organizationId) => {
-
-    return await USER_MODEL.findOne({ _id: userId, ORGANIZATION_ID: organizationId });
-  };
-
-  lockUserByOrganization = async (userId, organizationId) => {
-
-    const user = await this.findUserByIdAndOrganization(userId, organizationId);
-
-    if (!user) {
-      throw new Error('Người dùng không tồn tại hoặc không thuộc về tổ chức này.');
+    try {
+      return await USER_MODEL.findOne({ _id: userId, ORGANIZATION_ID: organizationId });
+    } catch (error) {
+      throw new Error('Unable to find user: ' + error.message);
     }
-
-    user.IS_BLOCKED = {
-      TIME: new Date(),
-      CHECK: true,
-      BLOCK_BY_USER_ID: null
-    };
-
-    await user.save();
-    return user;
   };
 
-  unlockUserByOrganization = async (userId, organizationId) => {
+  lockUserByOrganization = async (userId, organizationId, currentUserId) => {
+    try {
+      const user = await this.findUserByIdAndOrganization(userId, organizationId);
 
-    const user = await this.findUserByIdAndOrganization(userId, organizationId);
+      if (!user) {
+        throw new Error('Người dùng không tồn tại hoặc không thuộc về tổ chức này.');
+      }
 
-    if (!user) {
-      throw new Error('Người dùng không tồn tại hoặc không thuộc về tổ chức này.');
+      user.IS_BLOCKED = {
+        TIME: new Date(),
+        CHECK: true,
+        BLOCK_BY_USER_ID: currentUserId
+      };
+
+      await user.save();
+      return user;
+    } catch (error) {
+      throw new Error('Không thể khóa người dùng: ' + error.message);
     }
-
-    user.IS_BLOCKED = {
-      TIME: new Date(),
-      CHECK: false,
-      BLOCK_BY_USER_ID: null
-    };
-
-    await user.save();
-    return user;
   };
+
+  unlockUserByOrganization = async (userId, organizationId, currentUserId) => {
+    try {
+      const user = await this.findUserByIdAndOrganization(userId, organizationId);
+
+      if (!user) {
+        throw new Error('Người dùng không tồn tại hoặc không thuộc về tổ chức này.');
+      }
+
+      user.IS_BLOCKED = {
+        TIME: new Date(),
+        CHECK: false,
+        BLOCK_BY_USER_ID: currentUserId
+      };
+
+      await user.save();
+      return user;
+    } catch (error) {
+      throw new Error('Không thể mở khóa người dùng: ' + error.message);
+    }
+  };
+
 
 }
 

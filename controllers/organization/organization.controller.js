@@ -179,7 +179,6 @@ class ORGANIZATION_CONTROLLER {
                 token: token,
                 user: {
                     id: user._id,
-                    username: user.USERNAME,
                     organizationId: user.ORGANIZATION_ID
                 }
             });
@@ -247,7 +246,9 @@ class ORGANIZATION_CONTROLLER {
         try {
             const { userId } = req.params;
             const organizationId = req.header('ORGANIZATION_ID');
+            const currentUserId = req.user_id;
 
+            // Tìm người dùng
             const user = await userService.findUserByIdAndOrganization(userId, organizationId);
 
             if (!user) {
@@ -259,14 +260,14 @@ class ORGANIZATION_CONTROLLER {
 
             let result;
             if (user.IS_BLOCKED?.CHECK === true) {
-                result = await userService.unlockUserByOrganization(userId, organizationId);
+                result = await userService.unlockUserByOrganization(userId, organizationId, currentUserId);
             } else {
-                result = await userService.lockUserByOrganization(userId, organizationId);
+                result = await userService.lockUserByOrganization(userId, organizationId, currentUserId);
             }
 
             return res.status(200).json({
                 success: true,
-                message: user.IS_BLOCKED?.CHECK === true ? 'Người dùng đã được mở khóa.' : 'Người dùng đã bị khóa bởi tổ chức.',
+                message: user.IS_BLOCKED?.CHECK === true ? 'Người dùng đã được mở khóa bởi tổ chức.' : 'Người dùng đã được khóa bởi tổ chức.',
                 data: result
             });
         } catch (err) {
