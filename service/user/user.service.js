@@ -1,9 +1,8 @@
 const USER_MODEL = require("../../models/user/user.model");
+const ORGANIZATION_MODEL = require("../../models/organization/organization.model");
 const { Types } = require("mongoose");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const dotenv = require('dotenv');
-dotenv.config();
 class USER_SERVICE {
 
 
@@ -32,21 +31,19 @@ class USER_SERVICE {
     return result._doc;
   }
 
-  async editUser(userId, userDataToUpdate) {
-    const foundUser = await USER_MODEL.findById(userId);
-    if (!foundUser) {
-      throw new Error("User does not exist");
+  async updateUser(userId, userDataToUpdate) {
+    const condition = {
+      "_id": userId,
     }
-    foundUser.set(userDataToUpdate);
-    await foundUser.save();
-    return foundUser;
-  }
+    const data = {};
+    if (userDataToUpdate.FULLNAME) {
+      data.FULLNAME = userDataToUpdate.FULLNAME;
+    }
 
-  async deleteUser(userId) {
-    const deletedUser = await USER_MODEL.findByIdAndDelete(userId);
-    if (!deletedUser) {
-      throw new Error("User not found");
-    }
+    const options = { new: true };
+    const foundUser = await USER_MODEL.findOneAndUpdate(condition, data, options);
+
+    return foundUser;
   }
 
   async getUsers() {
@@ -75,6 +72,57 @@ class USER_SERVICE {
     return accessToken;
   };
 
+  // admin
+
+  async blockUser(userId, isBlocked, blocked_byuserid) {
+    const condition = { "_id": userId };
+    const data = {
+      IS_BLOCKED: {
+        "CHECK": isBlocked,
+        "TIME": Date.now(),
+        "BLOCK_BY_USER_ID": blocked_byuserid
+      }
+    };
+    const options = { new: true };
+
+    const foundUser = await USER_MODEL.findOneAndUpdate(condition, data, options);
+
+    return foundUser;
+  }
+
+  async activeOrganization(organizationId, isActive, active_byuserid) {
+    const condition = { "_id": organizationId };
+    const data = {
+      ORGANIZATION_ACTIVE: {
+        "CHECK": isActive,
+        "TIME": Date.now(),
+        "ACTIVE_BY_USER_ID": active_byuserid
+      }
+    };
+
+    const options = { new: true };
+    const foundOrganization = await ORGANIZATION_MODEL.findOneAndUpdate(condition, data, options);
+
+    return foundOrganization;
+  }
+
+  async approvedOrganization(organizationId, isApproved, approved_byuserid) {
+    const condition = { "_id": organizationId };
+    const data = {
+      IS_APPROVED: {
+        "CHECK": isApproved,
+        "TIME": Date.now(),
+        "APPROVED_BY_USER_ID": approved_byuserid
+      }
+    }
+    const options = { new: true };
+    const foundOrganization = await ORGANIZATION_MODEL.findOneAndUpdate(condition, data, options);
+
+    return foundOrganization;
+  }
+
+  //organization
+
   checkUserHasOrganization = async (UserId) => {
     try {
       const user = await USER_MODEL.findById(UserId);
@@ -83,6 +131,48 @@ class USER_SERVICE {
       throw new Error('Unable to check user organization: ' + error.message);
     }
   };
+
+  findUserByIdAndOrganization = async (userId, organizationId) => {
+
+    return await USER_MODEL.findOne({ _id: userId, ORGANIZATION_ID: organizationId });
+  };
+
+  lockUserByOrganization = async (userId, organizationId) => {
+
+    const user = await this.findUserByIdAndOrganization(userId, organizationId);
+
+    if (!user) {
+      throw new Error('Người dùng không tồn tại hoặc không thuộc về tổ chức này.');
+    }
+
+    user.IS_BLOCKED = {
+      TIME: new Date(),
+      CHECK: true,
+      BLOCK_BY_USER_ID: null
+    };
+
+    await user.save();
+    return user;
+  };
+
+  unlockUserByOrganization = async (userId, organizationId) => {
+
+    const user = await this.findUserByIdAndOrganization(userId, organizationId);
+
+    if (!user) {
+      throw new Error('Người dùng không tồn tại hoặc không thuộc về tổ chức này.');
+    }
+
+    user.IS_BLOCKED = {
+      TIME: new Date(),
+      CHECK: false,
+      BLOCK_BY_USER_ID: null
+    };
+
+    await user.save();
+    return user;
+  };
+
 }
 
 module.exports = new USER_SERVICE();

@@ -3,6 +3,7 @@ const organizationService = require('../../service/organization/organization.ser
 const userService = require('../../service/user/user.service');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
+
 dotenv.config();
 class ORGANIZATION_CONTROLLER {
     registerOrganization = async (req, res) => {
@@ -147,13 +148,19 @@ class ORGANIZATION_CONTROLLER {
             const { USERNAME, PASSWORD } = req.body;
             const organizationId = req.header('ORGANIZATION_ID');
 
-
-
+            // Kiểm tra xem người dùng có tồn tại và chưa bị khóa không
             const user = await organizationService.authenticate(USERNAME, PASSWORD);
             if (!user) {
                 return res.status(400).json({
                     success: false,
                     message: 'Tài khoản hoặc mật khẩu không đúng.'
+                });
+            }
+
+            if (user.IS_BLOCKED && user.IS_BLOCKED.CHECK === true) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Tài khoản này đã bị khóa.'
                 });
             }
 
@@ -209,31 +216,6 @@ class ORGANIZATION_CONTROLLER {
         }
     };
 
-    deleteUserByOrganization = async (req, res) => {
-        try {
-            const userId = req.params.userId;
-            const result = await organizationService.deleteUserByOrganization(userId);
-
-            if (result) {
-                return res.status(200).json({
-                    success: true,
-                    message: 'Đã xóa người dùng thành công.'
-                });
-            } else {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Không tìm thấy người dùng này.'
-                });
-            }
-        } catch (err) {
-            return res.status(500).json({
-                success: false,
-                message: 'Internal server error',
-                error: err.message
-            });
-        }
-    };
-
     editOrganization = async (req, res) => {
         try {
             const organizationId = req.header('ORGANIZATION_ID');
@@ -261,7 +243,40 @@ class ORGANIZATION_CONTROLLER {
         }
     };
 
+    toggleBlockUserByOrganization = async (req, res) => {
+        try {
+            const { userId } = req.params;
+            const organizationId = req.header('ORGANIZATION_ID');
 
+            const user = await userService.findUserByIdAndOrganization(userId, organizationId);
+
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Người dùng không tồn tại hoặc không thuộc về tổ chức này.'
+                });
+            }
+
+            let result;
+            if (user.IS_BLOCKED?.CHECK === true) {
+                result = await userService.unlockUserByOrganization(userId, organizationId);
+            } else {
+                result = await userService.lockUserByOrganization(userId, organizationId);
+            }
+
+            return res.status(200).json({
+                success: true,
+                message: user.IS_BLOCKED?.CHECK === true ? 'Người dùng đã được mở khóa.' : 'Người dùng đã bị khóa bởi tổ chức.',
+                data: result
+            });
+        } catch (err) {
+            return res.status(500).json({
+                success: false,
+                message: 'Internal server error',
+                error: err.message
+            });
+        }
+    };
 }
 
 module.exports = new ORGANIZATION_CONTROLLER();

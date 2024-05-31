@@ -75,7 +75,7 @@ class ORGANIZATION_SERVICE {
             username: user.USERNAME,
             organizationId: user.ORGANIZATION_ID
         };
-        const secret = process.env.ACCESS_TOKEN_SECRECT;
+        const secret = process.env.ACCESS_TOKEN_SECRET_2;
         const options = { expiresIn: '1h' };
 
         return jwt.sign(payload, secret, options);
@@ -153,11 +153,6 @@ class ORGANIZATION_SERVICE {
             totalPages,
             currentPage: page
         };
-    };
-
-    deleteUserByOrganization = async (userId) => {
-        const result = await User.findByIdAndDelete(userId);
-        return result;
     };
 
     editOrganization = async (organizationId, newData) => {
