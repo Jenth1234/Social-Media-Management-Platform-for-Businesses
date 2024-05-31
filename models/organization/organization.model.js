@@ -12,16 +12,22 @@ var ORGANIZATION = new Schema({
         type: String,
     },
     ORGANIZATION_ACTIVE: {
-        type: Boolean,
-        default: false
+        TIME: {
+            type: Date
+        },
+        CHECK: {
+            type: Boolean
+        },
+        ACTIVE_BY_USER_ID: {
+            type: Schema.Types.ObjectId
+        }
     },
     OBJECT_APPROVED: {
         TIME: {
             type: Date
         },
         CHECK: {
-            type: Boolean,
-            default: null
+            type: Boolean
         },
         APPROVED_BY_USER_ID: {
             type: Schema.Types.ObjectId

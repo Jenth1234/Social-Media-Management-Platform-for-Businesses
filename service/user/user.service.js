@@ -26,6 +26,7 @@ class USER_SERVICE {
         IS_ADMIN: false,
         IS_ORGANIZATION: false,
       },
+      ORGANIZATION_ID: body.ORGANIZATION_ID,
     });
     const result = await newUser.save();
     return result._doc;
@@ -36,8 +37,8 @@ class USER_SERVICE {
       "_id": userId,
     }
     const data = {};
-    if (userDataToUpdate.FULLNAME) {
-      data.FULLNAME = userDataToUpdate.FULLNAME;
+    if (userDataToUpdate.FULL_NAME) {
+      data.FULL_NAME = userDataToUpdate.FULL_NAME;
     }
 
     const options = { new: true };
@@ -65,11 +66,20 @@ class USER_SERVICE {
     }
   };
 
-  login = async (userId) => {
+  login = async (payload) => {
     const secret = process.env.ACCESS_TOKEN_SECRECT;
-    const expiresIn = "1h";
-    const accessToken = jwt.sign({ userId }, secret, { expiresIn });
+    const expiresIn = "5h";
+    const accessToken = jwt.sign(payload, secret, { expiresIn });
     return accessToken;
+  };
+
+  async getUserInfo(user_id) {
+    const user = await USER_MODEL.findById(user_id);
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+    return user;
   };
 
   // admin
@@ -82,6 +92,19 @@ class USER_SERVICE {
         "TIME": Date.now(),
         "BLOCK_BY_USER_ID": blocked_byuserid
       }
+    };
+    const options = { new: true };
+
+    const foundUser = await USER_MODEL.findOneAndUpdate(condition, data, options);
+
+    return foundUser;
+  }
+
+  async activeOrganization(organizationId, isActive, active_byuserid) {
+    const data = {
+      "CHECK": isBlocked,
+      "TIME": Date.now(),
+      "BLOCK_BY_USER_ID": blocked_byuserid
     };
     const options = { new: true };
 
@@ -108,6 +131,7 @@ class USER_SERVICE {
 
   async approvedOrganization(organizationId, isApproved, approved_byuserid) {
     const condition = { "_id": organizationId };
+
     const data = {
       IS_APPROVED: {
         "CHECK": isApproved,
