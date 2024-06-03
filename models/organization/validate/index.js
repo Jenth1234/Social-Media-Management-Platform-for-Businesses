@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const { model } = require('mongoose');
+Joi.objectId = require("joi-objectid")(Joi);
 
 const registerOrganization = Joi.object({
     ORGANIZATION_NAME: Joi.string()
@@ -14,7 +14,10 @@ const registerOrganization = Joi.object({
             'any.required': 'Organization name is required.'
         }),
     ORGANIZATION_EMAIL: Joi.string()
-        .email()
+        .email({
+            minDomainSegments: 2,
+            tlds: { allow: ["com", "net"] }
+        })
         .required()
         .messages({
             'string.base': 'Email must be a string.',
@@ -31,33 +34,93 @@ const registerOrganization = Joi.object({
             'string.pattern.base': 'Please provide a valid phone number.',
             'any.required': 'Organization phone number is required.'
         }),
-    // ORGANIZATION_ACTIVE: Joi.boolean()
-    //     .required()
-    //     .messages({
-    //         'boolean.base': 'Active status must be a boolean.',
-    //         'any.required': 'Organization active status is required.'
-    //     }),
-    // IS_APPROVED: Joi.object({
-    //     TIME: Joi.date()
-    //         .default(Date.now)
-    //         .messages({
-    //             'date.base': 'Time must be a valid date.'
-    //         }),
-    //     CHECK: Joi.boolean()
-    //         .required()
-    //         .messages({
-    //             'boolean.base': 'Approval check status must be a boolean.',
-    //             'any.required': 'Approval check status is required.'
-    //         }),
-    //     BLOCK_BY_USER_ID: Joi.string()
-    //         .required()
-    //         .messages({
-    //             'string.base': 'Blocked user ID must be a string.',
-    //             'any.required': 'Blocked user ID is required.'
-    //         })
-    //})
+});
+
+const loginToOrganization = Joi.object({
+    USERNAME: Joi.string()
+        .trim()
+        .alphanum()
+        .min(5)
+        .max(32)
+        .required()
+        .messages({
+            'string.base': 'Username must be a string.',
+            'string.empty': 'Username cannot be empty.',
+            'string.min': 'Username must be at least {#limit} characters long.',
+            'string.max': 'Username cannot exceed {#limit} characters.',
+            'any.required': 'Username is required.'
+        }),
+    PASSWORD: Joi.string()
+        .trim()
+        .min(8)
+        .max(32)
+        .pattern(
+            new RegExp(
+                "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\\$%\\^&\\*])(?!.*\\s).*$"
+            )
+        )
+        .required()
+        .messages({
+            'string.pattern.base': 'Password must include at least one uppercase letter, one lowercase letter, one number, and one special character, and must not contain spaces.',
+            'string.min': 'Password should have a minimum length of {#limit}.',
+            'string.max': 'Password should have a maximum length of {#limit}.',
+            'any.required': 'Password is required.'
+        }),
+});
+
+const registerAccountOfOrganization = Joi.object({
+    USERNAME: Joi.string().trim().alphanum().min(5).max(32).required(),
+
+    PASSWORD: Joi.string()
+        .trim()
+        .min(8)
+        .max(32)
+        .pattern(
+            new RegExp(
+                "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\\$%\\^&\\*])(?!.*\\s).*$"
+            )
+        )
+        .required()
+        .messages({
+            "string.pattern.base":
+                "Password must include at least one uppercase letter, one lowercase letter, one number, and one special character, and must not contain spaces.",
+            "string.min": "Password should have a minimum length of {#limit}.",
+            "string.max": "Password should have a maximum length of {#limit}.",
+        }),
+
+    FULLNAME: Joi.string()
+        .trim()
+        .pattern(/^[A-Za-z\s]+$/)
+        .min(5)
+        .max(100)
+        .custom((value, helpers) => {
+            if (value.split(" ").length < 2) {
+                return helpers.message("Full name must contain at least two words.");
+            }
+            return value;
+        })
+        .required()
+        .messages({
+            "string.base": "Full name must be a string.",
+            "string.pattern.base": "Full name must contain only letters and spaces.",
+            "string.empty": "Full name cannot be empty.",
+            "string.min": "Full name must be at least {#limit} characters long.",
+            "string.max": "Full name must be at most {#limit} characters long.",
+        }),
+
+    EMAIL: Joi.string().email({
+        minDomainSegments: 2,
+        tlds: { allow: ["com", "net"] },
+    }),
+});
+
+const validateHeader = Joi.object({
+    ORGANIZATION_ID: Joi.objectId().required()
 });
 
 module.exports = {
     registerOrganization,
+    loginToOrganization,
+    registerAccountOfOrganization,
+    validateHeader,
 };
