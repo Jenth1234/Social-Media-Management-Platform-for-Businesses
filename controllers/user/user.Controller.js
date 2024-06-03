@@ -132,7 +132,7 @@ class USER_CONTROLLER {
     }
   };
 
-  getUserInfo = async (req, res) => {
+  getUserInfoAdmin = async (req, res) => {
     try {
       const userInfo = req.user;
       const IS_ADMIN = userInfo.ROLE.IS_ADMIN;
@@ -141,6 +141,33 @@ class USER_CONTROLLER {
       }
 
       res.json(userInfo);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
+
+
+  checkAdmin = async (req, res, next) => {
+    try {
+      const userInfo = req.user;
+      const IS_ADMIN = userInfo.ROLE.IS_ADMIN;
+      if (!IS_ADMIN) {
+        return res.status(403).json({ error: 'Access denied. Admins only.' });
+      }
+      next();
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
+
+  checkOrganization = async (req, res, next) => {
+    try {
+      const userInfo = req.user;
+      const IS_ADMIN = userInfo.ROLE.IS_ORGANIZATION;
+      if (!IS_ADMIN) {
+        return res.status(403).json({ error: 'Access denied. Organization only.' });
+      }
+      next();
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
