@@ -62,6 +62,12 @@ const UserSchema = new Schema({
   },
   ORGANIZATION_ID: {
     type: Schema.Types.ObjectId
+  },
+  ADDRESS: {
+    type: String,
+  },
+  GENDER: {
+    type: String,
   }
 });
 
