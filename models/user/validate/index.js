@@ -100,10 +100,10 @@ const loginValidate = Joi.object({
 
 function validateUserId(userId) {
   const schema = Joi.string().custom((value, helpers) => {
-      if (!Types.ObjectId.isValid(value)) {
-          return helpers.error('any.invalid');
-      }
-      return value;
+    if (!Types.ObjectId.isValid(value)) {
+      return helpers.error('any.invalid');
+    }
+    return value;
   }, 'ObjectId validation').required();
 
   return schema.validate(userId);
