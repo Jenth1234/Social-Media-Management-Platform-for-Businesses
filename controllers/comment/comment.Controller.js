@@ -6,7 +6,7 @@ class COMMENT_CONTROLLER{
 createComment = async (req, res) => {
     try {
         const payload = req.body;
-        const { error } = createSchema.validate(payload, { abortEarly: false });
+        const { error } = createCommentValidate.validate(payload, { abortEarly: false });
 
         if (error) {
             return res.status(400).json({

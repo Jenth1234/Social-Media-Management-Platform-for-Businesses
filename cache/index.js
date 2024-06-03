@@ -45,9 +45,9 @@ class Cache {
 const cache = new Cache();
 
 // Đặt giá trị 'bar' cho key 'foo' trong cache
-cache.put('foo', 'bar');
+
 
 // Lấy giá trị của key 'foo' từ cache và log ra console
-console.log(cache.get('foo')); // Output: bar
+// console.log(cache.get('foo')); // Output: bar
 
-module.exports = new Cache();
+// module.exports = new cache();

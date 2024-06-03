@@ -1,25 +1,19 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-
-const dbConnect = require('./config/dbconnect');
-
-require('dotenv').config();
- 
 const route = require('./router');
+require('dotenv').config();
+const morgan = require('morgan');
+const db = require('./config/dbconnect');
 const app = express();
 const port = process.env.PORT || 3000;
 
-
-// Middleware
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-
-dbConnect();
-
-
+app.use(morgan('combined'));
 
 route(app);
-
+db();
 app.listen(port, () => {
-  console.log(`The server is running on the port ${port}`);
+  console.log(`Máy chủ đang chạy trên cổng ${port}`);
 });
