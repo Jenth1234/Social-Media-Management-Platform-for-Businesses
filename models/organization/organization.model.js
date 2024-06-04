@@ -23,6 +23,22 @@ var ORGANIZATION = new Schema({
         BLOCK_BY_USER_ID: {
             type: Schema.Types.ObjectId
         }
+    },
+    PACKAGE:{
+    LEVEL: {
+        type: Number
+    },
+    PACKAGE_COST: {
+        type: Number
+    },
+    NUMBER_OF_PRODUCT: {
+        type: Number
+    },
+    NUMBER_OF_COMMENT: {
+        type: Number
+    },
     }
+   
+    
 });
 module.exports = mongoose.model("ORGANIZATION", ORGANIZATION);
