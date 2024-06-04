@@ -29,7 +29,7 @@ var Package = new Schema({
         type:Number
     }
    
-);
+});
 
 
 module.exports = mongoose.model('Package', Package);

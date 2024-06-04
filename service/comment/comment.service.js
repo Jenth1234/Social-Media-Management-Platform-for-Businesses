@@ -48,5 +48,53 @@ deleteComment = async (commentId) => {
     return await Comment.findByIdAndDelete(commentId);
   };
 
+<<<<<<< HEAD
 }
 module.exports = new COMMENT_SERVICE();
+=======
+  updateCommentContent = async (commentId, content) => {
+    try {
+      const result = await Comment.findOneAndUpdate(
+        { "LIST_COMMENT._id": commentId },
+        {
+          $set: { "LIST_COMMENT.$.CONTENT": content }
+        },
+        { new: true }
+      );
+      
+      if (result) {
+        // Tìm bình luận đã được cập nhật
+        const updatedComment = result.LIST_COMMENT.find(comment => comment._id.toString() === commentId);
+        return updatedComment;
+      }
+      
+      return null;
+    } catch (error) {
+      throw new Error(`Error updating comment content: ${error.message}`);
+    }
+  };
+  deleteComment = async (commentId, userId) => {
+    try {
+      const commentDoc = await Comment.findOne({ 'LIST_COMMENT._id': commentId });  
+      if (!commentDoc) {
+        throw new Error('Comment not found');
+      }
+      
+      const comment = commentDoc.LIST_COMMENT.id(commentId);
+      if (!comment) {
+        throw new Error('Comment not found');
+      }
+  
+     
+      comment.remove();
+      await commentDoc.save();
+  
+      return { message: 'Comment deleted successfully', updatedDocument: commentDoc };
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  };
+}
+
+module.exports = new COMMENT_SERVICE();
+>>>>>>> 4e8faf27985e7bf7614252e0d6bf59e7a5c8a91b

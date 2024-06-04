@@ -67,6 +67,52 @@ getCommentsByProduct = async (req, res) => {
 };
 
 
+<<<<<<< HEAD
+=======
+      const { error } = updateCommentValidate.validate({ CONTENT }, { abortEarly: false });
+      if (error) {
+        return res.status(400).json({
+          success: false,
+          message: 'Dữ liệu không hợp lệ',
+          errors: error.details
+        });
+      }
+
+      const updatedComment = await commentService.updateCommentContent(commentId, CONTENT);
+
+      if (!updatedComment) {
+        return res.status(404).json({
+          success: false,
+          message: 'Không tìm thấy bình luận'
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: 'Bình luận đã được cập nhật thành công.',
+        data: updatedComment
+      });
+    } catch (err) {
+      return res.status(500).json({
+        success: false,
+        message: 'Lỗi máy chủ nội bộ',
+        error: err.message
+      });
+    }
+  };
+  deleteComment = async (req, res) => {
+    const { commentId } = req.params;
+    const userId = req.user_id;
+  
+    try {
+      const response = await commentService.deleteComment(commentId, userId);
+      res.status(200).json(response);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  };
+  
+>>>>>>> 4e8faf27985e7bf7614252e0d6bf59e7a5c8a91b
 }
 
 module.exports = new COMMENT_CONTROLLER();
