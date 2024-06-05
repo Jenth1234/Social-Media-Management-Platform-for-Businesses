@@ -17,7 +17,7 @@ var CommentSchema = new Schema({
         type: String
     },
     LIST_COMMENT_MAX_NUMBER: {
-        type: Number
+        type: Number    
     }
 });
 module.exports = mongoose.model('Comment', CommentSchema);

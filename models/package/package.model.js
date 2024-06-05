@@ -27,7 +27,8 @@ var Package = new Schema({
     },
     DISCOUNT:{
         type:Number
-    }
+    },
+     
    
 });
 

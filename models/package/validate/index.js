@@ -31,12 +31,13 @@ class PackageValidate {
             'string.base': 'DESCRIPTION must be a string',
             'any.required': 'DESCRIPTION is required'
         }),
-        DISCOUNT: Joi.number().integer().min(1).max(10).required().messages({
-            'number.base': 'LEVEL must be a number',
-            'number.min': 'LEVEL must be at least 1',
-            'number.max': 'LEVEL must be at most 10',
-            'any.required': 'LEVEL is required'
+        DISCOUNT: Joi.number().integer().min(10).max(50).required().messages({
+            'number.base': 'DISCOUNT must be a number',
+            'number.min': 'DISCOUNT must be at least 10',
+            'number.max': 'DISCOUNT must be at most 50',
+            'any.required': 'DISCOUNT is required'
         })
+
     });
 
     static updatePackageSchema = Joi.object({
@@ -63,11 +64,11 @@ class PackageValidate {
         DESCRIPTION: Joi.string().messages({
             'string.base': 'DESCRIPTION must be a string',
         }),
-        DISCOUNT: Joi.number().integer().min(1).max(10).required().messages({
-            'number.base': 'LEVEL must be a number',
-            'number.min': 'LEVEL must be at least 1',
-            'number.max': 'LEVEL must be at most 10',
-            'any.required': 'LEVEL is required'
+        DISCOUNT: Joi.number().integer().min(10).max(50).required().messages({
+            'number.base': 'DISCOUNT must be a number',
+            'number.min': 'DISCOUNT must be at least 10',
+            'number.max': 'DISCOUNT must be at most 50',
+            'any.required': 'DISCOUNT is required'
         })
     });
 }
