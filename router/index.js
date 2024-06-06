@@ -3,11 +3,19 @@ const commentRouter = require('./comment');
 const organizationRouter = require('./organization');
 const azureRouter = require('./azure');
 const adminRouter = require('./admin');
+const categoryRouter = require('./category');
+const metadatacmtproductRouter = require('./metadata_cmt_product');
+
 function route(app) {
     app.use('/user', userRouter);
     app.use('/comment', commentRouter);
     app.use('/organization', organizationRouter);
+
     app.use('/azure',azureRouter );
     app.use('/admin',adminRouter);
+  
+    app.use('/metadatacmtproduct', metadatacmtproductRouter);
+    app.use('/category', categoryRouter);
+
 }
 module.exports = route;
