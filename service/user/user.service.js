@@ -1,9 +1,10 @@
 const USER_MODEL = require("../../models/user/user.model");
+const MailService = require('../../utils/send.mail')
+const ORGANIZATION_MODEL = require("../../models/organization/organization.model");
 const { Types } = require("mongoose");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 class USER_SERVICE {
-
 
   async checkUsernameExists(username) {
     return await USER_MODEL.findOne({ USERNAME: username }).lean();
@@ -13,8 +14,11 @@ class USER_SERVICE {
     return await USER_MODEL.findOne({ EMAIL: email }).lean();
   }
 
-  async registerUser(body) {
+  async registerUser(body, otpType) {
     const hash = await this.hashPassword(body.PASSWORD);
+    const otpCode = await MailService.randomOtp();
+    const otpTime = new Date();
+    const otpExpTime = new Date(otpTime.getTime() + 5 * 60 * 1000);
     const newUser = new USER_MODEL({
       USERNAME: body.USERNAME,
       PASSWORD: hash,
@@ -25,26 +29,56 @@ class USER_SERVICE {
         IS_ADMIN: false,
         IS_ORGANIZATION: false,
       },
-    });
+      ADDRESS: body.ADDRESS,
+      GENDER: body.GENDER,
+      IS_ACTIVATED: false,
+    }); 
+
+    newUser.OTP = [{
+      TYPE: otpType,
+      CODE: otpCode,
+      TIME: Date.now(),
+      EXP_TIME: otpExpTime,
+      CHECK_USING: false
+  }];
+
     const result = await newUser.save();
     return result._doc;
   }
 
-  async editUser(userId, userDataToUpdate) {
-    const foundUser = await USER_MODEL.findById(userId);
-    if (!foundUser) {
-      throw new Error("User does not exist");
-    }
-    foundUser.set(userDataToUpdate);
-    await foundUser.save();
-    return foundUser;
-  }
+  // async updateUserOtp(email, otp, otpType) {
+  //   const otpTime = new Date();
+  //   const otpExpTime = new Date(otpTime.getTime() + 10 * 60 * 1000); 
+  
+  //   await USER_MODEL.findOneAndUpdate(
+  //     { EMAIL: email },
+  //     {
+  //       $push: {
+  //         OTP: {
+  //           TYPE: otpType,
+  //           CODE: otp,
+  //           TIME: otpTime,
+  //           EXP_TIME: otpExpTime,
+  //           CHECK_USING: false
+  //         }
+  //       }
+  //     }
+  //   );
+  // }
 
-  async deleteUser(userId) {
-    const deletedUser = await USER_MODEL.findByIdAndDelete(userId);
-    if (!deletedUser) {
-      throw new Error("User not found");
+  async updateUser(userId, userDataToUpdate) {
+    const condition = {
+      "_id": userId,
     }
+    const data = {};
+    if (userDataToUpdate.FULL_NAME) {
+      data.FULL_NAME = userDataToUpdate.FULL_NAME;
+    }
+
+    const options = { new: true };
+    const foundUser = await USER_MODEL.findOneAndUpdate(condition, data, options);
+
+    return foundUser;
   }
 
   async getUsers() {
@@ -66,12 +100,84 @@ class USER_SERVICE {
     }
   };
 
-  login = async (userId) => {
+  login = async (payload) => {
     const secret = process.env.ACCESS_TOKEN_SECRECT;
-    const expiresIn = "1h";
-    const accessToken = jwt.sign({ userId }, secret, { expiresIn });
+    const expiresIn = "5h";
+    const accessToken = jwt.sign(payload, secret, { expiresIn });
     return accessToken;
   };
+
+  async getUserInfo(user_id) {
+    const user = await USER_MODEL.findById(user_id);
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+    return user;
+  };
+
+  // admin
+
+  async blockUser(userId, isBlocked, blocked_byuserid) {
+    const condition = { "_id": userId };
+    const data = {
+      IS_BLOCKED: {
+        "CHECK": isBlocked,
+        "TIME": Date.now(),
+        "BLOCK_BY_USER_ID": blocked_byuserid
+      }
+    };
+    const options = { new: true };
+
+    const foundUser = await USER_MODEL.findOneAndUpdate(condition, data, options);
+
+    return foundUser;
+  }
+
+  async activeOrganization(organizationId, isActive, active_byuserid) {
+    const data = {
+      "CHECK": isBlocked,
+      "TIME": Date.now(),
+      "BLOCK_BY_USER_ID": blocked_byuserid
+    };
+    const options = { new: true };
+
+    const foundUser = await USER_MODEL.findOneAndUpdate(condition, data, options);
+
+    return foundUser;
+  }
+
+  async activeOrganization(organizationId, isActive, active_byuserid) {
+    const condition = { "_id": organizationId };
+    const data = {
+      ORGANIZATION_ACTIVE: {
+        "CHECK": isActive,
+        "TIME": Date.now(),
+        "ACTIVE_BY_USER_ID": active_byuserid
+      }
+    };
+
+    const options = { new: true };
+    const foundOrganization = await ORGANIZATION_MODEL.findOneAndUpdate(condition, data, options);
+
+    return foundOrganization;
+  }
+
+  async approvedOrganization(organizationId, isApproved, approved_byuserid) {
+    const condition = { "_id": organizationId };
+
+    const data = {
+      IS_APPROVED: {
+        "CHECK": isApproved,
+        "TIME": Date.now(),
+        "APPROVED_BY_USER_ID": approved_byuserid
+      }
+    }
+    const options = { new: true };
+    const foundOrganization = await ORGANIZATION_MODEL.findOneAndUpdate(condition, data, options);
+
+    return foundOrganization;
+  }
 }
 
 module.exports = new USER_SERVICE();

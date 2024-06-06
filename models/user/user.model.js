@@ -30,6 +30,9 @@ const UserSchema = new Schema({
     type: String,
   },
   OTP: [{
+    TYPE: {
+      type: String
+    },
     CODE: {
       type: String
     },
@@ -62,6 +65,12 @@ const UserSchema = new Schema({
   },
   ORGANIZATION_ID: {
     type: Schema.Types.ObjectId
+  },
+  ADDRESS: {
+    type: String,
+  },
+  GENDER: {
+    type: String,
   }
 });
 
