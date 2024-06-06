@@ -1,4 +1,5 @@
 const Comment = require("../../models/comment/comment.model");
+const MetadaraCmtProductService = require('../../service/metadata_cmt_product/metadatacmtproduct.service');
 class COMMENT_SERVICE {
   createComment = async (payload) => {
     const countCMT = 5
@@ -11,6 +12,8 @@ class COMMENT_SERVICE {
       "FROM_DATE": Date.now(),
       "THRU_DATE": null
     }
+
+    await MetadaraCmtProductService.updateCmtCount(payload.PRODUCT_ID, payload.ORGANIZATION_ID, 1);
 
     await Comment.updateOne(
       query,
