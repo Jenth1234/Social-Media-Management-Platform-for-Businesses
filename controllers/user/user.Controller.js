@@ -127,6 +127,9 @@ class USER_CONTROLLER {
     }
   };
 
+
+
+
   getUserInfoAdmin = async (req, res) => {
     try {
       const userInfo = req.user;
@@ -242,3 +245,4 @@ class USER_CONTROLLER {
 
 } 
 module.exports = new USER_CONTROLLER();
+

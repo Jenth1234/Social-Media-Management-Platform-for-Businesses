@@ -11,6 +11,10 @@ var CommentSchema = new Schema({
     CONTENT: {
       type: String
     },
+
+   LIST_COMMENT_MAX_NUMBER: {
+      type: Number    
+
     ATTACHMENTS: [{}],
     FROM_DATE: {
       type: Date
@@ -18,12 +22,12 @@ var CommentSchema = new Schema({
     THRU_DATE: {
       type: Date
     }
-  }],
-  PRODUCT_ID: {
-    type: String
-  },
-  LIST_COMMENT_MAX_NUMBER: {
-    type: Number
-  }
+    }],
+    PRODUCT_ID: {
+      type: String
+    },
+    LIST_COMMENT_MAX_NUMBER: {
+      type: Number
+    }
 });
 module.exports = mongoose.model('Comment', CommentSchema);
