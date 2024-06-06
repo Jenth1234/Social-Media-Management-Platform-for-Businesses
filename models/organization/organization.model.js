@@ -1,4 +1,5 @@
 const { date } = require('joi');
+
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
@@ -34,7 +35,6 @@ var ORGANIZATION = new Schema({
             type: Schema.Types.ObjectId
         }
     },
-
     PACKAGE:{
         PACKAGE_ID:{
             type:Schema.Types.ObjectId,
@@ -49,17 +49,14 @@ var ORGANIZATION = new Schema({
         NUMBER_OF_COMMENT: {
             type: Number
         },
-        ACTIVE_FROM_DATE:{
-            type:date
+        ACTIVE_FROM_DATE: {
+            type: Date
         },
-        ACTIVE_THRU_DATE:{
-            type:date
+        ACTIVE_THRU_DATE: {
+            type: Date
         }
     }
-    REGISTER_DATE: {
-        type: Date,
-    },
-
+   
+    
 });
-
 module.exports = mongoose.model("ORGANIZATION", ORGANIZATION);

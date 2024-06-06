@@ -11,6 +11,10 @@ var Invoice = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Package'
     },
+    LEVEL: { 
+        type: Number, 
+        required: true 
+    }, 
     AMOUNT: {
         type: Number
     },

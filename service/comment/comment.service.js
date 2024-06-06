@@ -89,7 +89,6 @@ class COMMENT_SERVICE {
       throw new Error(`Error getting comments by product: ${error.message}`);
     }
   };
-
   updateCommentContent = async (commentId, content) => {
     try {
       const result = await Comment.findOneAndUpdate(

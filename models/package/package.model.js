@@ -1,10 +1,9 @@
-
+// Trong file package.model.js
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-const Joi = require('joi');
-
+const { date } = require('joi');
 var Package = new Schema({
-    TITLE:{
+    TITLE: {
         type: String
     },
     LEVEL: {
@@ -22,15 +21,12 @@ var Package = new Schema({
     DESCRIPTION: {
         type: String
     },
-    IS_ACTIVE:{
+    IS_ACTIVE: {
         type: Boolean
     },
-    DISCOUNT:{
-        type:Number
-    },
-     
-   
+    DISCOUNT: {
+        type: Number
+    } 
 });
-
 
 module.exports = mongoose.model('Package', Package);
