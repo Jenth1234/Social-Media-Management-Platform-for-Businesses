@@ -13,6 +13,7 @@ router.put('/updateUser/:id', verifyToken, user_controller.updateUser);//CHECK L
 router.get('/getUsers',verifyToken,user_controller.getUsers);
 router.post("/register", user_controller.registerUser);
 router.post("/loginUser", user_controller.login);
+router.post("/loginAdmin", verifyToken, user_controller.checkAdmin, user_controller.login);
 router.post("/getUserInfoAdmin",verifyToken, user_controller.getUserInfoAdmin);
 
 module.exports = router;

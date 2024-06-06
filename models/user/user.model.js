@@ -30,6 +30,9 @@ const UserSchema = new Schema({
     type: String,
   },
   OTP: [{
+    TYPE: {
+      type: String
+    },
     CODE: {
       type: String
     },

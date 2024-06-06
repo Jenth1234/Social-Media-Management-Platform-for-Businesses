@@ -46,7 +46,6 @@ const registerValidate = Joi.object({
     minDomainSegments: 2,
     tlds: { allow: ["com", "net"] },
   }),
-  ORGANIZATION_ID: Joi.string().trim().alphanum().length(24),
 
   ADDRESS: Joi.string().trim().max(255),
 
