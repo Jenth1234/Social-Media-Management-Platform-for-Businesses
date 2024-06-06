@@ -26,6 +26,7 @@ class Queue {
     }
 }
 
+
 const mailQueue = new Queue();
 
 async function addToMailQueue(email, otp, otpType) {

@@ -39,7 +39,6 @@ class USER_CONTROLLER {
       if (existingEmail) {
         return res.status(400).json({ message: "Email đã tồn tại" });
       }
-      
 
       // const newUser = await USER_SERVICE.registerUser(payload);
       return res.status(201).json(newUser);
