@@ -27,6 +27,8 @@ class USER_SERVICE {
         IS_ORGANIZATION: false,
       },
       ORGANIZATION_ID: body.ORGANIZATION_ID,
+      ADDRESS: body.ADDRESS,
+      GENDER: body.GENDER,
     });
     const result = await newUser.save();
     return result._doc;
