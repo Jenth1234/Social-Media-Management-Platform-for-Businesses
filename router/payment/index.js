@@ -4,101 +4,65 @@ const router = express.Router();
 const payment_controller = require("../../controllers/payment/payment.Controller");
 const verifyToken = require("../../middleware/verifyToken");
 
-app.post("/pay", async (req, res) => {
-  //https://developers.momo.vn/#/docs/en/aiov2/?id=payment-method
-  //parameters
-  var accessKey = "F8BBA842ECF85";
-  var secretKey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
-  var orderInfo = "pay with MoMo";
-  var partnerCode = "MOMO";
-  var redirectUrl = "https://webhook.site/b3088a6a-2d17-4f8d-a383-71389a6c600b";
-  var ipnUrl = "https://webhook.site/b3088a6a-2d17-4f8d-a383-71389a6c600b";
-  var requestType = "payWithMethod";
-  var amount = "50000";
-  var orderId = partnerCode + new Date().getTime();
-  var requestId = orderId;
-  var extraData = "";
-  var paymentCode =
-    "T8Qii53fAXyUftPV3m9ysyRhEanUs9KlOPfHgpMR0ON50U10Bh+vZdpJU7VY4z+Z2y77fJHkoDc69scwwzLuW5MzeUKTwPo3ZMaB29imm6YulqnWfTkgzqRaion+EuD7FN9wZ4aXE1+mRt0gHsU193y+yxtRgpmY7SDMU9hCKoQtYyHsfFR5FUAOAKMdw2fzQqpToei3rnaYvZuYaxolprm9+/+WIETnPUDlxCYOiw7vPeaaYQQH0BF0TxyU3zu36ODx980rJvPAgtJzH1gUrlxcSS1HQeQ9ZaVM1eOK/jl8KJm6ijOwErHGbgf/hVymUQG65rHU2MWz9U8QUjvDWA==";
-  var orderGroupId = "";
-  var autoCapture = true;
-  var lang = "vi";
+router.post("/pay", async (req, res) => {
+  const accessKey = "F8BBA842ECF85";
+  const secretKey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
+  const orderInfo = "pay with MoMo";
+  const partnerCode = "MOMO";
+  const redirectUrl = "https://webhook.site/b3088a6a-2d17-4f8d-a383-71389a6c600b";
+  const ipnUrl = "https://webhook.site/b3088a6a-2d17-4f8d-a383-71389a6c600b";
+  const requestType = "payWithMethod";
+  const amount = "50000";
+  const orderId = partnerCode + new Date().getTime();
+  const requestId = orderId;
+  const extraData = "";
+  const orderGroupId = "";
+  const autoCapture = true;
+  const lang = "vi";
 
-  //before sign HMAC SHA256 with format
-  //accessKey=$accessKey&amount=$amount&extraData=$extraData&ipnUrl=$ipnUrl&orderId=$orderId&orderInfo=$orderInfo&partnerCode=$partnerCode&redirectUrl=$redirectUrl&requestId=$requestId&requestType=$requestType
-  var rawSignature =
-    "accessKey=" +
-    accessKey +
-    "&amount=" +
-    amount +
-    "&extraData=" +
-    extraData +
-    "&ipnUrl=" +
-    ipnUrl +
-    "&orderId=" +
-    orderId +
-    "&orderInfo=" +
-    orderInfo +
-    "&partnerCode=" +
-    partnerCode +
-    "&redirectUrl=" +
-    redirectUrl +
-    "&requestId=" +
-    requestId +
-    "&requestType=" +
-    requestType;
-  //puts raw signature
-  console.log("--------------------RAW SIGNATURE----------------");
-  console.log(rawSignature);
-  //signature
+  const rawSignature = `accessKey=${accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
   const crypto = require("crypto");
-  var signature = crypto
-    .createHmac("sha256", secretKey)
-    .update(rawSignature)
-    .digest("hex");
-  console.log("--------------------SIGNATURE----------------");
-  console.log(signature);
+  const signature = crypto.createHmac("sha256", secretKey).update(rawSignature).digest("hex");
 
-  //json object send to MoMo endpoint
-  const requestBody = JSON.stringify({
-    partnerCode: partnerCode,
-    partnerName: "Test",
-    storeId: "MomoTestStore",
-    requestId: requestId,
-    amount: amount,
-    orderId: orderId,
-    orderInfo: orderInfo,
-    redirectUrl: redirectUrl,
-    ipnUrl: ipnUrl,
-    lang: lang,
-    requestType: requestType,
-    autoCapture: autoCapture,
-    extraData: extraData,
-    orderGroupId: orderGroupId,
-    signature: signature,
-  });
-  const options = {
-    method:"POST",
-    url:"http://test-payment.momo.vn/v2/gateway/api/create",
-    headers :{
-        'Content-Type':'application/json',
-        'Content-Length': Buffer.byteLength(requestBody)
+  const requestBody = {
+      partnerCode: partnerCode,
+      partnerName: "Test",
+      storeId: "MomoTestStore",
+      requestId: requestId,
+      amount: amount,
+      orderId: orderId,
+      orderInfo: orderInfo,
+      redirectUrl: redirectUrl,
+      ipnUrl: ipnUrl,
+      lang: lang,
+      requestType: requestType,
+      autoCapture: autoCapture,
+      extraData: extraData,
+      orderGroupId: orderGroupId,
+      signature: signature
+  };
 
-    },
-    data:requestBody
-  }
-  let result;
   try {
-        result =await axios(options);   
-        return res.status(200).json(result.data);
+      const response = await axios.post("https://test-payment.momo.vn/v2/gateway/api/create", requestBody);
+      return res.status(200).json(response.data);
   } catch (error) {
-        return res.status(500).json({
-            statusCode:500 ,
-            message:"server error"
-        })
-
+      if (error.response) {
+          return res.status(error.response.status).json({
+              statusCode: error.response.status,
+              message: error.response.data
+          });
+      } else if (error.request) {
+          return res.status(500).json({
+              statusCode: 500,
+              message: "No response received from server"
+          });
+      } else {
+          return res.status(500).json({
+              statusCode: 500,
+              message: "An unexpected error occurred"
+          });
+      }
   }
-})
-// router.get('/organization', AuthMiddleware.checkOrganization,user_controller.login);
+});
 
 module.exports = router;

@@ -2,7 +2,7 @@ const Organization = require('../../models/organization/organization.model');
 const User = require('../../models/user/user.model');
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken");
-const MetadataCommentProduct = require('../../models/metadatacmtproduct/metadatacmtproduct.model');
+const MetadataCommentProduct = require('../../models/metadata_cmt_product/metadatacmtproduct.model');
 
 class ORGANIZATION_SERVICE {
     registerOrganization = async (payload) => {
