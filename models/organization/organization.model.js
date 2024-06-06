@@ -33,6 +33,9 @@ var ORGANIZATION = new Schema({
             type: Schema.Types.ObjectId
         }
     },
+    REGISTER_DATE: {
+        type: Date,
+    },
 });
 
 module.exports = mongoose.model("ORGANIZATION", ORGANIZATION);
