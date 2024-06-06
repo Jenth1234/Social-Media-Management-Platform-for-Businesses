@@ -1,4 +1,5 @@
 const USER_MODEL = require("../../models/user/user.model");
+const MailService = require('../../utils/send.mail')
 const ORGANIZATION_MODEL = require("../../models/organization/organization.model");
 const { Types } = require("mongoose");
 const jwt = require("jsonwebtoken");
@@ -14,8 +15,11 @@ class USER_SERVICE {
     return await USER_MODEL.findOne({ EMAIL: email }).lean();
   }
 
-  async registerUser(body) {
+  async registerUser(body, otpType) {
     const hash = await this.hashPassword(body.PASSWORD);
+    const otpCode = await MailService.randomOtp();
+    const otpTime = new Date();
+    const otpExpTime = new Date(otpTime.getTime() + 5 * 60 * 1000);
     const newUser = new USER_MODEL({
       USERNAME: body.USERNAME,
       PASSWORD: hash,
@@ -26,13 +30,42 @@ class USER_SERVICE {
         IS_ADMIN: false,
         IS_ORGANIZATION: false,
       },
-      ORGANIZATION_ID: body.ORGANIZATION_ID,
       ADDRESS: body.ADDRESS,
       GENDER: body.GENDER,
-    });
+      IS_ACTIVATED: false,
+    }); 
+
+    newUser.OTP = [{
+      TYPE: otpType,
+      CODE: otpCode,
+      TIME: Date.now(),
+      EXP_TIME: otpExpTime,
+      CHECK_USING: false
+  }];
+
     const result = await newUser.save();
     return result._doc;
   }
+
+  // async updateUserOtp(email, otp, otpType) {
+  //   const otpTime = new Date();
+  //   const otpExpTime = new Date(otpTime.getTime() + 10 * 60 * 1000); 
+  
+  //   await USER_MODEL.findOneAndUpdate(
+  //     { EMAIL: email },
+  //     {
+  //       $push: {
+  //         OTP: {
+  //           TYPE: otpType,
+  //           CODE: otp,
+  //           TIME: otpTime,
+  //           EXP_TIME: otpExpTime,
+  //           CHECK_USING: false
+  //         }
+  //       }
+  //     }
+  //   );
+  // }
 
   async updateUser(userId, userDataToUpdate) {
     const condition = {
