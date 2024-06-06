@@ -48,11 +48,7 @@ deleteComment = async (commentId) => {
     return await Comment.findByIdAndDelete(commentId);
   };
 
-<<<<<<< HEAD
-}
-module.exports = new COMMENT_SERVICE();
-=======
-  updateCommentContent = async (commentId, content) => {
+  updateComment = async (commentId, content) => {
     try {
       const result = await Comment.findOneAndUpdate(
         { "LIST_COMMENT._id": commentId },
@@ -97,4 +93,3 @@ module.exports = new COMMENT_SERVICE();
 }
 
 module.exports = new COMMENT_SERVICE();
->>>>>>> 4e8faf27985e7bf7614252e0d6bf59e7a5c8a91b

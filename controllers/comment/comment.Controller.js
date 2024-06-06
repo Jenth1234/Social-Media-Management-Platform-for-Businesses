@@ -1,74 +1,78 @@
-
-const { createCommentValidate } = require('../../models/comment/validate/index');
+const { createCommentValidate, updateCommentValidate } = require('../../models/comment/validate/index');
 const Comment = require('../../models/comment/comment.model');
 const commentService = require('../../service/comment/comment.service');
-class COMMENT_CONTROLLER{
-createComment = async (req, res) => {
+
+class COMMENT_CONTROLLER {
+  createComment = async (req, res) => {
     try {
-        const payload = req.body;
-        const { error } = createCommentValidate.validate(payload, { abortEarly: false });
+      const payload = req.body;
+      const { error } = createCommentValidate.validate(payload, { abortEarly: false });
 
-        if (error) {
-            return res.status(400).json({
-                success: false,
-                message: 'Invalid data',
-                errors: error.details.map(detail => detail.message)
-            });
-        }
-        const newComment = await commentService.createComment(payload);
-
-        return res.status(201).json({
-            success: true,
-            message: 'Comment has been created successfully.',
-            data: newComment
+      if (error) {
+        return res.status(400).json({
+          success: false,
+          message: 'Dữ liệu không hợp lệ',
+          errors: error.details.map(detail => detail.message)
         });
+      }
+      
+      const newComment = await commentService.createComment(payload);
+
+      return res.status(201).json({
+        success: true,
+        message: 'Bình luận đã được tạo thành công.',
+        data: newComment
+      });
     } catch (err) {
-        return res.status(500).json({
-            success: false,
-            message: 'Internal server error',
-            error: err.message
-        });
+      return res.status(500).json({
+        success: false,
+        message: 'Lỗi máy chủ nội bộ',
+        error: err.message
+      });
     }
-};
+  };
 
-getCommentsByUser = async (req, res) => {
+  getCommentsByUser = async (req, res) => {
     try {
-        const { userId } = req.params;
-        const comments = await commentService.getCommentsByUser(userId);
-        
-        return res.status(200).json({
-            success: true,
-            data: comments
-        });
+      const { userId } = req.params;
+      const comments = await commentService.getCommentsByUser(userId);
+      
+      return res.status(200).json({
+        success: true,
+        data: comments
+      });
     } catch (err) {
-        return res.status(500).json({
-            success: false,
-            message: 'Internal server error',
-            error: err.message
-        });
+      return res.status(500).json({
+        success: false,
+        message: 'Lỗi máy chủ nội bộ',
+        error: err.message
+      });
     }
-};
-getCommentsByProduct = async (req, res) => {
+  };
+
+  getCommentsByProduct = async (req, res) => {
     try {
-        const { productId } = req.params;
-        const comments = await commentService.getCommentsByProduct(productId);
-        
-        return res.status(200).json({
-            success: true,
-            data: comments
-        });
+      const { productId } = req.params;
+      const comments = await commentService.getCommentsByProduct(productId);
+      
+      return res.status(200).json({
+        success: true,
+        data: comments
+      });
     } catch (err) {
-        return res.status(500).json({
-            success: false,
-            message: 'Internal server error',
-            error: err.message
-        });
+      return res.status(500).json({
+        success: false,
+        message: 'Lỗi máy chủ nội bộ',
+        error: err.message
+      });
     }
-};
+  };
 
+  updateComment = async (req, res) => {
+    try {
+      const { commentId } = req.params;
+      const { CONTENT } = req.body;
 
-<<<<<<< HEAD
-=======
       const { error } = updateCommentValidate.validate({ CONTENT }, { abortEarly: false });
       if (error) {
         return res.status(400).json({
@@ -100,6 +104,7 @@ getCommentsByProduct = async (req, res) => {
       });
     }
   };
+
   deleteComment = async (req, res) => {
     const { commentId } = req.params;
     const userId = req.user_id;
@@ -111,9 +116,6 @@ getCommentsByProduct = async (req, res) => {
       res.status(400).json({ message: error.message });
     }
   };
-  
->>>>>>> 4e8faf27985e7bf7614252e0d6bf59e7a5c8a91b
 }
 
 module.exports = new COMMENT_CONTROLLER();
-

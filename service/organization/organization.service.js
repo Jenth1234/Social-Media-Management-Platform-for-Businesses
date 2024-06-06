@@ -10,6 +10,11 @@ class ORGANIZATION_SERVICE {
                 ORGANIZATION_EMAIL: payload.ORGANIZATION_EMAIL,
                 ORGANIZATION_PHONE: payload.ORGANIZATION_PHONE,
                 ORGANIZATION_ACTIVE: false,
+
+                PACKAGE:payload.PACKAGE,
+                
+
+
                 IS_APPROVED: null
             });
             // Lưu vào cơ sở dữ liệu
