@@ -36,6 +36,7 @@ createComment = async (req, res) => {
     }
 };
 
+
 getCommentsByUser = async (req, res) => {
     try {
         const { userId } = req.params;
@@ -68,6 +69,7 @@ getCommentsByUser = async (req, res) => {
         });
     }
 };
+
 getCommentsByProduct = async (req, res) => {
     try {
         const { productId } = req.params;
@@ -85,6 +87,7 @@ getCommentsByProduct = async (req, res) => {
         });
     }
 };
+
 
 getCommentWithUserInfo = async (req, res) => {
     try {

@@ -28,6 +28,7 @@ class COMMENT_SERVICE {
 
     return comment_obj
   };
+
   getCommentsByUser = async (userId) => {
     try {
       // Tìm tất cả các bình luận mà người dùng đã thực hiện
@@ -39,6 +40,7 @@ class COMMENT_SERVICE {
       throw new Error(`Error getting comments by user: ${error.message}`);
     }
   };
+
 
   getCommentWithUserInfo = async (page, limit) => {
     const skips = page ? (page - 1) * limit : 0;
@@ -79,6 +81,7 @@ class COMMENT_SERVICE {
   };
 
 
+  
 getCommentsByProduct = async (productId) => {
     try {
       const comments = await Comment.find({ PRODUCT_ID: productId });
