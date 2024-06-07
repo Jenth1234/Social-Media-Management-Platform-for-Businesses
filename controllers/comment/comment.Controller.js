@@ -92,8 +92,9 @@ getCommentsByProduct = async (req, res) => {
 getCommentWithUserInfo = async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 10;
-        const { page } = req.query;
-        const commentsWithUserInfo = await commentService.getCommentWithUserInfo(page, limit);
+        const page  = req.query.page || 1;
+        const userId = req.user._id;
+        const commentsWithUserInfo = await commentService.getCommentWithUserInfo(page, limit, userId);
         res.json(commentsWithUserInfo);
     } catch (err) {
         return res.status(500).json({error: err.message});

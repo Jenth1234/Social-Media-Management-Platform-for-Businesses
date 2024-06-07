@@ -37,7 +37,9 @@ class USER_CONTROLLER {
 
       const newUser = await USER_SERVICE.registerUser(payload);
 
-      const sendMail = await MailService.sendVerifyEmail(EMAIL);
+      const sendMail = await MailService.sendVerifyEmail(EMAIL, otpType);
+
+      return res.status(200).json({ message: "Đăng ký người dùng thành công."});
 
       return res.status(201).json(newUser);
 
@@ -52,7 +54,7 @@ class USER_CONTROLLER {
   forgotPassword = async (req, res) => {
     const email = req.body.EMAIL;
     try {
-      const forgotPass = await sendForgotPasswordEmail(email);
+      await sendForgotPasswordEmail(email);
       return res.status(200).json({ message: "OTP for password reset sent successfully."});
 
     }catch (err) {
