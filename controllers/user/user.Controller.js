@@ -1,7 +1,8 @@
 const user = require("../../models/user/user.model");
 const MailService = require('../../utils/send.mail');
 const USER_SERVICE = require("../../service/user/user.service");
-const {
+const {sendForgotPasswordEmail, verifyOTP} = require("../../utils/send.mail")
+const { 
   registerValidate,
   updateUserValidate,
   loginValidate,
@@ -22,13 +23,7 @@ class USER_CONTROLLER {
     const { USERNAME, EMAIL } = value;
 
     const otpType = 'create_account';
-      // const otp = await MailService.randomOtp();
-      const newUser = await USER_SERVICE.registerUser(payload, otpType);
-      if (!newUser || !newUser.OTP || newUser.OTP.length === 0 || !newUser.OTP[0].CODE) {
-        return res.status(500).json({ message: "Lỗi khi tạo người dùng. Không có mã OTP." });
-    }
-      // const sendMail = await MailService.sendMail(EMAIL, newUser.OTP[0].CODE, otpType);
-    const sendMail = await MailService.addToMailQueue(EMAIL, newUser.OTP[0].CODE, otpType);
+
     try {
       const existingUser = await USER_SERVICE.checkUsernameExists(USERNAME);
       if (existingUser) {
@@ -40,7 +35,10 @@ class USER_CONTROLLER {
         return res.status(400).json({ message: "Email đã tồn tại" });
       }
 
-      // const newUser = await USER_SERVICE.registerUser(payload);
+      const newUser = await USER_SERVICE.registerUser(payload);
+
+      const sendMail = await MailService.sendVerifyEmail(EMAIL);
+
       return res.status(201).json(newUser);
 
     } catch (err) {
@@ -51,7 +49,31 @@ class USER_CONTROLLER {
     }
   };
 
+  forgotPassword = async (req, res) => {
+    const email = req.body.EMAIL;
+    try {
+      const forgotPass = await sendForgotPasswordEmail(email);
+      return res.status(200).json({ message: "OTP for password reset sent successfully."});
 
+    }catch (err) {
+      res.status(500).json({ error: 'Error sending password reset OTP.' });
+    }
+  }
+
+  resetPassword = async (req, res) => {
+    const {email, otp, newPassword} = req.body;
+    try {
+      const isValid = await verifyOTP(email, otp);
+      if (!isValid) {
+        return res.status(500).json({error: 'Invalid or expired OTP.'});
+      }
+      await USER_SERVICE.resetPassword(email, newPassword);
+      return res.status(200).json({ message: 'Password reset was successfully.' });
+
+    }catch (err) {
+      res.status(500).json({error: 'Error resetting password'});
+    }
+  }
 
   getUsers = async (req, res) => {
     try {
@@ -142,32 +164,18 @@ class USER_CONTROLLER {
   };
 
 
-  checkAdmin = async (req, res, next) => {
-    try {
-      const userInfo = req.user;
-      const IS_ADMIN = userInfo.ROLE.IS_ADMIN;
-      if (!IS_ADMIN) {
-        return res.status(403).json({ error: 'Access denied. Admins only.' });
-      }
-      next();
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  };
-
-  checkOrganization = async (req, res, next) => {
-    try {
-      const userInfo = req.user;
-      const IS_ADMIN = userInfo.ROLE.IS_ORGANIZATION;
-      if (!IS_ADMIN) {
-        return res.status(403).json({ error: 'Access denied. Organization only.' });
-      }
-      next();
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  };
-
+  // checkAdmin = async (req, res, next) => {
+  //   try {
+  //     const userInfo = req.user;
+  //     const IS_ADMIN = userInfo.ROLE.IS_ADMIN;
+  //     if (!IS_ADMIN) {
+  //       return res.status(403).json({ error: 'Access denied. Admins only.' });
+  //     }
+  //     next();
+  //   } catch (error) {
+  //     res.status(500).json({ error: error.message });
+  //   }
+  // };
 
   blockUser = async (req, res) => {
     const payload = req.body;

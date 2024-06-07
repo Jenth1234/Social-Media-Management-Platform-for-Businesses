@@ -14,11 +14,8 @@ class USER_SERVICE {
     return await USER_MODEL.findOne({ EMAIL: email }).lean();
   }
 
-  async registerUser(body, otpType) {
+  async registerUser(body) {
     const hash = await this.hashPassword(body.PASSWORD);
-    const otpCode = await MailService.randomOtp();
-    const otpTime = new Date();
-    const otpExpTime = new Date(otpTime.getTime() + 5 * 60 * 1000);
     const newUser = new USER_MODEL({
       USERNAME: body.USERNAME,
       PASSWORD: hash,
@@ -34,37 +31,55 @@ class USER_SERVICE {
       IS_ACTIVATED: false,
     }); 
 
-    newUser.OTP = [{
-      TYPE: otpType,
-      CODE: otpCode,
-      TIME: Date.now(),
-      EXP_TIME: otpExpTime,
-      CHECK_USING: false
-  }];
-
     const result = await newUser.save();
     return result._doc;
+  } 
+
+  async updateUserOTP(email, otp, otpType, expTime) {
+    try {
+      const user = await USER_MODEL.findOneAndUpdate(
+        { EMAIL: email },
+        {
+          $push: {
+            OTP: {
+              TYPE: otpType,
+              CODE: otp,
+              TIME: Date.now(),
+              EXP_TIME: expTime,
+              CHECK_USING: false
+            }
+          }
+        },
+        { new: true }
+      );
+    } catch (error) {
+      console.error("Error updating user OTP:", error);
+    }
   }
 
-  // async updateUserOtp(email, otp, otpType) {
-  //   const otpTime = new Date();
-  //   const otpExpTime = new Date(otpTime.getTime() + 10 * 60 * 1000); 
-  
-  //   await USER_MODEL.findOneAndUpdate(
-  //     { EMAIL: email },
-  //     {
-  //       $push: {
-  //         OTP: {
-  //           TYPE: otpType,
-  //           CODE: otp,
-  //           TIME: otpTime,
-  //           EXP_TIME: otpExpTime,
-  //           CHECK_USING: false
-  //         }
-  //       }
-  //     }
-  //   );
-  // }
+  async updateOTPstatus(email, otp) {
+    try {
+      const user = await USER_MODEL.findOneAndUpdate(
+        { EMAIL: email, "OTP.CODE": otp},
+        { $set: {"OTP.$.CHECK_USING": true}},
+        { new: true }
+      );
+      return user;
+    } catch (error) {
+      console.error("Error updating user OTP:", error);
+    }
+  }
+
+  async resetPassword(email, newPassword) {
+    const hash = await this.hashPassword(newPassword);
+    const result = await USER_MODEL.updateOne({EMAIL: email}, {PASSWORD: hash});
+
+    if (result.nModified === 0) {
+      throw new Error('Failed to update password. User may not exist.');
+    }
+
+    return { success: true, message: 'Password updated successfully.' };
+  }
 
   async updateUser(userId, userDataToUpdate) {
     const condition = {
@@ -101,7 +116,7 @@ class USER_SERVICE {
   };
 
   login = async (payload) => {
-    const secret = process.env.ACCESS_TOKEN_SECRECT;
+    const secret = process.env.ACCESS_TOKEN_SECRET;
     const expiresIn = "5h";
     const accessToken = jwt.sign(payload, secret, { expiresIn });
     return accessToken;
