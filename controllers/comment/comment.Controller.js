@@ -93,7 +93,7 @@ getCommentWithUserInfo = async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 10;
         const page  = req.query.page || 1;
-        const userId = req.user._id;
+        const userId = req.user.id;
         const commentsWithUserInfo = await commentService.getCommentWithUserInfo(page, limit, userId);
         res.json(commentsWithUserInfo);
     } catch (err) {

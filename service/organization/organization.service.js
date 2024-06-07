@@ -2,6 +2,7 @@ const Organization = require('../../models/organization/organization.model');
 const User = require('../../models/user/user.model');
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken");
+const MetadataCommentProduct = require('../../models/metadata_cmt_product/metadatacmtproduct.model');
 
 class ORGANIZATION_SERVICE {
     registerOrganization = async (payload) => {
@@ -10,7 +11,12 @@ class ORGANIZATION_SERVICE {
                 ORGANIZATION_NAME: payload.ORGANIZATION_NAME,
                 ORGANIZATION_EMAIL: payload.ORGANIZATION_EMAIL,
                 ORGANIZATION_PHONE: payload.ORGANIZATION_PHONE,
-                ORGANIZATION_ACTIVE: false,
+                REGISTER_DATE: new Date(),
+                ORGANIZATION_ACTIVE: {
+                    TIME: null,
+                    CHECK: false,
+                    ACTIVE_BY_USER_ID: null
+                },
                 OBJECT_APPROVED: {
                     TIME: null,
                     CHECK: false,
@@ -44,41 +50,11 @@ class ORGANIZATION_SERVICE {
     };
 
     checkOrganizationNameExists = async (organizationName) => {
-        try {
-            const normalizedOrganizationName = organizationName.toLowerCase();
-            const organization = await Organization.findOne({
-                ORGANIZATION_NAME: { $regex: `^${normalizedOrganizationName}$`, $options: 'i' }
-            });
-            return !!organization;
-        } catch (error) {
-            throw new Error('Unable to check if Organization_name exists: ' + error.message);
-        }
-    };
-
-    authenticate = async (username, password) => {
-        try {
-            const user = await User.findOne({ USERNAME: username });
-            if (!user) return { error: 'Invalid username' };
-
-            const isPasswordValid = await bcrypt.compare(password, user.PASSWORD);
-            if (!isPasswordValid) return { error: 'Invalid password' };
-
-            return user;
-        } catch (error) {
-            throw new Error('Unable to authenticate user: ' + error.message);
-        }
-    };
-
-    generateToken = (user) => {
-        const payload = {
-            id: user._id,
-            username: user.USERNAME,
-            organizationId: user.ORGANIZATION_ID
-        };
-        const secret = process.env.ACCESS_TOKEN_SECRET_2;
-        const options = { expiresIn: '1h' };
-
-        return jwt.sign(payload, secret, options);
+        const normalizedOrganizationName = organizationName.toLowerCase();
+        const organization = await Organization.findOne({
+            ORGANIZATION_NAME: { $regex: `^${normalizedOrganizationName}$`, $options: 'i' }
+        });
+        return !!organization;
     };
 
     registerAccountOfOrganization = async (body) => {
@@ -87,7 +63,7 @@ class ORGANIZATION_SERVICE {
             const newUser = new User({
                 USERNAME: body.USERNAME,
                 PASSWORD: hash,
-                FULL_NAME: body.FULL_NAME,
+                FULLNAME: body.FULLNAME,
                 EMAIL: body.EMAIL,
                 IS_BLOCKED: null,
                 ROLE: {
@@ -99,8 +75,15 @@ class ORGANIZATION_SERVICE {
             const result = await newUser.save();
             return result._doc;
         } catch (error) {
-            throw new Error('Unable to add sub account: ' + error.message);
+            throw new Error('Không thể thêm tài khoản con: ' + error.message);
         }
+    };
+
+    loginToOrganization = async (payload) => {
+        const secret = process.env.ACCESS_TOKEN_SECRET_2;
+        const expiresIn = "5h";
+        const accessToken = jwt.sign(payload, secret, { expiresIn });
+        return accessToken;
     };
 
     hashPassword = async (password) => {
@@ -108,11 +91,6 @@ class ORGANIZATION_SERVICE {
         const hash = await bcrypt.hashSync(password, saltRounds);
         return hash;
     };
-
-    // checkOrganizationExists = async (organizationId) => {
-    //     const organization = await Organization.findById(organizationId);
-    //     return organization;
-    // };
 
     checkAccountExists = async (username, email) => {
         try {
@@ -183,6 +161,72 @@ class ORGANIZATION_SERVICE {
 
         const result = await Organization.findByIdAndUpdate(organizationId, updateData, { new: true });
         return result;
+    };
+
+    //organization
+
+    checkUserHasOrganization = async (UserId) => {
+
+        const user = await User.findById(UserId);
+        return user && user.ORGANIZATION_ID ? true : false;
+
+    };
+
+    findUserByIdAndOrganization = async (userId, organizationId) => {
+        return await User.findOne({ _id: userId, ORGANIZATION_ID: organizationId });
+    };
+
+    lockUserByOrganization = async (userId, organizationId, currentUserId) => {
+        try {
+            const user = await this.findUserByIdAndOrganization(userId, organizationId);
+
+            if (!user) {
+                throw new Error('Người dùng không tồn tại hoặc không thuộc về tổ chức này.');
+            }
+
+            user.IS_BLOCKED = {
+                TIME: new Date(),
+                CHECK: true,
+                BLOCK_BY_USER_ID: currentUserId
+            };
+
+            await user.save();
+            return user;
+        } catch (error) {
+            throw new Error('Không thể khóa người dùng: ' + error.message);
+        }
+    };
+
+    unlockUserByOrganization = async (userId, organizationId, currentUserId) => {
+        try {
+            const user = await this.findUserByIdAndOrganization(userId, organizationId);
+
+            if (!user) {
+                throw new Error('Người dùng không tồn tại hoặc không thuộc về tổ chức này.');
+            }
+
+            user.IS_BLOCKED = {
+                TIME: new Date(),
+                CHECK: false,
+                BLOCK_BY_USER_ID: currentUserId
+            };
+
+            await user.save();
+            return user;
+        } catch (error) {
+            throw new Error('Không thể mở khóa người dùng: ' + error.message);
+        }
+    };
+
+    //hiển thị danh sách sản phẩm
+    //productid, số comment,
+
+    getProductsWithCommentCount = async (organizationId) => {
+
+        const productsWithComments = await MetadataCommentProduct.find({ ORGANIZATION_ID: organizationId })
+            .select('PRODUCT_ID COMMENT_COUNT');
+
+        return productsWithComments;
     };
 }
 

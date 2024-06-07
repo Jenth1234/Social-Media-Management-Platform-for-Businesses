@@ -21,10 +21,10 @@ class ORGANIZATION_CONTROLLER {
                 });
             }
 
-            const UserId = req.user_id;
+            const UserId = req.user;
 
             // Kiểm tra xem người dùng đã đăng ký tổ chức chưa
-            const userHasOrganization = await userService.checkUserHasOrganization(UserId);
+            const userHasOrganization = await organizationService.checkUserHasOrganization(UserId);
             if (userHasOrganization) {
                 return res.status(400).json({
                     success: false,
@@ -44,6 +44,7 @@ class ORGANIZATION_CONTROLLER {
             }
 
             const newOrganization = await organizationService.registerOrganization(payload);
+            newOrganization.REGISTER_DATE = new Date();
 
             const data_update = {
                 ORGANIZATION_ID: newOrganization._id,
@@ -92,7 +93,7 @@ class ORGANIZATION_CONTROLLER {
                 });
             }
 
-            const { USERNAME, EMAIL, PASSWORD, FULL_NAME } = req.body;
+            const { USERNAME, EMAIL, PASSWORD, FULLNAME } = req.body;
 
             // Kiểm tra account đã được tạo chưa?
             const accountExists = await organizationService.checkAccountExists(USERNAME, EMAIL);
@@ -116,7 +117,7 @@ class ORGANIZATION_CONTROLLER {
                 USERNAME,
                 EMAIL,
                 PASSWORD,
-                FULL_NAME,
+                FULLNAME,
                 organizationId
             });
 
@@ -136,7 +137,8 @@ class ORGANIZATION_CONTROLLER {
 
     loginToOrganization = async (req, res) => {
         try {
-            const { error } = loginToOrganization.validate(req.body);
+            const payload = req.body;
+            const { error } = loginToOrganization.validate(payload);
             if (error) {
                 return res.status(400).json({
                     success: false,
@@ -145,42 +147,47 @@ class ORGANIZATION_CONTROLLER {
                 });
             }
 
-            const { USERNAME, PASSWORD } = req.body;
             const organizationId = req.header('ORGANIZATION_ID');
 
             // Kiểm tra xem người dùng có tồn tại và chưa bị khóa không
-            const user = await organizationService.authenticate(USERNAME, PASSWORD);
-            if (!user) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Tài khoản hoặc mật khẩu không đúng.'
-                });
+            const existingUser = await userService.checkUsernameExists(payload.USERNAME);
+            if (!existingUser) {
+                return res
+                    .status(401)
+                    .json({ message: "Tài khoản hoặc mật khẩu không chính xác" });
+            }
+            const passwordValid = await userService.checkPassword(
+                payload.PASSWORD,
+                existingUser.PASSWORD
+            );
+            if (!passwordValid) {
+                return res
+                    .status(401)
+                    .json({ message: "Tài khoản hoặc mật khẩu không chính xác" });
             }
 
-            if (user.IS_BLOCKED && user.IS_BLOCKED.CHECK === true) {
+            if (existingUser.IS_BLOCKED && existingUser.IS_BLOCKED.CHECK === true) {
                 return res.status(400).json({
                     success: false,
                     message: 'Tài khoản này đã bị khóa.'
                 });
             }
 
-            if (user.ORGANIZATION_ID.toString() !== organizationId) {
+            if (existingUser.ORGANIZATION_ID.toString() !== organizationId) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Tổ chức không hợp lệ'
+                    message: 'Tổ chức bạn đang đăng nhập không chính xác'
                 });
             }
-
-            const token = organizationService.generateToken(user);
-
+            const data = {
+                userId: existingUser._id,
+                organizationId: existingUser.ORGANIZATION_ID
+            }
+            const accessToken = await organizationService.loginToOrganization(data);
             return res.status(200).json({
-                success: true,
-                message: 'Đăng nhập thành công',
-                token: token,
-                user: {
-                    id: user._id,
-                    organizationId: user.ORGANIZATION_ID
-                }
+                errorCode: 0,
+                message: "Logged in successfully!!",
+                metadata: accessToken,
             });
         } catch (err) {
             return res.status(500).json({
@@ -226,7 +233,12 @@ class ORGANIZATION_CONTROLLER {
                 return res.status(200).json({
                     success: true,
                     message: 'Hiệu chỉnh thông tin tổ chức thành công.',
-                    data: result
+                    data: {
+                        ORGANIZATION_ID: result._id,
+                        ORGANIZATION_NAME: result.ORGANIZATION_NAME,
+                        ORGANIZATION_EMAIL: result.ORGANIZATION_EMAIL,
+                        ORGANIZATION_PHONE: result.ORGANIZATION_PHONE
+                    }
                 });
             } else {
                 return res.status(404).json({
@@ -246,10 +258,10 @@ class ORGANIZATION_CONTROLLER {
         try {
             const { userId } = req.params;
             const organizationId = req.header('ORGANIZATION_ID');
-            const currentUserId = req.user_id;
+            const currentUserId = req.user;
 
             // Tìm người dùng
-            const user = await userService.findUserByIdAndOrganization(userId, organizationId);
+            const user = await organizationService.findUserByIdAndOrganization(userId, organizationId);
 
             if (!user) {
                 return res.status(404).json({
@@ -260,15 +272,19 @@ class ORGANIZATION_CONTROLLER {
 
             let result;
             if (user.IS_BLOCKED?.CHECK === true) {
-                result = await userService.unlockUserByOrganization(userId, organizationId, currentUserId);
+                result = await organizationService.unlockUserByOrganization(userId, organizationId, currentUserId);
             } else {
-                result = await userService.lockUserByOrganization(userId, organizationId, currentUserId);
+                result = await organizationService.lockUserByOrganization(userId, organizationId, currentUserId);
             }
 
             return res.status(200).json({
                 success: true,
-                message: user.IS_BLOCKED?.CHECK === true ? 'Người dùng đã được mở khóa bởi tổ chức.' : 'Người dùng đã được khóa bởi tổ chức.',
-                data: result
+                message: user.IS_BLOCKED?.CHECK === true ? 'Người dùng đã được mở khóa.' : 'Người dùng đã bị khóa bởi tổ chức.',
+                data: {
+                    IS_BLOCKED: result.IS_BLOCKED,
+                    USER_ID: result._id,
+                    ORGANIZATION_ID: result.ORGANIZATION_ID
+                }
             });
         } catch (err) {
             return res.status(500).json({
@@ -278,6 +294,26 @@ class ORGANIZATION_CONTROLLER {
             });
         }
     };
+
+    getProductsWithCommentCount = async (req, res) => {
+        try {
+            const organizationId = req.header('ORGANIZATION_ID');
+
+            const products = await organizationService.getProductsWithCommentCount(organizationId);
+
+            return res.status(200).json({
+                success: true,
+                data: products
+            });
+        } catch (err) {
+            return res.status(500).json({
+                success: false,
+                message: 'Internal server error',
+                error: err.message
+            });
+        }
+    };
+    
 }
 
 module.exports = new ORGANIZATION_CONTROLLER();
