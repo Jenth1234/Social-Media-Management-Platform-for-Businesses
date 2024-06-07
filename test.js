@@ -85,5 +85,5 @@ app.use(bodyParser.json());
 route(app);
 
 app.listen(port, () => {
-  console.log(`Máy chủ đang chạy trên cổng ${port}`);
+  console.log(`Máy chủ đang chạy trên cổng ${port} 2`);
 });

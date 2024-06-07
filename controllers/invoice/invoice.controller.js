@@ -1,11 +1,12 @@
 const InvoiceService = require('../../service/invoice/invoice.Service');
 
+
 class InvoiceController {
-    static async buyPackage(req, res) {
+      buyPackage(req, res) {
         const { organizationId, packageId } = req.body;
 
         try {
-            const result = await InvoiceService.buyPackage(organizationId, packageId);
+            const result =  InvoiceService.buyPackage(organizationId, packageId);
             res.status(200).json(result);
         } catch (error) {
             console.error(error.message);
@@ -14,4 +15,4 @@ class InvoiceController {
     }
 }
 
-module.exports = InvoiceController;
+module.exports = new InvoiceController();

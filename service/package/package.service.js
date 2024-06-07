@@ -6,7 +6,7 @@ class PackageService {
     return await PACKAGE_MODEL.findOne({ LEVEL: LEVEL }).lean();
   }
     async createPackage(payload) {
-      const {TITLE, LEVEL, COST, NUMBER_OF_PRODUCT, NUMBER_OF_COMMENT,DESCRIPTION } = payload;
+      const {TITLE, LEVEL, COST, NUMBER_OF_PRODUCT, NUMBER_OF_COMMENT,DESCRIPTION,DISCOUNT } = payload;
         const newPackage = new PACKAGE_MODEL({
           TITLE:TITLE,
           LEVEL: LEVEL,

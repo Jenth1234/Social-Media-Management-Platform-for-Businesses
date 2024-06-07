@@ -22,7 +22,7 @@ const registerValidate = Joi.object({
       "string.max": "Password should have a maximum length of {#limit}.",
     }),
 
-  FULL_NAME: Joi.string()
+  FULLNAME: Joi.string()
     .trim()
     .pattern(/^[A-Za-z\s]+$/)
     .min(5)
@@ -54,7 +54,7 @@ const registerValidate = Joi.object({
 
 const updateUserValidate = Joi.object({
 
-  FULL_NAME: Joi.string()
+  FULLNAME: Joi.string()
     .trim()
     .pattern(/^[A-Za-z\s]+$/)
     .min(5)

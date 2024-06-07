@@ -71,8 +71,8 @@ class USER_SERVICE {
       "_id": userId,
     }
     const data = {};
-    if (userDataToUpdate.FULL_NAME) {
-      data.FULL_NAME = userDataToUpdate.FULL_NAME;
+    if (userDataToUpdate.FULLNAME) {
+      data.FULLNAME = userDataToUpdate.FULLNAME;
     }
 
     const options = { new: true };
@@ -101,7 +101,7 @@ class USER_SERVICE {
   };
 
   login = async (payload) => {
-    const secret = process.env.ACCESS_TOKEN_SECRECT;
+    const secret = process.env.ACCESS_TOKEN_SECRET;
     const expiresIn = "5h";
     const accessToken = jwt.sign(payload, secret, { expiresIn });
     return accessToken;
@@ -134,18 +134,18 @@ class USER_SERVICE {
     return foundUser;
   }
 
-  async activeOrganization(organizationId, isActive, active_byuserid) {
-    const data = {
-      "CHECK": isBlocked,
-      "TIME": Date.now(),
-      "BLOCK_BY_USER_ID": blocked_byuserid
-    };
-    const options = { new: true };
+  // async activeOrganization(organizationId, isActive, active_byuserid) {
+  //   const data = {
+  //     "CHECK": isBlocked,
+  //     "TIME": Date.now(),
+  //     "BLOCK_BY_USER_ID": blocked_byuserid
+  //   };
+  //   const options = { new: true };
 
-    const foundUser = await USER_MODEL.findOneAndUpdate(condition, data, options);
+  //   const foundUser = await USER_MODEL.findOneAndUpdate(condition, data, options);
 
-    return foundUser;
-  }
+  //   return foundUser;
+  // }
 
   async activeOrganization(organizationId, isActive, active_byuserid) {
     const condition = { "_id": organizationId };

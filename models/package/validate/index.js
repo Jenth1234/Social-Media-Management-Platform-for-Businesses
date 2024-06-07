@@ -1,7 +1,7 @@
 const Joi = require('joi');
 
 class PackageValidate {
-    packageSchema = Joi.object({
+    packageCreate = Joi.object({
         TITLE: Joi.string().required().messages({
             'string.base': 'Title must be a string',
             'any.required': 'Title is required'
@@ -37,10 +37,9 @@ class PackageValidate {
             'number.max': 'DISCOUNT must be at most 50',
             'any.required': 'DISCOUNT is required'
         })
-
     });
 
-    static updatePackageSchema = Joi.object({
+    updatePackage = Joi.object({
         TITLE: Joi.string().messages({
             'string.base': 'Title must be a string',
         }),
@@ -64,11 +63,10 @@ class PackageValidate {
         DESCRIPTION: Joi.string().messages({
             'string.base': 'DESCRIPTION must be a string',
         }),
-        DISCOUNT: Joi.number().integer().min(10).max(50).required().messages({
+        DISCOUNT: Joi.number().integer().min(10).max(50).messages({
             'number.base': 'DISCOUNT must be a number',
             'number.min': 'DISCOUNT must be at least 10',
             'number.max': 'DISCOUNT must be at most 50',
-            'any.required': 'DISCOUNT is required'
         })
     });
 }

@@ -8,14 +8,19 @@ class AzureService {
   }
 
   async extractMetadata(headers) {
-    const contentType = headers['content-type'];
-    const fileType = contentType.split('/')[1];
-    const contentDisposition = headers['content-disposition'];
+    const contentType = headers['content-type'] || '';
+    const fileType = contentType.split('/')[1] || '';
+    const contentDisposition = headers['content-disposition'] || '';
     const caption = headers['x-image-caption'] || 'Không có chú thích';
+
+    let fileName = `image-${Date.now()}.${fileType}`;
     const matches = /filename="([^"]+)/i.exec(contentDisposition);
-    const fileName = matches?.[1] || `image-${Date.now()}.${fileType}`;
+    if (matches && matches[1]) {
+        fileName = matches[1];
+    }
+
     return { fileName, caption, fileType };
-  }
+}
 
   async uploadImage(stream, fileName) {
     try {
