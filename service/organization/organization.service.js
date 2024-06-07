@@ -70,6 +70,9 @@ class ORGANIZATION_SERVICE {
                     IS_ADMIN: false,
                     IS_ORGANIZATION: false,
                 },
+                ADDRESS: body.ADDRESS,
+                GENDER: body.GENDER,
+                IS_ACTIVATED: false,
                 ORGANIZATION_ID: body.organizationId
             });
             const result = await newUser.save();
@@ -117,11 +120,12 @@ class ORGANIZATION_SERVICE {
         };
     };
 
-    getUsersByOrganization = async (organizationId, page = 1, limit = 10) => {
+    getUsersByOrganization = async (organizationId, page = 1, limit = 5) => {
         const skip = (page - 1) * limit;
         const users = await User.find({ ORGANIZATION_ID: organizationId })
             .skip(skip)
-            .limit(limit);
+            .limit(limit)
+            .select('USERNAME EMAIL FULLNAME ADDRESS GENDER');
         const totalUsers = await User.countDocuments({ ORGANIZATION_ID: organizationId });
         const totalPages = Math.ceil(totalUsers / limit);
 

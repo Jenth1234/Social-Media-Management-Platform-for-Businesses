@@ -49,7 +49,7 @@ const registerValidate = Joi.object({
 
   ADDRESS: Joi.string().trim().max(255),
 
-  GENDER: Joi.string().valid('Male', 'Female', 'Other') 
+  GENDER: Joi.string().valid('Male', 'Female', 'Other')
 });
 
 const updateUserValidate = Joi.object({
