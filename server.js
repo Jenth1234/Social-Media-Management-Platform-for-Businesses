@@ -5,10 +5,11 @@
     const dbConnect = require('./config/dbconnect');
     const multer = require('multer');
     app.use(bodyParser.urlencoded({ extended: true }));
-    const route = require('./router');
+    const route  = require('./router');
+    app.use(bodyParser.json());
     route(app);
     dbConnect();
     const port = process.env.PORT || 3000;
-    app.listen(port, () => {
-        console.log(`Máy chủ đang chạy trên cổng ${port}`);
+    app.listen(port,() => {
+        console.log(`Máy chủ đang chạy trên cổng ${port} `);
     });

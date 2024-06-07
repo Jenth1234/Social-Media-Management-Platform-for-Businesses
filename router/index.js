@@ -5,6 +5,7 @@ const azureRouter = require('./azure');
 const adminRouter = require('./admin');
 const invoiceRouter = require('./invoice');
 const paymentRouter = require('./payment');
+const packageRouter = require('./package')
 const categoryRouter = require('./category');
 const metadatacmtproductRouter = require('./metadata_cmt_product');
 
@@ -18,6 +19,7 @@ function route(app) {
     app.use('/payment', paymentRouter);
     app.use('/metadatacmtproduct', metadatacmtproductRouter);
     app.use('/category', categoryRouter);
+    app.use('/package',packageRouter)
 }
 
 module.exports = route;

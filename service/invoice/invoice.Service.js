@@ -3,7 +3,7 @@ const Organization = require('../../models/organization/organization.model');
 const PackageItem = require('../../models/package/package.model');
 
 class InvoiceService {
-    static async buyPackage(organizationId, packageId) {
+    async buyPackage(organizationId, packageId) {
         try {
           
             const organization = await Organization.findById(organizationId);
@@ -23,7 +23,7 @@ class InvoiceService {
                 PACKAGE_ID: packageId,
                 LEVEL: packageItem.LEVEL,
                 AMOUNT: packageItem.COST,
-                DUE_DATE: new Date(new Date().setMonth(new Date().getMonth() + 1)) // Hóa đơn đến hạn sau 1 tháng
+                DUE_DATE: new Date(new Date().setMonth(new Date().getMonth() + 1)) 
             });
 
            
@@ -46,4 +46,4 @@ class InvoiceService {
     }
 }
 
-module.exports = InvoiceService;
+module.exports = new InvoiceService();

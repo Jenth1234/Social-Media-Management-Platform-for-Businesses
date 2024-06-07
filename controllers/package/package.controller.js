@@ -1,13 +1,11 @@
 const packageService = require("../../service/package/package.service");
-const packageSchema = require("../../models/package/package.model");
-
-const PackageValidate = require("../../models/package/validate/index"); 
+const PackageValidate = require("../../models/package/validate/index");
 
 class PACKAGE {
   createPackage = async (req, res) => {
     const payload = req.body;
-    const { error, value } = createValidate.validate(payload, { abortEarly: false });
-    
+    const { error, value } = PackageValidate.packageCreate.validate(payload, { abortEarly: false });
+
     if (error) {
       return res.status(400).json({
         success: false,
@@ -16,8 +14,8 @@ class PACKAGE {
       });
     }
 
-    const { LEVEL } = value;
-    
+    const { LEVEL, DISCOUNT } = value; 
+
     try {
       const existingLevel = await packageService.checkLevelExists(LEVEL);
       if (existingLevel) {
@@ -37,8 +35,8 @@ class PACKAGE {
 
   updatePackage = async (req, res) => {
     const payload = req.body;
-    const { error, value } = PackageValidate.validate(payload);
-    
+    const { error, value } = PackageValidate.updatePackage.validate(payload);
+
     if (error) {
       return res.status(400).json({
         success: false,
@@ -47,15 +45,15 @@ class PACKAGE {
       });
     }
 
-    const { LEVEL } = value;
-    
+    const { LEVEL, DISCOUNT } = value; 
+
     try {
       const existingLevel = await packageService.checkLevelExists(LEVEL);
       if (existingLevel) {
         return res.status(400).json({ success: false, message: "Level already exists" });
       }
 
-      const level = req.params.level; 
+      const level = req.params.level;
       const updatedPackage = await packageService.updatePackage(level, payload);
       return res.status(200).json({ success: true, data: updatedPackage });
     } catch (error) {
@@ -85,7 +83,7 @@ class PACKAGE {
     try {
       const packages = await packageService.getPackage();
       return res.status(200).json({ success: true, data: packages });
-    } catch (error) {
+    } catch (error) { 
       return res.status(500).json({
         success: false,
         message: "An error occurred while retrieving packages",
@@ -93,8 +91,9 @@ class PACKAGE {
       });
     }
   };
+
   DiscountedCost(cost, discount) {
-    const PRICE = cost * (discount / 100);
+    const discountAmount = cost * (discount / 100);
     return cost - discountAmount;
   }
 }

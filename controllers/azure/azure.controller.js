@@ -1,6 +1,6 @@
 const { Readable } = require('stream');
 const azureService = require('../../service/azure/azureService');
-
+const multer = require('multer');
 class AzureController {
   constructor() {
     this.azureService = new azureService();
@@ -32,15 +32,15 @@ class AzureController {
 }
 async function createFolders() {
   try {
-      // Lấy hoặc tạo container
+      
       const containerClient = blobServiceClient.getContainerClient(containerName);
       await containerClient.createIfNotExists();
 
-      // Tạo thư mục cha (nếu chưa tồn tại)
+      
       const parentFolderClient = containerClient.getDirectoryClient(parentFolderName);
       await parentFolderClient.createIfNotExists();
 
-      // Tạo thư mục con
+      
       for (const subFolderName of subFolderNames) {
           const subFolderClient = parentFolderClient.getDirectoryClient(subFolderName);
           await subFolderClient.create();

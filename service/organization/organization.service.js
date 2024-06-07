@@ -63,7 +63,7 @@ class ORGANIZATION_SERVICE {
             const newUser = new User({
                 USERNAME: body.USERNAME,
                 PASSWORD: hash,
-                FULL_NAME: body.FULL_NAME,
+                FULLNAME: body.FULLNAME,
                 EMAIL: body.EMAIL,
                 IS_BLOCKED: null,
                 ROLE: {

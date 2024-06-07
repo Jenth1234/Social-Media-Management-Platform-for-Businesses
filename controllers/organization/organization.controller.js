@@ -93,7 +93,7 @@ class ORGANIZATION_CONTROLLER {
                 });
             }
 
-            const { USERNAME, EMAIL, PASSWORD, FULL_NAME } = req.body;
+            const { USERNAME, EMAIL, PASSWORD, FULLNAME } = req.body;
 
             // Kiểm tra account đã được tạo chưa?
             const accountExists = await organizationService.checkAccountExists(USERNAME, EMAIL);
@@ -117,7 +117,7 @@ class ORGANIZATION_CONTROLLER {
                 USERNAME,
                 EMAIL,
                 PASSWORD,
-                FULL_NAME,
+                FULLNAME,
                 organizationId
             });
 

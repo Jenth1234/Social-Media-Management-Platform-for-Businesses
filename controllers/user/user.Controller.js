@@ -64,6 +64,7 @@ class USER_CONTROLLER {
 
   login = async (req, res) => {
     const payload = req.body;
+
     const { error } = loginValidate.validate(payload);
     if (error) {
       return res.status(401).json({ message: error.details[0].message });
