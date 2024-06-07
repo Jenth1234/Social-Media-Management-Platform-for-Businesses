@@ -1,4 +1,5 @@
 const nodemailer = require("nodemailer");
+const USER_SERVICE = require('../service/user/user.service');
 
 class Queue {
     constructor() {
@@ -37,6 +38,35 @@ async function processMailQueue() {
     while (!mailQueue.isEmpty()) {
         const { email, otp, otpType } = mailQueue.dequeue();
         await sendMail(email, otp, otpType);
+    }
+}
+
+async function sendVerifyEmail(email, otpType) {
+    try {
+        const otp = await randomOtp();
+        const expTime = new Date();;
+
+        expTime.setMinutes(expTime.getMinutes() + 5);
+
+        await USER_SERVICE.updateUserOTP(email, otp, otpType, expTime);
+
+        await addToMailQueue(email, otp, otpType);
+        return true;
+
+    } catch (error) {
+        console.error("Error sending verification email:", error);
+    }
+}
+
+async function sendForgotPasswordEmail(email) {
+    return sendVerifyEmail(email, 'reset_password');
+}
+
+async function verifyOTP(email, otp) {
+    try {
+        await USER_SERVICE.updateOTPstatus(email, otp);
+    } catch (error) {
+        console.error("Error verifying OTP:", error);
     }
 }
 
@@ -444,4 +474,8 @@ module.exports = {
     addToMailQueue, 
     processMailQueue,
     sendMail, 
-    randomOtp};
+    randomOtp,
+    verifyOTP,
+    sendVerifyEmail,
+    sendForgotPasswordEmail
+};
