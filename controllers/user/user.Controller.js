@@ -86,6 +86,7 @@ class USER_CONTROLLER {
 
   login = async (req, res) => {
     const payload = req.body;
+
     const { error } = loginValidate.validate(payload);
     if (error) {
       return res.status(401).json({ message: error.details[0].message });
@@ -148,6 +149,9 @@ class USER_CONTROLLER {
       res.status(400).json({ error: err.message });
     }
   };
+
+
+
 
   getUserInfoAdmin = async (req, res) => {
     try {
@@ -250,3 +254,4 @@ class USER_CONTROLLER {
 
 } 
 module.exports = new USER_CONTROLLER();
+
