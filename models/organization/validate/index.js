@@ -112,6 +112,10 @@ const registerAccountOfOrganization = Joi.object({
         minDomainSegments: 2,
         tlds: { allow: ["com", "net"] },
     }),
+
+    ADDRESS: Joi.string().trim().max(255),
+
+    GENDER: Joi.string().valid('Male', 'Female', 'Other')
 });
 
 const validateHeader = Joi.object({
