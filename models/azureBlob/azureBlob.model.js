@@ -20,5 +20,5 @@ class AzureBlobModel {
 }
 
 
-module.exports = AzureBlobModel;
+module.exports = new AzureBlobModel();
 

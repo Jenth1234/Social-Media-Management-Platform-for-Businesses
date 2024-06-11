@@ -96,6 +96,7 @@ class PACKAGE {
     const discountAmount = cost * (discount / 100);
     return cost - discountAmount;
   }
+  
 }
 
 module.exports = new PACKAGE();

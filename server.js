@@ -7,6 +7,7 @@
     app.use(bodyParser.urlencoded({ extended: true }));
     const route  = require('./router');
     app.use(bodyParser.json());
+    const upload = multer();
     route(app);
     dbConnect();
     const port = process.env.PORT || 3000;
