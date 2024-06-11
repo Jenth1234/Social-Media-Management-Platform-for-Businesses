@@ -1,9 +1,11 @@
 const InvoiceService = require('../../service/invoice/invoice.Service');
 const packageService = require('../../service/package/package.service');
+const Organization = require('../../service/organization/organization.service');
+
 
 class InvoiceController {
     async  buyPackage(req, res) {
-        const user = req.user;
+        const user = req.user._doc;
 
         const { organizationId, packageId } = req.body;
         const existingIdPackage = await packageService.checkIdExits(packageId);
@@ -12,19 +14,25 @@ class InvoiceController {
         .status(401)
         .json({ message: "Invalid !!!" });
     }
+    // const existingOrganizationId = await Organization.findUserByIdAndOrganization(user._id, user.ORGANIZATION_ID);
+    // if (!existingOrganizationId) {
+    //   return res
+    //     .status(401)
+    //     .json({ message: "Invalid  organization!!!" });
+    // }
         const money =existingIdPackage.COST -  (existingIdPackage.COST * existingIdPackage.DISCOUNT/100)
         
        
         const result_momo = await InvoiceService.createBill(money);
         
         const data_invoice =  {
-            ORGANIZATION_ID: organizationId,
+            // ORGANIZATION_ID: existingOrganizationId.ORGANIZATION_ID,
             PACKAGE_ID: packageId,
-            // LEVEL: existingIdPackage.LEVEL,
-            AMOUNT: 10000,
+            LEVEL: existingIdPackage.LEVEL,
+            AMOUNT: money,
             DUE_DATE: new Date(new Date().setMonth(new Date().getMonth() + 1)),
-           PAID : null,
-           ORDER_ID: result_momo.orderId  
+            PAID : null,
+            ORDER_ID: result_momo.orderId  
         }    
 
         try {

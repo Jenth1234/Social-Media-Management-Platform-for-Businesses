@@ -12,7 +12,7 @@ var Invoice = new Schema({
         ref: 'Package'
     },
     LEVEL: { 
-        type: Number, 
+        type: Number
      
     }, 
     AMOUNT: {
@@ -33,7 +33,10 @@ var Invoice = new Schema({
     },
     ORDER_ID:{
         type:String
+       
+      
     }
+    
 });
 
 module.exports = mongoose.model('Invoice', Invoice);
