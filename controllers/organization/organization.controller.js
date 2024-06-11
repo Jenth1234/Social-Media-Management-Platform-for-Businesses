@@ -1,6 +1,7 @@
 const { registerOrganization, loginToOrganization, registerAccountOfOrganization } = require('../../models/organization/validate/index');
 const organizationService = require('../../service/organization/organization.service');
 const userService = require('../../service/user/user.service');
+const MailService = require('../../utils/send.mail');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 
@@ -123,6 +124,12 @@ class ORGANIZATION_CONTROLLER {
                 organizationId
             });
 
+            // Gửi email xác nhận
+            const sendMail = await MailService.sendVerifyEmail(EMAIL);
+
+            // Xử lý hàng đợi gửi email
+            await MailService.processMailQueue();
+
             return res.status(201).json({
                 success: true,
                 message: 'Đăng ký tài khoản tổ chức thành công.',
@@ -136,6 +143,7 @@ class ORGANIZATION_CONTROLLER {
             });
         }
     };
+
 
     loginToOrganization = async (req, res) => {
         try {

@@ -20,7 +20,7 @@ const registerCategory = Joi.object({
             'any.required': 'Organization ID is required.'
         }),
 
-    COMMENT_TYPE: Joi.string()
+    CATEGORY_TYPE: Joi.string()
         .valid('product', 'post', 'video')
         .required()
         .messages({

@@ -15,10 +15,10 @@ const categorySchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Category'
     },
-    COMMENT_TYPE: {
+    CATEGORY_TYPE: {
         type: String,
         required: true,
-        enum: ['product', 'post', 'video']
+        enum: ['product', 'post', 'video', 'other']
     }
 });
 
