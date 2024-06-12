@@ -1,18 +1,15 @@
 const Category = require('../../models/category/category.model');
+const Organization = require('../../models/organization/organization.model');
 
 class CATEGORY_SERVICE {
     async getCategoryByNameAndOrganization(name, organizationId) {
-
         const category = await Category.findOne({ NAME_CATEGORY: name, ORGANIZATION_ID: organizationId });
         return category;
-
     }
 
     async getCategoryByTypeAndOrganization(categoryType, organizationId) {
-
         const category = await Category.findOne({ CATEGORY_TYPE: categoryType, ORGANIZATION_ID: organizationId });
         return category;
-
     }
 
     async registerCategory(categoryData) {
@@ -31,6 +28,21 @@ class CATEGORY_SERVICE {
         return savedCategory;
     }
 
+    async updateOrganizationListCategory(organizationId, categoryId) {
+        const updatedOrganization = await Organization.findByIdAndUpdate(
+            organizationId,
+            {
+                $push: {
+                    LIST_CATEGORY: {
+                        CATEGORY_ID: categoryId,
+                        LIST_PRODUCT: []
+                    }
+                }
+            },
+            { new: true }
+        );
+        return updatedOrganization;
+    }
 }
 
 module.exports = new CATEGORY_SERVICE();
