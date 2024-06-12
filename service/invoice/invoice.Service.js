@@ -1,6 +1,6 @@
 const Invoice = require("../../models/Invoice/Invoice.model");
 const Organization = require("../../models/organization/organization.model");
-
+const InvoiceContr = require("../../controllers/invoice/invoice.controller");
 const payment = require("../../controllers/payment/payment.Controller");
 const express = require("express");
 const axios = require("axios");
@@ -9,23 +9,15 @@ const crypto = require("crypto");
 const accessKey = process.env.accessKey
 const secretKey = process.env.secretKey
 class InvoiceService {
-  async buyPackage(organizationId, packageId) {
+  async buyPackage(data_invoice) {
     try {
-      const invoice = new Invoice();
+      const invoice = new Invoice(data_invoice);
+    //   const result = await  Invoice.buyPackage(data_invoice)
+    console.log(invoice);
+    await invoice.save();
+    //   const result = await invoice.save();
 
-      const data_invoice = await invoice.save();
-
-      //   organization.PACKAGE.PACKAGE_ID = packageId;
-      //   organization.PACKAGE.LEVEL = packageItem.LEVEL;
-      //   organization.PACKAGE.NUMBER_OF_PRODUCT = packageItem.NUMBER_OF_PRODUCT;
-      //   organization.PACKAGE.NUMBER_OF_COMMENT = packageItem.NUMBER_OF_COMMENT;
-      //   organization.PACKAGE.ACTIVE_FROM_DATE = new Date();
-      //   organization.PACKAGE.ACTIVE_THRU_DATE = new Date(
-      //     new Date().setFullYear(new Date().getFullYear() + 1)
-      //   );
-      //   await organization.save();
-
-      return data_invoice;
+      return invoice;
     } catch (error) {
       console.error(error);
       throw new Error("Đã xảy ra lỗi khi mua gói");
@@ -85,18 +77,17 @@ class InvoiceService {
       return error;
     }
   };
-  async updatePaymentStatus(orderId, status) {
+  async updateOrderStatus(orderId) {
     try {
-      const updatedInvoice = await Invoice.findOneAndUpdate(
-        { ORDER_ID: orderId },
-        { PAID: status },
-        { new: true } // Return the updated document
-      );
-      return updatedInvoice;
+        const invoice = await Invoice.findOneAndUpdate(
+            { ORDER_ID: orderId },
+            { $set: { PAID: true } },
+            { new: true }
+        );
+        return invoice;
     } catch (error) {
-      console.error(error);
-      throw new Error("Error occurred while updating payment status");
+        throw new Error('Failed to update order status');
     }
-  }
+}
 }
 module.exports = new InvoiceService();
