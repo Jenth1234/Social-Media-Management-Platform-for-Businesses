@@ -3,7 +3,7 @@ const dbConnect = require('../../config/dbconnect');
 
 class AzureService {
   constructor() {
-    this.AzureBlobModel = new AzureBlobModel();
+    // this.AzureBlobModel = new AzureBlobModel();
     this.clientPromise = dbConnect();
   }
 
@@ -22,16 +22,16 @@ class AzureService {
     return { fileName, caption, fileType };
 }
 
-  async uploadImage(stream, fileName) {
-    try {
-      // Gọi phương thức uploadImageToAzure từ AzureBlobModel
-      const imageUrl = await this.AzureBlobModel.uploadImageToAzure(stream, fileName);
-      return imageUrl;
-    } catch (error) {
-      console.error('Error uploading image to Azure:', error);
-      throw error;
-    }
-  }
+  // async uploadImage(stream, fileName) {
+  //   try {
+  //     // Gọi phương thức uploadImageToAzure từ AzureBlobModel
+  //     const imageUrl = await this.AzureBlobModel.uploadImageToAzure(stream, fileName);
+  //     return imageUrl;
+  //   } catch (error) {
+  //     console.error('Error uploading image to Azure:', error);
+  //     throw error;
+  //   }
+  // }
 
   async storeMetadata(fileName, caption, fileType, imageUrl) {
     try {
@@ -45,4 +45,4 @@ class AzureService {
   }
 }
 
-module.exports = AzureService;
+module.exports = new AzureService();

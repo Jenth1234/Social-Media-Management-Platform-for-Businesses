@@ -27,7 +27,7 @@ class USER_CONTROLLER {
     try {
       const existingUser = await USER_SERVICE.checkUsernameExists(USERNAME);
       if (existingUser) {
-        return res.status(400).json({ message: "Tên người dùng đã tồn tại" });
+        return res.status(400).json({ message: "đăng kí thành công" });
       }
 
       const existingEmail = await USER_SERVICE.checkEmailExists(EMAIL);
