@@ -45,15 +45,15 @@ class COMMENT_SERVICE {
 
   
   getCommentWithUserInfo = async (page, limit, userId) => {
-    const userIdOb = new Types.ObjectId(userId);
+    // const userIdOb = new Types.ObjectId(userId);
     
     const skips = page ? (page - 1) * limit : 0;
     const cmtWithUserInfo = await Comment.aggregate ([
-      { $match: {
+    //   { $match: {
 
-        "LIST_COMMENT.USER_ID": userIdOb
-      }
-    },
+    //     "LIST_COMMENT.USER_ID": userIdOb
+    //   }
+    // },
       {
         $unwind: "$LIST_COMMENT"
       },

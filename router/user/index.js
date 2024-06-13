@@ -15,6 +15,8 @@ router.post('/resetPassword', verifyToken, user_controller.resetPassword);
 router.put('/updateUser', verifyToken, user_controller.updateUser);
 
 router.get('/getUsers',verifyToken,user_controller.getUsers);
+router.get('/totalUser',verifyToken,user_controller.getTotalUsers);
+router.get('/info',verifyToken,user_controller.getUserInfo);
 router.post("/register", user_controller.registerUser);
 
 router.post("/loginUser", user_controller.login);

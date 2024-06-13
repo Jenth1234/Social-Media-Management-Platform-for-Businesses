@@ -1,7 +1,7 @@
 const user = require("../../models/user/user.model");
 const MailService = require('../../utils/send.mail');
 const USER_SERVICE = require("../../service/user/user.service");
-const {sendForgotPasswordEmail, verifyOTP} = require("../../utils/send.mail")
+const MailQueue = require("../../utils/send.mail")
 const { 
   registerValidate,
   updateUserValidate,
@@ -35,31 +35,41 @@ class USER_CONTROLLER {
         return res.status(400).json({ message: "Email đã tồn tại" });
       }
 
-      const newUser = await USER_SERVICE.registerUser(payload);
+      await USER_SERVICE.registerUser(payload);
+      const sendMail = await MailQueue.sendVerifyEmail(EMAIL, otpType);
+        if (!sendMail) {
+            throw new Error("Gửi email xác minh thất bại");
+        }
 
-      const sendMail = await MailService.sendVerifyEmail(EMAIL, otpType);
-
-      return res.status(200).json({ message: "Đăng ký người dùng thành công."});
-
-      return res.status(201).json(newUser);
+        return res.status(201).json({
+            message: "Đăng ký người dùng thành công. Vui lòng kiểm tra email để xác thực.",
+        });
 
     } catch (err) {
       return res.status(500).json({ message: "Đăng ký người dùng thất bại" });
-    } finally {
-      // Gọi hàm xử lý hàng đợi gửi mail
-      await MailService.processMailQueue();
-    }
+    } 
   };
 
   forgotPassword = async (req, res) => {
-    const email = req.body.EMAIL;
     try {
-      await sendForgotPasswordEmail(email);
-      return res.status(200).json({ message: "OTP for password reset sent successfully."});
+      const { email } = req.body;
+      const existingEmail = await USER_SERVICE.checkEmailExists(email);
+      if (!existingEmail) {
+        return res.status(404).json({ message: "Email not found!!"});
+      }
+      const sendMail = await MailQueue.sendForgotPasswordEmail(email);
+      // const otp = await MailQueue.randomOtp();
+      if (sendMail) {
 
-    }catch (err) {
-      res.status(500).json({ error: 'Error sending password reset OTP.' });
-    }
+        await MailService.processMailQueue();
+
+        return res.status(200).json({ message: "Một email chứa mã OTP đã được gửi đến địa chỉ email của bạn." })
+      }
+      
+    } catch (error) {
+      console.error("Error handling forgot password request:", error);
+      return res.status(500).json({ message: "Đã xảy ra lỗi khi xử lý yêu cầu." });
+    }  
   }
 
   resetPassword = async (req, res) => {
@@ -86,9 +96,18 @@ class USER_CONTROLLER {
     }
   };
 
+  getTotalUsers = async (req, res) => {
+    try {
+      const totalUsers = await USER_SERVICE.countUsers();
+      res.status(200).json({ total: totalUsers });
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  };
+
   login = async (req, res) => {
     const payload = req.body;
-
+    console.log(payload);
     const { error } = loginValidate.validate(payload);
     if (error) {
       return res.status(401).json({ message: error.details[0].message });
@@ -115,8 +134,8 @@ class USER_CONTROLLER {
     const accessToken = await USER_SERVICE.login(data_sign);
     return res.status(200).json({
       errorCode: 0,
-      message: "Logged in successfully!!",
       metadata: accessToken,
+      message: existingUser   
     });
 
 
@@ -152,7 +171,14 @@ class USER_CONTROLLER {
     }
   };
 
-
+  getUserInfo = async (req, res) => {
+    try {
+      const userInfo = req.user;
+      res.json(userInfo);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
 
 
   getUserInfoAdmin = async (req, res) => {

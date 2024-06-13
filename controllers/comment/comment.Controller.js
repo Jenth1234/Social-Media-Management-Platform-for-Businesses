@@ -19,6 +19,7 @@ createComment = async (req, res) => {
             });
         }
         payload.USER_ID = user_id
+        console.log('Payload after adding USER_ID:', payload);
 
         const newComment = await commentService.createComment(payload);
 
@@ -93,11 +94,48 @@ getCommentWithUserInfo = async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 10;
         const page  = req.query.page || 1;
-        const userId = req.user.id;
-        const commentsWithUserInfo = await commentService.getCommentWithUserInfo(page, limit, userId);
+        // const userId = req.user_id;
+        const commentsWithUserInfo = await commentService.getCommentWithUserInfo(page, limit);
         res.json(commentsWithUserInfo);
     } catch (err) {
         return res.status(500).json({error: err.message});
+    }
+};
+
+updateComment = async (req, res) => {
+    try {
+        const { commentId } = req.params;
+        const { CONTENT } = req.body;
+
+        const { error } = updateCommentValidate.validate({ CONTENT }, { abortEarly: false });
+        if (error) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid data',
+                errors: error.details.map(detail => detail.message)
+            });
+        }
+
+        const updatedComment = await commentService.updateCommentContent(commentId, CONTENT);
+
+        if (!updatedComment) {
+            return res.status(404).json({
+                success: false,
+                message: 'Comment not found'
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'Comment has been updated successfully.',
+            data: updatedComment
+        });
+    } catch (err) {
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: err.message
+        });
     }
 };
 
