@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-
+const { date } = require('joi');
 // Schema của hóa đơn
 var Invoice = new Schema({
     ORGANIZATION_ID: {
@@ -12,23 +12,31 @@ var Invoice = new Schema({
         ref: 'Package'
     },
     LEVEL: { 
-        type: Number, 
-        required: true 
+        type: Number
+     
     }, 
     AMOUNT: {
         type: Number
     },
+    // URL_PAYMENT:{
+    //     type:String
+    // },
     DATE_ISSUED: {
         type: Date,
         default: Date.now
     },
-    DUE_DATE: {
+    THRU_DATE: {
         type: Date
     },
     PAID: {
-        type: Boolean,
-        default: false
+        type: Boolean
+    },
+    ORDER_ID:{
+        type:String
+       
+      
     }
+    
 });
 
 module.exports = mongoose.model('Invoice', Invoice);

@@ -1,6 +1,6 @@
 const Comment = require("../../models/comment/comment.model");
 const MetadaraCmtProductService = require('../../service/metadata_cmt_product/metadatacmtproduct.service');
-
+const { Types } = require('mongoose');
 class COMMENT_SERVICE {
   createComment = async (payload) => {
     const countCMT = 5;
@@ -43,9 +43,17 @@ class COMMENT_SERVICE {
     }
   };
 
-  getCommentWithUserInfo = async (page, limit) => {
+  
+  getCommentWithUserInfo = async (page, limit, userId) => {
+    // const userIdOb = new Types.ObjectId(userId);
+    
     const skips = page ? (page - 1) * limit : 0;
-    const cmtWithUserInfo = await Comment.aggregate([
+    const cmtWithUserInfo = await Comment.aggregate ([
+    //   { $match: {
+
+    //     "LIST_COMMENT.USER_ID": userIdOb
+    //   }
+    // },
       {
         $unwind: "$LIST_COMMENT"
       },

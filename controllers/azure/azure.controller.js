@@ -1,19 +1,23 @@
 const { Readable } = require('stream');
 const azureService = require('../../service/azure/azureService');
+const modelAzure = require('../../models/azureBlob/azureBlob.model');
 const multer = require('multer');
+const azureBlobModel = require('../../models/azureBlob/azureBlob.model');
+
 class AzureController {
   constructor() {
-    this.azureService = new azureService();
+    // this.azureService = new azureService();
+   
   }
-
+  
   async upload(req, res) {
     res.setHeader('Content-Type', 'application/json');
 
     try {
-      const { fileName, caption, fileType } = await this.azureService.extractMetadata(req.headers);
+      const { fileName, caption, fileType } = await azureService.extractMetadata(req.headers);
       const stream = Readable.from(req.file);
-      const imageUrl = await this.azureService.uploadImage(stream, fileName);
-      await this.azureService.storeMetadata(fileName, caption, fileType, imageUrl);
+      const imageUrl = await modelAzure.uploadImageToAzure(stream, fileName);
+      await azureService.storeMetadata(fileName, caption, fileType, imageUrl);
 
       res.status(201).json({ message: "Ảnh đã được tải lên thành công" });
     } catch (error) {

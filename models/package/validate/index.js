@@ -31,6 +31,12 @@ class PackageValidate {
             'string.base': 'DESCRIPTION must be a string',
             'any.required': 'DESCRIPTION is required'
         }),
+        MONTH: Joi.number().integer().min(1).max(36).required().messages({
+            'number.base': 'MONTH must be a number',
+            'number.min': 'MONTH must be at least 1',
+            'number.max': 'MONTH must be at most 36',
+            'any.required': 'MONTH is required'
+        }),
         DISCOUNT: Joi.number().integer().min(10).max(50).required().messages({
             'number.base': 'DISCOUNT must be a number',
             'number.min': 'DISCOUNT must be at least 10',

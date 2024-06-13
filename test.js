@@ -42,9 +42,9 @@ async function uploadImageToAzure(stream, fileName) {
 async function storeMetadata(fileName, caption, fileType, imageUrl) {
   try {
     console.log('Waiting for database connection...');
-
+    const db = await clientPromise;
     console.log('Database connection established!');
-    const collection = clientPromise.db("tutorial").collection('metadata');
+    const collection = db.db("tutorial").collection('metadata');
     await collection.insertOne({ fileName, caption, fileType, imageUrl });
   } catch (error) {
     console.error('Error storing metadata:', error);
@@ -60,6 +60,11 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
 
   try {
     const { fileName, caption, fileType } = await extractMetadata(req.headers);
+    
+    if (!req.file) {
+      throw new Error('No file uploaded');
+    }
+
     const stream = Readable.from(req.file.buffer);
     const imageUrl = await uploadImageToAzure(stream, fileName);
     await storeMetadata(fileName, caption, fileType, imageUrl);
@@ -72,6 +77,8 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
       errorMessage = "Chỉ chấp nhận file ảnh";
     } else if (error.message.includes("file size")) {
       errorMessage = "Kích thước file vượt quá giới hạn";
+    } else if (error.message === 'No file uploaded') {
+      errorMessage = "Không có file nào được tải lên";
     } else {
       errorMessage = "Lỗi không xác định";
     }
