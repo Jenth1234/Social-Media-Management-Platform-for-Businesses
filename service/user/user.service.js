@@ -26,10 +26,9 @@ class USER_SERVICE {
         IS_ADMIN: false,
         IS_ORGANIZATION: false,
       },
-      ADDRESS: body.ADDRESS,
-      GENDER: body.GENDER,
-      IS_ACTIVATED: false,
-    });
+      IS_ACTIVATED: false
+    }); 
+
 
     const result = await newUser.save();
     return result._doc;
@@ -99,6 +98,10 @@ class USER_SERVICE {
   async getUsers() {
     return await USER_MODEL.find({});
   }
+
+  async countUsers () {
+    return await USER_MODEL.countDocuments();
+  };
 
   hashPassword = async (password) => {
     const saltRounds = 10;
