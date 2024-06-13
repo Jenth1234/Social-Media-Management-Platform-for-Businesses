@@ -25,7 +25,7 @@ var Invoice = new Schema({
         type: Date,
         default: Date.now
     },
-    DUE_DATE: {
+    THRU_DATE: {
         type: Date
     },
     PAID: {
