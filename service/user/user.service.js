@@ -29,9 +29,10 @@ class USER_SERVICE {
       IS_ACTIVATED: false
     }); 
 
+
     const result = await newUser.save();
     return result._doc;
-  } 
+  }
 
   async updateUserOTP(email, otp, otpType, expTime) {
     try {
@@ -58,8 +59,8 @@ class USER_SERVICE {
   async updateOTPstatus(email, otp) {
     try {
       const user = await USER_MODEL.findOneAndUpdate(
-        { EMAIL: email, "OTP.CODE": otp},
-        { $set: {"OTP.$.CHECK_USING": true}},
+        { EMAIL: email, "OTP.CODE": otp },
+        { $set: { "OTP.$.CHECK_USING": true } },
         { new: true }
       );
       return user;
@@ -70,7 +71,7 @@ class USER_SERVICE {
 
   async resetPassword(email, newPassword) {
     const hash = await this.hashPassword(newPassword);
-    const result = await USER_MODEL.updateOne({EMAIL: email}, {PASSWORD: hash});
+    const result = await USER_MODEL.updateOne({ EMAIL: email }, { PASSWORD: hash });
 
     if (result.nModified === 0) {
       throw new Error('Failed to update password. User may not exist.');
@@ -184,7 +185,7 @@ class USER_SERVICE {
     const condition = { "_id": organizationId };
 
     const data = {
-      IS_APPROVED: {
+      IS_APPROVED: { //cái này là OBJECT_APPROVED nha Thảo ơi, bữa anh Kỳ kêu sửa tên á.
         "CHECK": isApproved,
         "TIME": Date.now(),
         "APPROVED_BY_USER_ID": approved_byuserid

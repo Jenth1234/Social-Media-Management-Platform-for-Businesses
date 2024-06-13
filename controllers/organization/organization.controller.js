@@ -1,6 +1,7 @@
 const { registerOrganization, loginToOrganization, registerAccountOfOrganization } = require('../../models/organization/validate/index');
 const organizationService = require('../../service/organization/organization.service');
 const userService = require('../../service/user/user.service');
+const MailService = require('../../utils/send.mail');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 
@@ -93,7 +94,7 @@ class ORGANIZATION_CONTROLLER {
                 });
             }
 
-            const { USERNAME, EMAIL, PASSWORD, FULLNAME } = req.body;
+            const { USERNAME, EMAIL, PASSWORD, FULLNAME, ADDRESS, GENDER } = req.body;
 
             // Kiểm tra account đã được tạo chưa?
             const accountExists = await organizationService.checkAccountExists(USERNAME, EMAIL);
@@ -118,8 +119,16 @@ class ORGANIZATION_CONTROLLER {
                 EMAIL,
                 PASSWORD,
                 FULLNAME,
+                ADDRESS,
+                GENDER,
                 organizationId
             });
+
+            // Gửi email xác nhận
+            const sendMail = await MailService.sendVerifyEmail(EMAIL);
+
+            // Xử lý hàng đợi gửi email
+            await MailService.processMailQueue();
 
             return res.status(201).json({
                 success: true,
@@ -134,6 +143,7 @@ class ORGANIZATION_CONTROLLER {
             });
         }
     };
+
 
     loginToOrganization = async (req, res) => {
         try {
@@ -313,7 +323,7 @@ class ORGANIZATION_CONTROLLER {
             });
         }
     };
-    
+
 }
 
 module.exports = new ORGANIZATION_CONTROLLER();

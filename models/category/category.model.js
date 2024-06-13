@@ -8,10 +8,17 @@ const categorySchema = new Schema({
     },
     ORGANIZATION_ID: {
         type: Schema.Types.ObjectId,
-        required: true
+        required: true,
+        ref: 'Organization'
     },
     ROOT_CATEGORY_ID: {
-        type: Schema.Types.ObjectId
+        type: Schema.Types.ObjectId,
+        ref: 'Category'
+    },
+    CATEGORY_TYPE: {
+        type: String,
+        required: true,
+        enum: ['product', 'post', 'video', 'other']
     }
 });
 
