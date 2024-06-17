@@ -19,6 +19,15 @@ const registerCategory = Joi.object({
         .messages({
             'any.required': 'Organization ID is required.'
         }),
+
+    CATEGORY_TYPE: Joi.string()
+        .valid('product', 'post', 'video')
+        .required()
+        .messages({
+            'string.base': 'Comment type must be a string.',
+            'any.only': 'Comment type must be one of [product, post, video].',
+            'any.required': 'Comment type is required.'
+        })
 });
 
 module.exports = registerCategory;

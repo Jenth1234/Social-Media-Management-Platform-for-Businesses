@@ -62,9 +62,11 @@ const registerValidate = Joi.object({
     "string.max": "Địa chỉ phải có nhiều nhất {#limit} ký tự."
   }),
 
+
   GENDER: Joi.string().valid('Male', 'Female', 'Other').optional().messages({
     "any.only": "Giới tính phải là 'Male', 'Female', hoặc 'Other'."
   })
+
 });
 
 const updateUserValidate = Joi.object({

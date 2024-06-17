@@ -34,6 +34,11 @@ const registerOrganization = Joi.object({
             'string.pattern.base': 'Please provide a valid phone number.',
             'any.required': 'Organization phone number is required.'
         }),
+
+    REGISTER_DATE: Joi.date()
+        .messages({
+            'date.base': 'Register date must be a valid date.'
+        })
 });
 
 const loginToOrganization = Joi.object({
@@ -112,6 +117,10 @@ const registerAccountOfOrganization = Joi.object({
         minDomainSegments: 2,
         tlds: { allow: ["com", "net"] },
     }),
+
+    ADDRESS: Joi.string().trim().max(255),
+
+    GENDER: Joi.string().valid('Male', 'Female', 'Other')
 });
 
 const validateHeader = Joi.object({
