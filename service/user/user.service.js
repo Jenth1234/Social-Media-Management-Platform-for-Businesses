@@ -1,11 +1,10 @@
 const USER_MODEL = require("../../models/user/user.model");
-const MailService = require('../../utils/send.mail')
+const MailService = require("../../utils/send.mail");
 const ORGANIZATION_MODEL = require("../../models/organization/organization.model");
 const { Types } = require("mongoose");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 class USER_SERVICE {
-
   async checkUsernameExists(username) {
     return await USER_MODEL.findOne({ USERNAME: username }).lean();
   }
@@ -29,11 +28,11 @@ class USER_SERVICE {
       ADDRESS: body.ADDRESS,
       GENDER: body.GENDER,
       IS_ACTIVATED: false,
-    }); 
+    });
 
     const result = await newUser.save();
     return result._doc;
-  } 
+  }
 
   async updateUserOTP(email, otp, otpType, expTime) {
     try {
@@ -46,9 +45,9 @@ class USER_SERVICE {
               CODE: otp,
               TIME: Date.now(),
               EXP_TIME: expTime,
-              CHECK_USING: false
-            }
-          }
+              CHECK_USING: false,
+            },
+          },
         },
         { new: true }
       );
@@ -60,8 +59,8 @@ class USER_SERVICE {
   async updateOTPstatus(email, otp) {
     try {
       const user = await USER_MODEL.findOneAndUpdate(
-        { EMAIL: email, "OTP.CODE": otp},
-        { $set: {"OTP.$.CHECK_USING": true}},
+        { EMAIL: email, "OTP.CODE": otp },
+        { $set: { "OTP.$.CHECK_USING": true } },
         { new: true }
       );
       return user;
@@ -72,26 +71,52 @@ class USER_SERVICE {
 
   async resetPassword(email, newPassword) {
     const hash = await this.hashPassword(newPassword);
-    const result = await USER_MODEL.updateOne({EMAIL: email}, {PASSWORD: hash});
+    const result = await USER_MODEL.updateOne(
+      { EMAIL: email },
+      { PASSWORD: hash }
+    );
 
     if (result.nModified === 0) {
-      throw new Error('Failed to update password. User may not exist.');
+      throw new Error("Failed to update password. User may not exist.");
     }
 
-    return { success: true, message: 'Password updated successfully.' };
+    return { success: true, message: "Password updated successfully." };
   }
 
   async updateUser(userId, userDataToUpdate) {
-    const condition = {
-      "_id": userId,
-    }
+    const condition = { _id: userId };
     const data = {};
+
     if (userDataToUpdate.FULLNAME) {
       data.FULLNAME = userDataToUpdate.FULLNAME;
     }
 
+    if (userDataToUpdate.PASSWORD) {
+      data.PASSWORD = await this.hashPassword(userDataToUpdate.PASSWORD);
+    }
+
+    if (userDataToUpdate.EMAIL) {
+      data.EMAIL = userDataToUpdate.EMAIL;
+    }
+
+    if (userDataToUpdate.ADDRESS) {
+      data.ADDRESS = userDataToUpdate.ADDRESS;
+    }
+
+    if (userDataToUpdate.GENDER) {
+      data.GENDER = userDataToUpdate.GENDER;
+    }
+
     const options = { new: true };
-    const foundUser = await USER_MODEL.findOneAndUpdate(condition, data, options);
+    const foundUser = await USER_MODEL.findOneAndUpdate(
+      condition,
+      data,
+      options
+    );
+
+    if (!foundUser) {
+      throw new Error("Không tìm thấy người dùng");
+    }
 
     return foundUser;
   }
@@ -126,25 +151,29 @@ class USER_SERVICE {
     const user = await USER_MODEL.findById(user_id);
 
     if (!user) {
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
     return user;
-  };
+  }
 
   // admin
 
   async blockUser(userId, isBlocked, blocked_byuserid) {
-    const condition = { "_id": userId };
+    const condition = { _id: userId };
     const data = {
       IS_BLOCKED: {
-        "CHECK": isBlocked,
-        "TIME": Date.now(),
-        "BLOCK_BY_USER_ID": blocked_byuserid
-      }
+        CHECK: isBlocked,
+        TIME: Date.now(),
+        BLOCK_BY_USER_ID: blocked_byuserid,
+      },
     };
     const options = { new: true };
 
-    const foundUser = await USER_MODEL.findOneAndUpdate(condition, data, options);
+    const foundUser = await USER_MODEL.findOneAndUpdate(
+      condition,
+      data,
+      options
+    );
 
     return foundUser;
   }
@@ -163,33 +192,41 @@ class USER_SERVICE {
   // }
 
   async activeOrganization(organizationId, isActive, active_byuserid) {
-    const condition = { "_id": organizationId };
+    const condition = { _id: organizationId };
     const data = {
       ORGANIZATION_ACTIVE: {
-        "CHECK": isActive,
-        "TIME": Date.now(),
-        "ACTIVE_BY_USER_ID": active_byuserid
-      }
+        CHECK: isActive,
+        TIME: Date.now(),
+        ACTIVE_BY_USER_ID: active_byuserid,
+      },
     };
 
     const options = { new: true };
-    const foundOrganization = await ORGANIZATION_MODEL.findOneAndUpdate(condition, data, options);
+    const foundOrganization = await ORGANIZATION_MODEL.findOneAndUpdate(
+      condition,
+      data,
+      options
+    );
 
     return foundOrganization;
   }
 
   async approvedOrganization(organizationId, isApproved, approved_byuserid) {
-    const condition = { "_id": organizationId };
+    const condition = { _id: organizationId };
 
     const data = {
       IS_APPROVED: {
-        "CHECK": isApproved,
-        "TIME": Date.now(),
-        "APPROVED_BY_USER_ID": approved_byuserid
-      }
-    }
+        CHECK: isApproved,
+        TIME: Date.now(),
+        APPROVED_BY_USER_ID: approved_byuserid,
+      },
+    };
     const options = { new: true };
-    const foundOrganization = await ORGANIZATION_MODEL.findOneAndUpdate(condition, data, options);
+    const foundOrganization = await ORGANIZATION_MODEL.findOneAndUpdate(
+      condition,
+      data,
+      options
+    );
 
     return foundOrganization;
   }

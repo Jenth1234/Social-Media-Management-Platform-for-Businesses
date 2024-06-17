@@ -8,7 +8,7 @@ const {verifyToken, verifyTokenAdmin} = require("../../middleware/verifyToken");
 const verifyOrganization = require('../../middleware/verifyOrganization');
 const verifyOrganizationToken = require('../../middleware/verifyOrganizationToken');
 
-// router.post('/registerOrganization', verifyToken, organizationController.registerOrganization);
+router.post('/registerOrganization', verifyToken, organizationController.registerOrganization);
 router.post('/loginToOrganization', verifyOrganization, organizationController.loginToOrganization);
 router.post('/registerAccountOfOrganization', verifyOrganization, organizationController.registerAccountOfOrganization);
 router.get('/getUserByOrganization', verifyOrganization, verifyOrganizationToken, organizationController.getUsersByOrganization);

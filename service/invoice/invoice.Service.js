@@ -1,6 +1,6 @@
 const Invoice = require("../../models/Invoice/Invoice.model");
 const Organization = require("../../models/organization/organization.model");
-const InvoiceContr = require("../../controllers/invoice/invoice.controller");
+const PackageItem = require("../../models/package/package.model")
 const payment = require("../../controllers/payment/payment.Controller");
 const express = require("express");
 const axios = require("axios");
@@ -97,6 +97,20 @@ class InvoiceService {
       throw new Error("Failed to update order status");
     }
   }
+async updatePaidStatus(orderId, status) {
+    try {
+      await Invoice.findOneAndUpdate({ ORDER_ID: orderId }, { PAID: status });
+    } catch (error) {
+      console.error('Error updating paid status:', error);
+      throw error;
+    }
+  }
+  async getOP() {
+    return await Invoice.find({});
+  }
+ 
 }
 
+
+ 
 module.exports = new InvoiceService();

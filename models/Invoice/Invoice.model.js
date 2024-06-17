@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const { date } = require('joi');
-// Schema của hóa đơn
+
 var Invoice = new Schema({
     ORGANIZATION_ID: {
         type: Schema.Types.ObjectId,
