@@ -38,45 +38,38 @@ class PACKAGE {
     const { error, value } = PackageValidate.updatePackage.validate(payload);
 
     if (error) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid data",
-        errors: error.details.map((detail) => detail.message),
-      });
+        return res.status(400).json({
+            success: false,
+            message: "Invalid data",
+            errors: error.details.map((detail) => detail.message),
+        });
     }
-
-    const { LEVEL, DISCOUNT } = value; 
 
     try {
-      const existingLevel = await packageService.checkLevelExists(LEVEL);
-      if (existingLevel) {
-        return res.status(400).json({ success: false, message: "Level already exists" });
-      }
-
-      const level = req.params.level;
-      const updatedPackage = await packageService.updatePackage(level, payload);
-      return res.status(200).json({ success: true, data: updatedPackage });
+        const id = req.params.id;
+        const updatedPackage = await packageService.updatePackage(id, payload);
+        return res.status(200).json({ success: true, data: updatedPackage });
     } catch (error) {
-      return res.status(500).json({
-        success: false,
-        message: "An error occurred while updating the package",
-        error: error.message,
-      });
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while updating the package",
+            error: error.message,
+        });
     }
-  };
+};
 
   deletePackage = async (req, res) => {
     try {
-      const level = req.params.level;
-      await packageService.deletePackage(level);
+      const id = req.params.id;
+      await packageService.deletePackage(id);
       return res.status(200).json({ success: true, message: "Package deleted successfully" });
-    } catch (error) {
+  } catch (error) {
       return res.status(500).json({
-        success: false,
-        message: "An error occurred while deleting the package",
-        error: error.message,
+          success: false,
+          message: "An error occurred while deleting the package",
+          error: error.message,
       });
-    }
+  }
   };
 
   getPackage = async (req, res) => {
