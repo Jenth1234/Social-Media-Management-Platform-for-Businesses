@@ -58,11 +58,11 @@ class PackageValidate {
             'number.base': 'COST must be a number',
             'number.min': 'COST must be at least 0',
         }),
-        NUMBER_OF_PRODUCT: Joi.number().integer().min(0).messages({
+        NUMBER_OF_PRODUCT: Joi.number().integer().min(1).messages({
             'number.base': 'NUMBER_OF_PRODUCT must be a number',
             'number.min': 'NUMBER_OF_PRODUCT must be at least 0',
         }),
-        NUMBER_OF_COMMENT: Joi.number().integer().min(0).messages({
+        NUMBER_OF_COMMENT: Joi.number().integer().min(1).messages({
             'number.base': 'NUMBER_OF_COMMENT must be a number',
             'number.min': 'NUMBER_OF_COMMENT must be at least 0',
         }),
