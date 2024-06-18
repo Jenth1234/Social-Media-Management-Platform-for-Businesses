@@ -35,9 +35,14 @@ var ORGANIZATION = new Schema({
             type: Schema.Types.ObjectId
         }
     },
-    PACKAGE:{
-        PACKAGE_ID:{
-            type:Schema.Types.ObjectId,
+
+    REGISTER_DATE: {
+        type: Date
+    },
+
+    PACKAGE: {
+        PACKAGE_ID: {
+            type: Schema.Types.ObjectId,
             ref: 'Package'
         },
         LEVEL: {
@@ -56,7 +61,7 @@ var ORGANIZATION = new Schema({
             type: Date
         }
     }
-   
-    
+
+
 });
 module.exports = mongoose.model("ORGANIZATION", ORGANIZATION);
