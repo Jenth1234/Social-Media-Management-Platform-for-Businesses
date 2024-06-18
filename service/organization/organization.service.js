@@ -177,7 +177,12 @@ class ORGANIZATION_SERVICE {
     };
 
     findUserByIdAndOrganization = async (userId, organizationId) => {
-        return await User.findOne({ _id: userId, ORGANIZATION_ID: organizationId });
+        return await User.findOne({ _id: userId, ORGANIZATION_ID: organizationId })
+    };
+
+    getUserDetails = async (userId) => {
+        return await User.findOne({ _id: userId })
+            .select('USERNAME EMAIL FULLNAME ADDRESS GENDER IS_BLOCKED.CHECK');
     };
 
     lockUserByOrganization = async (userId, organizationId, currentUserId) => {
@@ -222,9 +227,6 @@ class ORGANIZATION_SERVICE {
         }
     };
 
-    //hiển thị danh sách sản phẩm
-    //productid, số comment,
-
     getProductsWithCommentCount = async (organizationId) => {
 
         const productsWithComments = await MetadataCommentProduct.find({ ORGANIZATION_ID: organizationId })
@@ -232,6 +234,31 @@ class ORGANIZATION_SERVICE {
 
         return productsWithComments;
     };
+
+    getOrganizations = async (page, perPage) => {
+        const skip = (page - 1) * perPage;
+        const organizations = await Organization.find({}, { USERS: 0 })
+            .skip(skip)
+            .limit(perPage)
+            .lean();
+
+        const organizationsWithUserCount = await Promise.all(
+            organizations.map(async (org) => {
+                const userCount = await User.countDocuments({ ORGANIZATION_ID: org._id });
+                return { ...org, USER_COUNT: userCount };
+            })
+        );
+
+        return {
+            total: await Organization.countDocuments(),
+            perPage: perPage,
+            currentPage: page,
+            data: organizationsWithUserCount
+        };
+    };
+
+
+
 }
 
 module.exports = new ORGANIZATION_SERVICE();
