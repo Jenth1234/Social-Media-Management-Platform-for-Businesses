@@ -1,9 +1,11 @@
 const user = require("../../models/user/user.model");
 const MailService = require('../../utils/send.mail');
 const USER_SERVICE = require("../../service/user/user.service");
-
+const {upload} = require("../azure/azure.controller")
 // const {sendForgotPasswordEmail, verifyOTP} = require("../../utils/send.mail")
 const MailQueue = require("../../utils/send.mail")
+const {storeMetadata} =require('../../service/azure/azure.Service')
+
 
 const { 
   registerValidate,
@@ -30,14 +32,25 @@ class USER_CONTROLLER {
     try {
       const existingUser = await USER_SERVICE.checkUsernameExists(USERNAME);
       if (existingUser) {
-        return res.status(400).json({ message: "usernam đã tồn tại" });
+        return res.status(400).json({ message: "username đã tồn tại" });
       }
 
       const existingEmail = await USER_SERVICE.checkEmailExists(EMAIL);
       if (existingEmail) {
         return res.status(400).json({ message: "Email đã tồn tại" });
       }
+      // Tải lên ảnh đại diện nếu tồn tại
+      if (req.file) {
+        const avatarUrl = await upload(req.file);
+        if (!avatarUrl) {
+          throw new Error("Tải lên ảnh đại diện thất bại");
+        }
 
+       
+        const avatarMetadata = await storeMetadata(req.file.originalname, "Avatar image", req.file.mimetype, avatarUrl);
+
+        payload.AVATAR = avatarMetadata._id; 
+      }
       await USER_SERVICE.registerUser(payload);
       const sendMail = await MailQueue.sendVerifyEmail(EMAIL, otpType);
         if (!sendMail) {

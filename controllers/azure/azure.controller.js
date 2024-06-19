@@ -5,7 +5,9 @@ async function upload(req, res) {
   res.setHeader('Content-Type', 'application/json');
 
   try {
-    const { fileName, caption, fileType, imageUrl } = await handleUpload(req);
+      const userId = req.user.id;
+    const { fileName, caption, fileType, imageUrl} = await handleUpload(req,userId);
+  
     res.status(201).json({ message: "Ảnh đã được tải lên thành công", imageUrl });
   } catch (error) {
     console.error(error);

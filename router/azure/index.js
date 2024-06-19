@@ -4,9 +4,11 @@ const multer = require('multer');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 const azure_controller = require('../../controllers/azure/azure.controller');
+const {verifyToken} = require('../../middleware/verifyToken')
 
-router.post('/upload', upload.single('file'), (req, res) => azure_controller.upload(req, res));
-
+router.post('/upload', verifyToken, upload.single('AVATAR'), (req, res) => {
+    azure_controller.upload(req, res);
+});
 
 
 

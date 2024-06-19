@@ -4,6 +4,7 @@ const ORGANIZATION_MODEL = require("../../models/organization/organization.model
 const { Types } = require("mongoose");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+
 class USER_SERVICE {
   async checkUsernameExists(username) {
     return await USER_MODEL.findOne({ USERNAME: username }).lean();
@@ -25,7 +26,7 @@ class USER_SERVICE {
         IS_ADMIN: false,
         IS_ORGANIZATION: false,
       },
-
+      AVATAR:body.AVATAR,
       ADDRESS: body.ADDRESS,
       GENDER: body.GENDER,
       IS_ACTIVATED: false,
