@@ -1,4 +1,5 @@
 const { date } = require('joi');
+const { ObjectId } = require('mongodb');
 
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
@@ -60,8 +61,13 @@ var ORGANIZATION = new Schema({
         ACTIVE_THRU_DATE: {
             type: Date
         }
-    }
+    },
 
-
+    LIST_CATEGORY: [{
+        CATEGORY_ID: {
+            type: Schema.Types.ObjectId
+        },
+        LIST_PRODUCT: [{}]
+    }]
 });
 module.exports = mongoose.model("ORGANIZATION", ORGANIZATION);
