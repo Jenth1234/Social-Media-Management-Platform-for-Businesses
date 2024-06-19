@@ -1,7 +1,10 @@
 const user = require("../../models/user/user.model");
 const MailService = require('../../utils/send.mail');
 const USER_SERVICE = require("../../service/user/user.service");
+
+// const {sendForgotPasswordEmail, verifyOTP} = require("../../utils/send.mail")
 const MailQueue = require("../../utils/send.mail")
+
 const { 
   registerValidate,
   updateUserValidate,
@@ -27,7 +30,7 @@ class USER_CONTROLLER {
     try {
       const existingUser = await USER_SERVICE.checkUsernameExists(USERNAME);
       if (existingUser) {
-        return res.status(400).json({ message: "đăng kí thành công" });
+        return res.status(400).json({ message: "usernam đã tồn tại" });
       }
 
       const existingEmail = await USER_SERVICE.checkEmailExists(EMAIL);
@@ -40,6 +43,9 @@ class USER_CONTROLLER {
         if (!sendMail) {
             throw new Error("Gửi email xác minh thất bại");
         }
+
+
+
 
         return res.status(201).json({
             message: "Đăng ký người dùng thành công. Vui lòng kiểm tra email để xác thực.",
@@ -144,23 +150,17 @@ class USER_CONTROLLER {
   updateUser = async (req, res) => {
     const payload = req.body;
     const { error, value } = updateUserValidate.validate(payload);
+
     if (error) {
-      return res.status(401).json({ message: error.details[0].message });
+      return res.status(400).json({ message: error.details[0].message });
     }
-    const { USERNAME } = value;
-  
-    const existingUser = await USER_SERVICE.checkUsernameExists(USERNAME);
-    if (existingUser) {
-      return res.status(401).json({ message: "User already exists!!!" });
-    }
-  
+    console.log(req.headers);
     try {
-      const userId = req.params.id;
-      // const userDataToUpdate = req.body;
-      const updatedUser = await USER_SERVICE.updateUser(userId, payload);
+      const userId = req.user;
+      const updatedUser = await USER_SERVICE.updateUser(userId, value);
       res.status(200).json(updatedUser);
     } catch (err) {
-      res.status(400).json({ message: "Fails to edit user" });
+      res.status(400).json({ message: "Cập nhật người dùng thất bại" });
     }
   };
 

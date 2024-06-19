@@ -72,27 +72,27 @@ class ORGANIZATION_CONTROLLER {
 
     registerAccountOfOrganization = async (req, res) => {
         try {
-            const organizationId = req.header('ORGANIZATION_ID');
+            // const organizationId = req.header('ORGANIZATION_ID');
 
-            const organizationStatus = await organizationService.checkOrganizationStatus(organizationId);
-            if (!organizationStatus.exists) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Tổ chức không tồn tại',
-                });
-            }
-            if (!organizationStatus.active) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Tổ chức này đã dừng hoạt động',
-                });
-            }
-            if (!organizationStatus.approved) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Tổ chức này chưa được cấp phép',
-                });
-            }
+            // const organizationStatus = await organizationService.checkOrganizationStatus(organizationId);
+            // if (!organizationStatus.exists) {
+            //     return res.status(400).json({
+            //         success: false,
+            //         message: 'Tổ chức không tồn tại',
+            //     });
+            // }
+            // if (!organizationStatus.active) {
+            //     return res.status(400).json({
+            //         success: false,
+            //         message: 'Tổ chức này đã dừng hoạt động',
+            //     });
+            // }
+            // if (!organizationStatus.approved) {
+            //     return res.status(400).json({
+            //         success: false,
+            //         message: 'Tổ chức này chưa được cấp phép',
+            //     });
+            // }
 
             const { USERNAME, EMAIL, PASSWORD, FULLNAME, ADDRESS, GENDER } = req.body;
 
