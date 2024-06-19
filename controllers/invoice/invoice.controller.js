@@ -1,6 +1,7 @@
 const InvoiceService = require('../../service/invoice/invoice.Service');
 const packageService = require('../../service/package/package.service');
 const Organization = require('../../service/organization/organization.service');
+const moment = require('moment');
 const crypto = require("crypto");
 const axios = require("axios");
 
@@ -30,14 +31,14 @@ class InvoiceController {
         return res.status(401).json({ message: "Invalid organization!!!" });
       }
 
-      // Check if organization has any active package
-      const organizationPackage = await InvoiceService.checkOrganizationHasPackage(existingOrganizationId.ORGANIZATION_ID);
-      if (organizationPackage) {
-        // If organization has a package, check if the new package level is higher
-        if (existingIdPackage.LEVEL <= organizationPackage.LEVEL) {
-          return res.status(401).json({ message: "Bạn chỉ có thể mua gói có cấp độ cao hơn gói hiện tại." });
-        }
-      }
+      // // Check if organization has any active package
+      // const organizationPackage = await InvoiceService.checkOrganizationHasPackage(existingOrganizationId.ORGANIZATION_ID);
+      // if (organizationPackage) {
+      //   // If organization has a package, check if the new package level is higher
+      //   if (existingIdPackage.LEVEL <= organizationPackage.LEVEL) {
+      //     return res.status(401).json({ message: "Bạn chỉ có thể mua gói có cấp độ cao hơn gói hiện tại." });
+      //   }
+      // }
 
       const money = existingIdPackage.COST - (existingIdPackage.COST * existingIdPackage.DISCOUNT / 100);
       const month = existingIdPackage.MONTH;
@@ -45,14 +46,38 @@ class InvoiceController {
 
       const data_invoice = {
         ORGANIZATION_ID: existingOrganizationId.ORGANIZATION_ID,
+        // ORGANIZATION_NAME:existingOrganizationId.ORGANIZATION_NAME,
         PACKAGE_ID: packageId,
+        PACKAGE_NAME:existingIdPackage.TITLE,
         LEVEL: existingIdPackage.LEVEL,
+        COST:existingIdPackage.COST,
+        MONTH:existingIdPackage.MONTH,
+        NUMBER_OF_PRODUCT:existingIdPackage.NUMBER_OF_PRODUCT,
+        NUMBER_OF_COMMENT:existingIdPackage.NUMBER_OF_COMMENT,
+        DISCOUNT:existingIdPackage.DISCOUNT,
         AMOUNT: money,
-        PAID: null,
-        ORDER_ID: result_momo.orderId
+        ORDER_ID: result_momo.orderId,
+        PAID: null
       };
 
-      const result = await InvoiceService.buyPackage(data_invoice);
+      const due_date = new Date();
+      due_date.setMonth(due_date.getMonth() + month);
+      due_date.setHours(due_date.getHours() + 0);
+
+      const data_bill = {
+        ORGANIZATION_ID: existingOrganizationId.ORGANIZATION_ID,
+        // ORGANIZATION_NAME:existingOrganizationId.ORGANIZATION_NAME,
+        PACKAGE_ID: packageId,
+        NUMBER_OF_PRODUCT:existingIdPackage.NUMBER_OF_PRODUCT,
+        NUMBER_OF_COMMENT:existingIdPackage.NUMBER_OF_COMMENT,
+        ACTIVE_THRU_DATE: due_date,
+     
+ 
+        // ORDER_ID: result_momo.orderId,
+      };
+
+      const result = await InvoiceService.buyPackage(data_invoice,data_bill);
+
       await this.handleIPN({ body: { orderId: result_momo.orderId, month } }, res);
       this.updatePaidStatusAfterOneMinute(result_momo.orderId);
     } catch (error) {

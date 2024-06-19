@@ -19,6 +19,7 @@ const containerClient = blobServiceClient.getContainerClient(containerName);
 
 const clientPromise = dbConnect();
 
+
 async function extractMetadata(headers) {
   const contentType = headers['content-type'];
   const fileType = contentType.split('/')[1];
@@ -92,5 +93,5 @@ app.use(bodyParser.json());
 route(app);
 
 app.listen(port, () => {
-  console.log(`Máy chủ đang chạy trên cổng ${port} 2`);
+  console.log(`Máy chủ đang chạy trên cổng ${port} `);
 });
