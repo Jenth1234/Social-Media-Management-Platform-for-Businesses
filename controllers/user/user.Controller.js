@@ -5,7 +5,7 @@ const USER_SERVICE = require("../../service/user/user.service");
 // const {sendForgotPasswordEmail, verifyOTP} = require("../../utils/send.mail")
 const MailQueue = require("../../utils/send.mail")
 
-const { 
+const {
   registerValidate,
   updateUserValidate,
   loginValidate,
@@ -40,20 +40,20 @@ class USER_CONTROLLER {
 
       await USER_SERVICE.registerUser(payload);
       const sendMail = await MailQueue.sendVerifyEmail(EMAIL, otpType);
-        if (!sendMail) {
-            throw new Error("Gửi email xác minh thất bại");
-        }
+      if (!sendMail) {
+        throw new Error("Gửi email xác minh thất bại");
+      }
 
 
 
 
-        return res.status(201).json({
-            message: "Đăng ký người dùng thành công. Vui lòng kiểm tra email để xác thực.",
-        });
+      return res.status(201).json({
+        message: "Đăng ký người dùng thành công. Vui lòng kiểm tra email để xác thực.",
+      });
 
     } catch (err) {
       return res.status(500).json({ message: "Đăng ký người dùng thất bại" });
-    } 
+    }
   };
 
   forgotPassword = async (req, res) => {
@@ -61,7 +61,7 @@ class USER_CONTROLLER {
       const { email } = req.body;
       const existingEmail = await USER_SERVICE.checkEmailExists(email);
       if (!existingEmail) {
-        return res.status(404).json({ message: "Email not found!!"});
+        return res.status(404).json({ message: "Email not found!!" });
       }
       const sendMail = await MailQueue.sendForgotPasswordEmail(email);
       // const otp = await MailQueue.randomOtp();
@@ -71,25 +71,25 @@ class USER_CONTROLLER {
 
         return res.status(200).json({ message: "Một email chứa mã OTP đã được gửi đến địa chỉ email của bạn." })
       }
-      
+
     } catch (error) {
       console.error("Error handling forgot password request:", error);
       return res.status(500).json({ message: "Đã xảy ra lỗi khi xử lý yêu cầu." });
-    }  
+    }
   }
 
   resetPassword = async (req, res) => {
-    const {email, otp, newPassword} = req.body;
+    const { email, otp, newPassword } = req.body;
     try {
       const isValid = await verifyOTP(email, otp);
       if (!isValid) {
-        return res.status(500).json({error: 'Invalid or expired OTP.'});
+        return res.status(500).json({ error: 'Invalid or expired OTP.' });
       }
       await USER_SERVICE.resetPassword(email, newPassword);
       return res.status(200).json({ message: 'Password reset was successfully.' });
 
-    }catch (err) {
-      res.status(500).json({error: 'Error resetting password'});
+    } catch (err) {
+      res.status(500).json({ error: 'Error resetting password' });
     }
   }
 
@@ -141,7 +141,7 @@ class USER_CONTROLLER {
     return res.status(200).json({
       errorCode: 0,
       metadata: accessToken,
-      message: existingUser   
+      message: existingUser
     });
 
 
@@ -186,7 +186,7 @@ class USER_CONTROLLER {
       const userInfo = req.user;
       const IS_ADMIN = userInfo.ROLE.IS_ADMIN;
       if (!IS_ADMIN) {
-       return res.status(400).json({ error: 'Invalid!!!'});
+        return res.status(400).json({ error: 'Invalid!!!' });
       }
 
       res.json(userInfo);
@@ -217,19 +217,19 @@ class USER_CONTROLLER {
     // Validate userId
     const { error } = validateUserId(userId);
     if (error) {
-        return res.status(400).json({ error: error.details[0].message });
+      return res.status(400).json({ error: error.details[0].message });
     }
 
     try {
-        const updatedUser = await USER_SERVICE.blockUser(userId, payload.IS_BLOCKED, blocked_byuserid);
+      const updatedUser = await USER_SERVICE.blockUser(userId, payload.IS_BLOCKED, blocked_byuserid);
 
-        if (!updatedUser) {
-            return res.status(404).json({ error: 'User not found' });
-        }
+      if (!updatedUser) {
+        return res.status(404).json({ error: 'User not found' });
+      }
 
-        res.json(updatedUser);
+      res.json(updatedUser);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+      res.status(500).json({ error: error.message });
     }
   };
 
@@ -238,16 +238,16 @@ class USER_CONTROLLER {
     const { organizationId } = payload;
     const active_byuserid = req.user_id;
 
-    const { error }= validateOrganizationId(organizationId);
+    const { error } = validateOrganizationId(organizationId);
     if (error) {
       return res.status(400).json({ error: error.message });
     }
 
     try {
-      const updatedOrganization = await USER_SERVICE.activeOrganization(organizationId, payload.IS_ACTIVE, active_byuserid);
+      const updatedOrganization = await USER_SERVICE.activeOrganization(organizationId, payload.ORGANIZATION_ACTIVE, active_byuserid);
 
       if (!updatedOrganization) {
-        return res.status(404).json({ error: 'Organization not found'});
+        return res.status(404).json({ error: 'Organization not found' });
       }
 
       res.json(updatedOrganization);
@@ -268,7 +268,7 @@ class USER_CONTROLLER {
     }
 
     try {
-      const approvedOrganization = await USER_SERVICE.approvedOrganization(organizationId, payload.IS_APPROVED, active_byuserid);
+      const approvedOrganization = await USER_SERVICE.approvedOrganization(organizationId, payload.OBJECT_APPROVED, active_byuserid);
 
       if (!approvedOrganization) {
         return res.status(500).json({ error: error.message });
@@ -276,10 +276,10 @@ class USER_CONTROLLER {
 
       res.json(approvedOrganization);
     } catch (error) {
-      return res.status(500).json({error: error.message});
+      return res.status(500).json({ error: error.message });
     }
   };
 
-} 
+}
 module.exports = new USER_CONTROLLER();
 

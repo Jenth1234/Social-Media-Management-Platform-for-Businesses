@@ -347,6 +347,7 @@ class ORGANIZATION_CONTROLLER {
         }
     };
 
+
     getUserDetails = async (req, res) => {
         try {
             const { userId } = req.params;

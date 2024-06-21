@@ -113,7 +113,7 @@ class ORGANIZATION_SERVICE {
         const { ORGANIZATION_ACTIVE, OBJECT_APPROVED } = organization;
         return {
             exists: true,
-            active: ORGANIZATION_ACTIVE,
+            active: ORGANIZATION_ACTIVE.CHECK,
             approved: OBJECT_APPROVED.CHECK,
             approvalTime: OBJECT_APPROVED.TIME,
             approvedBy: OBJECT_APPROVED.APPROVED_BY_USER_ID
@@ -125,7 +125,7 @@ class ORGANIZATION_SERVICE {
         const users = await User.find({ ORGANIZATION_ID: organizationId })
             .skip(skip)
             .limit(limit)
-            .select('USERNAME EMAIL FULLNAME ADDRESS GENDER');
+            .select('USERNAME EMAIL FULLNAME ADDRESS GENDER IS_BLOCKED.CHECK');
         const totalUsers = await User.countDocuments({ ORGANIZATION_ID: organizationId });
         const totalPages = Math.ceil(totalUsers / limit);
 
@@ -237,7 +237,10 @@ class ORGANIZATION_SERVICE {
 
     getOrganizations = async (page, perPage) => {
         const skip = (page - 1) * perPage;
-        const organizations = await Organization.find({}, { USERS: 0 })
+
+        // Projection để chỉ lấy các trường mong muốn
+        const organizations = await Organization.find({})
+            .select('_id ORGANIZATION_NAME ORGANIZATION_EMAIL ORGANIZATION_PHONE ORGANIZATION_ACTIVE.CHECK OBJECT_APPROVED.CHECK REGISTER_DATE PACKAGE')
             .skip(skip)
             .limit(perPage)
             .lean();
@@ -245,7 +248,17 @@ class ORGANIZATION_SERVICE {
         const organizationsWithUserCount = await Promise.all(
             organizations.map(async (org) => {
                 const userCount = await User.countDocuments({ ORGANIZATION_ID: org._id });
-                return { ...org, USER_COUNT: userCount };
+                return {
+                    _id: org._id,
+                    ORGANIZATION_NAME: org.ORGANIZATION_NAME,
+                    ORGANIZATION_EMAIL: org.ORGANIZATION_EMAIL,
+                    ORGANIZATION_PHONE: org.ORGANIZATION_PHONE,
+                    ORGANIZATION_ACTIVE: org.ORGANIZATION_ACTIVE,
+                    OBJECT_APPROVED: org.OBJECT_APPROVED,
+                    REGISTER_DATE: org.REGISTER_DATE,
+                    PACKAGE: org.PACKAGE,
+                    USER_COUNT: userCount
+                };
             })
         );
 
@@ -256,6 +269,7 @@ class ORGANIZATION_SERVICE {
             data: organizationsWithUserCount
         };
     };
+
 
 
 
