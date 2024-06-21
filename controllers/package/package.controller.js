@@ -103,13 +103,13 @@ class PACKAGE {
       const packageId = req.params.id;
       await packageService.deletePackage(packageId);
       return res.status(200).json({ success: true, message: "Package deleted successfully" });
-    } catch (error) {
+  } catch (error) {
       return res.status(500).json({
-        success: false,
-        message: "An error occurred while deleting the package",
-        error: error.message,
+          success: false,
+          message: "An error occurred while deleting the package",
+          error: error.message,
       });
-    }
+  }
   };
 
   getPackage = async (req, res) => {
