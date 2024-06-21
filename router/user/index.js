@@ -5,7 +5,6 @@ const user_controller = require('../../controllers/user/user.controller');
 // const verifyToken = require("../../middleware/verifyToken");
 const {verifyToken, verifyTokenAdmin} = require("../../middleware/verifyToken");
 
-router.post('/checkToken', verifyTokenAdmin);
 router.post('/approvedOrganizations', verifyTokenAdmin, user_controller.approvedOrganizations);
 router.post('/activeOrganization', verifyTokenAdmin, user_controller.activeOrganization);
 router.post('/blockUser', verifyTokenAdmin, user_controller.blockUser);
