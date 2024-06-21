@@ -1,9 +1,9 @@
 const Comment = require("../../models/comment/comment.model");
-const MetadaraCmtProductService = require('../../service/metadata_cmt_product/metadatacmtproduct.service');
-const { Types } = require('mongoose');
+const MetadataCmtProductService = require("../../service/metadata_cmt_product/metadatacmtproduct.service");
+const { Types } = require("mongoose");
 class COMMENT_SERVICE {
   createComment = async (payload) => {
-    const countCMT = 5;
+    const countCMT = 200;
     const query = { 
       PRODUCT_ID: payload.PRODUCT_ID, 
       ORGANIZATION_ID: payload.ORGANIZATION_ID, 
@@ -18,7 +18,7 @@ class COMMENT_SERVICE {
       "THRU_DATE": null
     };
 
-    await MetadaraCmtProductService.updateCmtCount(payload.PRODUCT_ID, payload.ORGANIZATION_ID, 1);
+    await MetadataCmtProductService.updateCmtCount(payload.PRODUCT_ID, payload.ORGANIZATION_ID, 1);
 
     await Comment.updateOne(
       query,
@@ -33,7 +33,7 @@ class COMMENT_SERVICE {
 
     return comment_obj;
   };
-
+  
   getCommentsByUser = async (userId) => {
     try {
       const comments = await Comment.find({ "LIST_COMMENT.USER_ID": userId });
@@ -43,48 +43,47 @@ class COMMENT_SERVICE {
     }
   };
 
-  
   getCommentWithUserInfo = async (page, limit, userId) => {
     // const userIdOb = new Types.ObjectId(userId);
-    
-    const skips = page ? (page - 1) * limit : 0;
-    const cmtWithUserInfo = await Comment.aggregate ([
-    //   { $match: {
 
-    //     "LIST_COMMENT.USER_ID": userIdOb
-    //   }
-    // },
+    const skips = page ? (page - 1) * limit : 0;
+    const cmtWithUserInfo = await Comment.aggregate([
+      //   { $match: {
+
+      //     "LIST_COMMENT.USER_ID": userIdOb
+      //   }
+      // },
       {
-        $unwind: "$LIST_COMMENT"
+        $unwind: "$LIST_COMMENT",
       },
       {
         $lookup: {
           from: "users",
           localField: "LIST_COMMENT.USER_ID",
           foreignField: "_id",
-          as: "user"
-        }
+          as: "user",
+        },
       },
       {
-        $unwind: "$user"
+        $unwind: "$user",
       },
       {
         $project: {
           "LIST_COMMENT.CONTENT": 1,
           "LIST_COMMENT.FROM_DATE": 1,
           "user.USERNAME": 1,
-          "user.EMAIL": 1
-        }
+          "user.EMAIL": 1,
+        },
       },
       {
-        $sort: { "LIST_COMMENT.FROM_DATE": -1 }
+        $sort: { "LIST_COMMENT.FROM_DATE": -1 },
       },
       {
-        $skip: skips
+        $skip: skips,
       },
       {
-        $limit: limit
-      }
+        $limit: limit,
+      },
     ]);
     return cmtWithUserInfo;
   };
@@ -102,13 +101,15 @@ class COMMENT_SERVICE {
       const result = await Comment.findOneAndUpdate(
         { "LIST_COMMENT._id": commentId },
         {
-          $set: { "LIST_COMMENT.$.CONTENT": content }
+          $set: { "LIST_COMMENT.$.CONTENT": content },
         },
         { new: true }
       );
 
       if (result) {
-        const updatedComment = result.LIST_COMMENT.find(comment => comment._id.toString() === commentId);
+        const updatedComment = result.LIST_COMMENT.find(
+          (comment) => comment._id.toString() === commentId
+        );
         return updatedComment;
       }
 
@@ -118,22 +119,22 @@ class COMMENT_SERVICE {
     }
   };
 
-  deleteComment = async (commentId, userId) => {
+  deleteComment = async (commentIdOb, userIdOb) => {
     try {
       const result = await Comment.findOneAndUpdate(
         {
           LIST_COMMENT: {
             $elemMatch: {
-              '_id': commentId,
-              'USER_ID': userId
+              '_id': commentIdOb,
+              'USER_ID': userIdOb
             }
           }
         },
         {
           $pull: {
             'LIST_COMMENT': {
-              _id: commentId,
-              USER_ID: userId
+              _id: commentIdOb,
+              USER_ID: userIdOb
             }
           },
           $inc: {
@@ -142,6 +143,10 @@ class COMMENT_SERVICE {
         },
         { new: true }
       );
+      
+      if (result) {
+        await  MetadataCmtProductService.updateCmtCount(result.PRODUCT_ID, result.ORGANIZATION_ID, -1);
+    }
 
       return result;
     } catch (error) {

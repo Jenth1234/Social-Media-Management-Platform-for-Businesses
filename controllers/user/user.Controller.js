@@ -27,7 +27,7 @@ class USER_CONTROLLER {
     try {
       const existingUser = await USER_SERVICE.checkUsernameExists(USERNAME);
       if (existingUser) {
-        return res.status(400).json({ message: "đăng kí thành công" });
+        return res.status(400).json({ message: "Username đã tồn tại" });
       }
 
       const existingEmail = await USER_SERVICE.checkEmailExists(EMAIL);
@@ -89,12 +89,19 @@ class USER_CONTROLLER {
 
   getUsers = async (req, res) => {
     try {
-      const users = await USER_SERVICE.getUsers();
+      const { tabStatus, page, limit, searchQuery } = req.query;
+      const users = await USER_SERVICE.getUsers(
+        tabStatus, 
+        parseInt(page), 
+        parseInt(limit),
+        searchQuery
+        );
       res.status(200).json(users);
     } catch (err) {
       res.status(400).json({ error: err.message });
     }
   };
+  
 
   getTotalUsers = async (req, res) => {
     try {
@@ -232,6 +239,16 @@ class USER_CONTROLLER {
         res.status(500).json({ error: error.message });
     }
   };
+
+  async search(req, res) {
+    const query = req.params.query;
+    try {
+        const results = await USER_SERVICE.searchUsers(query);
+        res.json(results);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+  }
 
   activeOrganization = async (req, res) => {
     const payload = req.body;

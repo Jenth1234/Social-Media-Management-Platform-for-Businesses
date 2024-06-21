@@ -6,6 +6,22 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 class USER_SERVICE {
 
+  async searchUsers(query) {
+    try {
+        // Sử dụng biểu thức chính quy để tìm kiếm theo username, fullname hoặc phone
+        const users = await USER_MODEL.find({
+            $or: [
+                { USERNAME: { $regex: query, $options: 'i' } }, // Tìm kiếm không phân biệt chữ hoa chữ thường
+                { FULLNAME: { $regex: query, $options: 'i' } },
+                { PHONE: { $regex: query, $options: 'i' } }
+            ]
+        }).exec();
+        return users;
+    } catch (error) {
+        throw new Error('Error searching users: ' + error.message);
+    }
+  }
+
   async checkUsernameExists(username) {
     return await USER_MODEL.findOne({ USERNAME: username }).lean();
   }
@@ -95,9 +111,50 @@ class USER_SERVICE {
     return foundUser;
   }
 
-  async getUsers() {
-    return await USER_MODEL.find({});
+  async getUsers(tabStatus, page, limit, searchQuery ) {
+    let query = {};
+    
+    switch (tabStatus) {
+      case '1':
+        query = { $or: [{ IS_ACTIVATED: false }, { IS_BLOCKED: null }] };
+        break;
+      case '2':
+        query = { IS_ACTIVATED: true, 'IS_BLOCKED.CHECK': false };
+        break;
+      case '3':
+        query = { 'IS_BLOCKED.CHECK': true };
+        break;
+      case '4':
+        query = {};
+        break;
+      default:
+        throw new Error('Invalid tab status');
+    }
+
+    if (searchQuery) {
+      const regex = new RegExp(searchQuery, 'i'); // 'i' cho phép tìm kiếm không phân biệt chữ hoa/chữ thường
+      query.USERNAME = regex;
+    }
+  
+    try {
+      const totalCount = await USER_MODEL.countDocuments(query);
+      const totalPages = Math.ceil(totalCount / limit);
+      const offset = (page - 1) * limit;
+  
+      const users = await USER_MODEL.find(query)
+        .skip(offset)
+        .limit(limit);
+  
+      return {
+        users,
+        totalPages,
+        totalCount
+      };
+    } catch (error) {
+      throw new Error('Error retrieving users');
+    }
   }
+  
 
   async countUsers () {
     return await USER_MODEL.countDocuments();

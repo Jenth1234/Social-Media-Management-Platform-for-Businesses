@@ -24,8 +24,8 @@ class PackageService {
         return result._doc;
   }
   
-  async updatePackage(level, packageDataToUpdate) {
-    const foundPackage = await PACKAGE_MODEL.findById(level);
+  async updatePackage(packageId, packageDataToUpdate) {
+    const foundPackage = await PACKAGE_MODEL.findById(packageId);
     if (!foundPackage) {
       throw new Error("User does not exist");
     }

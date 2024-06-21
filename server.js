@@ -20,7 +20,7 @@
     const upload = multer();
     route(app);
     dbConnect();
-    const port = process.env.PORT || 5000;
+    const port = process.env.PORT || 3000;
     app.listen(port,() => {
         console.log(`Máy chủ đang chạy trên cổng ${port} `);
     });
