@@ -19,19 +19,29 @@ class CATEGORY_CONTROLLER {
 
             const validationData = { NAME_CATEGORY, ORGANIZATION_ID, CATEGORY_TYPE };
             const { error } = registerCategory.validate(validationData);
-
             if (error) {
                 return res.status(400).json({ success: false, message: error.details[0].message });
             }
 
             const savedCategory = await categoryService.registerCategory(validationData);
 
-            return res.status(201).json({ success: true, message: "Category registered successfully", category: savedCategory });
+            const updatedOrganization = await categoryService.updateOrganizationListCategory(ORGANIZATION_ID, savedCategory._id);
 
+            return res.status(201).json({
+
+                success: true,
+                message: "Đăng ký danh mục thành công",
+                category: savedCategory,
+                organization: {
+                    ORGANIZATION_NAME: updatedOrganization.ORGANIZATION_NAME,
+                    LIST_CATEGORY: updatedOrganization.LIST_CATEGORY
+                }
+
+            });
         } catch (error) {
             return res.status(400).json({ success: false, message: error.message });
         }
     }
 }
-// list danh mục nằm trong tổ chức.
 module.exports = new CATEGORY_CONTROLLER();
+

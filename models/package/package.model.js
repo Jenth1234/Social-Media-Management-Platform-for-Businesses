@@ -1,7 +1,7 @@
 // Trong file package.model.js
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-const { date } = require('joi');
+const { date, boolean } = require('joi');
 const { type } = require('os');
 var Package = new Schema({
     TITLE: {
@@ -30,7 +30,11 @@ var Package = new Schema({
     },
     DISCOUNT: {
         type: Number
-    } 
+    }, 
+    IS_DELETE:{
+        type: Boolean,
+        default:false
+    }
 });
 
 module.exports = mongoose.model('Package', Package);

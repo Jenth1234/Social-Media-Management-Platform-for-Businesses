@@ -1,6 +1,6 @@
 const Invoice = require("../../models/Invoice/Invoice.model");
-const Organization = require("../../models/organization/organization.model");
-const InvoiceContr = require("../../controllers/invoice/invoice.controller");
+const Organization_data = require("../../models/metadata_organization/metadata_organization");
+const PackageItem = require("../../models/package/package.model")
 const payment = require("../../controllers/payment/payment.Controller");
 const express = require("express");
 const axios = require("axios");
@@ -10,12 +10,15 @@ const accessKey = process.env.accessKey;
 const secretKey = process.env.secretKey;
 
 class InvoiceService {
+
+
   async buyPackage(data_invoice) {
     try {
       const invoice = new Invoice(data_invoice);
-      console.log(invoice);
+      const organization_data = new Organization_data(data_invoice);
       await invoice.save();
-      return invoice;
+      await organization_data.save();
+      return invoice,organization_data;
     } catch (error) {
       console.error(error);
       throw new Error("Đã xảy ra lỗi khi mua gói");
@@ -97,6 +100,20 @@ class InvoiceService {
       throw new Error("Failed to update order status");
     }
   }
+async updatePaidStatus(orderId, status) {
+    try {
+      await Invoice.findOneAndUpdate({ ORDER_ID: orderId }, { PAID: status });
+    } catch (error) {
+      console.error('Error updating paid status:', error);
+      throw error;
+    }
+  }
+  async getOP() {
+    return await Invoice.find({});
+  }
+ 
 }
 
+
+ 
 module.exports = new InvoiceService();

@@ -113,7 +113,7 @@ class ORGANIZATION_SERVICE {
         const { ORGANIZATION_ACTIVE, OBJECT_APPROVED } = organization;
         return {
             exists: true,
-            active: ORGANIZATION_ACTIVE,
+            active: ORGANIZATION_ACTIVE.CHECK,
             approved: OBJECT_APPROVED.CHECK,
             approvalTime: OBJECT_APPROVED.TIME,
             approvedBy: OBJECT_APPROVED.APPROVED_BY_USER_ID
@@ -125,7 +125,7 @@ class ORGANIZATION_SERVICE {
         const users = await User.find({ ORGANIZATION_ID: organizationId })
             .skip(skip)
             .limit(limit)
-            .select('USERNAME EMAIL FULLNAME ADDRESS GENDER');
+            .select('USERNAME EMAIL FULLNAME ADDRESS GENDER IS_BLOCKED.CHECK');
         const totalUsers = await User.countDocuments({ ORGANIZATION_ID: organizationId });
         const totalPages = Math.ceil(totalUsers / limit);
 
@@ -177,7 +177,12 @@ class ORGANIZATION_SERVICE {
     };
 
     findUserByIdAndOrganization = async (userId, organizationId) => {
-        return await User.findOne({ _id: userId, ORGANIZATION_ID: organizationId });
+        return await User.findOne({ _id: userId, ORGANIZATION_ID: organizationId })
+    };
+
+    getUserDetails = async (userId) => {
+        return await User.findOne({ _id: userId })
+            .select('USERNAME EMAIL FULLNAME ADDRESS GENDER IS_BLOCKED.CHECK');
     };
 
     lockUserByOrganization = async (userId, organizationId, currentUserId) => {
@@ -222,9 +227,6 @@ class ORGANIZATION_SERVICE {
         }
     };
 
-    //hiển thị danh sách sản phẩm
-    //productid, số comment,
-
     getProductsWithCommentCount = async (organizationId) => {
 
         const productsWithComments = await MetadataCommentProduct.find({ ORGANIZATION_ID: organizationId })
@@ -232,6 +234,45 @@ class ORGANIZATION_SERVICE {
 
         return productsWithComments;
     };
+
+    getOrganizations = async (page, perPage) => {
+        const skip = (page - 1) * perPage;
+
+        // Projection để chỉ lấy các trường mong muốn
+        const organizations = await Organization.find({})
+            .select('_id ORGANIZATION_NAME ORGANIZATION_EMAIL ORGANIZATION_PHONE ORGANIZATION_ACTIVE.CHECK OBJECT_APPROVED.CHECK REGISTER_DATE PACKAGE')
+            .skip(skip)
+            .limit(perPage)
+            .lean();
+
+        const organizationsWithUserCount = await Promise.all(
+            organizations.map(async (org) => {
+                const userCount = await User.countDocuments({ ORGANIZATION_ID: org._id });
+                return {
+                    _id: org._id,
+                    ORGANIZATION_NAME: org.ORGANIZATION_NAME,
+                    ORGANIZATION_EMAIL: org.ORGANIZATION_EMAIL,
+                    ORGANIZATION_PHONE: org.ORGANIZATION_PHONE,
+                    ORGANIZATION_ACTIVE: org.ORGANIZATION_ACTIVE,
+                    OBJECT_APPROVED: org.OBJECT_APPROVED,
+                    REGISTER_DATE: org.REGISTER_DATE,
+                    PACKAGE: org.PACKAGE,
+                    USER_COUNT: userCount
+                };
+            })
+        );
+
+        return {
+            total: await Organization.countDocuments(),
+            perPage: perPage,
+            currentPage: page,
+            data: organizationsWithUserCount
+        };
+    };
+
+
+
+
 }
 
 module.exports = new ORGANIZATION_SERVICE();
