@@ -123,7 +123,7 @@ class USER_SERVICE {
     return await USER_MODEL.find({});
   }
 
-  async countUsers () {
+  async countUsers() {
     return await USER_MODEL.countDocuments();
   };
 
@@ -193,11 +193,11 @@ class USER_SERVICE {
   //   return foundUser;
   // }
 
-  async activeOrganization(organizationId, isActive, active_byuserid) {
+  async activeOrganization(organizationId, organizationActive, active_byuserid) {
     const condition = { _id: organizationId };
     const data = {
       ORGANIZATION_ACTIVE: {
-        CHECK: isActive,
+        CHECK: organizationActive,
         TIME: Date.now(),
         ACTIVE_BY_USER_ID: active_byuserid,
       },
@@ -213,13 +213,13 @@ class USER_SERVICE {
     return foundOrganization;
   }
 
-  async approvedOrganization(organizationId, isApproved, approved_byuserid) {
+  async approvedOrganization(organizationId, objectApproved, approved_byuserid) {
     const condition = { _id: organizationId };
 
     const data = {
 
-      IS_APPROVED: { //cái này là OBJECT_APPROVED nha Thảo ơi, bữa anh Kỳ kêu sửa tên á.
-        "CHECK": isApproved,
+      OBJECT_APPROVED: {
+        "CHECK": objectApproved,
         "TIME": Date.now(),
         "APPROVED_BY_USER_ID": approved_byuserid
       }
