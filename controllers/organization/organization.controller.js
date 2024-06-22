@@ -213,8 +213,9 @@ class ORGANIZATION_CONTROLLER {
             const organizationId = req.header('ORGANIZATION_ID');
             const page = parseInt(req.query.page) || 1;
             const limit = parseInt(req.query.limit) || 10;
+            const search = req.query.search;
 
-            const result = await organizationService.getUsersByOrganization(organizationId, page, limit);
+            const result = await organizationService.getUsersByOrganization(organizationId, page, limit, search);
 
             return res.status(200).json({
                 success: true,
@@ -231,6 +232,7 @@ class ORGANIZATION_CONTROLLER {
             });
         }
     };
+
 
     editOrganization = async (req, res) => {
         try {

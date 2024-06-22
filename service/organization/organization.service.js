@@ -120,13 +120,23 @@ class ORGANIZATION_SERVICE {
         };
     };
 
-    getUsersByOrganization = async (organizationId, page = 1, limit = 5) => {
+    getUsersByOrganization = async (organizationId, page = 1, limit = 5, search = '') => {
         const skip = (page - 1) * limit;
-        const users = await User.find({ ORGANIZATION_ID: organizationId })
+        let query = { ORGANIZATION_ID: organizationId };
+
+        if (search) {
+            query.$or = [
+                { USERNAME: { $regex: new RegExp(search, 'i') } },
+                { FULLNAME: { $regex: new RegExp(search, 'i') } }
+            ];
+        }
+
+        const users = await User.find(query)
             .skip(skip)
             .limit(limit)
             .select('USERNAME EMAIL FULLNAME ADDRESS GENDER IS_BLOCKED.CHECK');
-        const totalUsers = await User.countDocuments({ ORGANIZATION_ID: organizationId });
+
+        const totalUsers = await User.countDocuments(query);
         const totalPages = Math.ceil(totalUsers / limit);
 
         return {
@@ -136,6 +146,7 @@ class ORGANIZATION_SERVICE {
             currentPage: page
         };
     };
+
 
     editOrganization = async (organizationId, newData) => {
         const allowedFields = ['ORGANIZATION_NAME', 'ORGANIZATION_EMAIL', 'ORGANIZATION_PHONE'];
