@@ -12,7 +12,7 @@ class InvoiceController {
   constructor() {
     this.buyPackage = this.buyPackage.bind(this);
     this.handleIPN = this.handleIPN.bind(this);
-    this.updatePaidStatusAfterOneMinute = this.updatePaidStatusAfterOneMinute.bind(this);
+    // this.updatePaidStatusAfterOneMinute = this.updatePaidStatusAfterOneMinute.bind(this);
     this.checkOrganizationPackage = this.checkOrganizationPackage.bind(this);
   }
 
@@ -79,7 +79,7 @@ class InvoiceController {
       const result = await InvoiceService.buyPackage(data_invoice,data_bill);
 
       await this.handleIPN({ body: { orderId: result_momo.orderId, month } }, res);
-      this.updatePaidStatusAfterOneMinute(result_momo.orderId);
+      // this.updatePaidStatusAfterOneMinute(result_momo.orderId);
     } catch (error) {
       console.error(error.message);
       return res.status(500).json({ message: 'Đã xảy ra lỗi khi mua gói' });
@@ -124,16 +124,16 @@ class InvoiceController {
     }
   }
 
-  async updatePaidStatusAfterOneMinute(orderId) {
-    setTimeout(async () => {
-      try {
-        await InvoiceService.updatePaidStatus(orderId, false);
-        console.log('Updated paid status for invoice after 1 minute:', orderId);
-      } catch (error) {
-        console.error('Error updating paid status:', error);
-      }
-    }, 1 * 30 * 1000); // 1 phút
-  }
+  // async updatePaidStatusAfterOneMinute(orderId) {
+  //   setTimeout(async () => {
+  //     try {
+  //       await InvoiceService.updatePaidStatus(orderId, false);
+  //       console.log('Updated paid status for invoice after 1 minute:', orderId);
+  //     } catch (error) {
+  //       console.error('Error updating paid status:', error);
+  //     }
+  //   }, 1 * 30 * 1000); // 1 phút
+  // }
 
   async checkOrganizationPackage(req, res) {
     const user = req.user._doc;
