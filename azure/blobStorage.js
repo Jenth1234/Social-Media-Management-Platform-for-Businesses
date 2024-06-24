@@ -6,7 +6,8 @@ const AZURE_STORAGE_CONNECTION_STRING = process.env.AZURE_STORAGE_CONNECTION_STR
 async function connectToBlobStorage() {
     const blobServiceClient = BlobServiceClient.fromConnectionString(AZURE_STORAGE_CONNECTION_STRING);
     const containerClient = blobServiceClient.getContainerClient('your-container-name');
-    
+    const blobServiceClient_cmt = BlobServiceClient.fromConnectionString(AZURE_STORAGE_CONNECTION_STRING);
+    const containerClient_cmt = blobServiceClient.getContainerClient('your-container-name');
     // Tạo container nếu nó không tồn tại
     await containerClient.createIfNotExists();
     console.log('Connected to Azure Blob Storage');
@@ -21,3 +22,4 @@ async function connectToBlobStorage() {
 connectToBlobStorage().catch(err => {
     console.error('Error connecting to Blob Storage:', err);
 });
+

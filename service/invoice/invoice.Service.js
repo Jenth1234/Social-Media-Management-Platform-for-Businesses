@@ -30,8 +30,8 @@ class InvoiceService {
     const secretKey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
     const orderInfo = "pay with MoMo";
     const partnerCode = "MOMO";
-    const redirectUrl = "https://webhook.site/b3088a6a-2d17-4f8d-a383-71389a6c600b";
-    const ipnUrl = "https://5812-14-230-62-193.ngrok-free.app/invoice/callback";
+    const redirectUrl = "http://localhost:3001/pages/menu";
+    const ipnUrl = "https://8fbd-113-170-51-144.ngrok-free.app/invoice/callback";
     const requestType = "payWithMethod";
     const amount = money.toString();
     const orderId = partnerCode + Date.now().toString();
