@@ -49,7 +49,7 @@ class PackageService {
     }
   }
   async getPackage() {
-    return await PACKAGE_MODEL.find({IS_DELETE:true});
+    return await PACKAGE_MODEL.find({});
   }
 }
 

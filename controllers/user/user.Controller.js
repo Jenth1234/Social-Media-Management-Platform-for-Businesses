@@ -1,18 +1,17 @@
 const user = require("../../models/user/user.model");
-const MailService = require('../../utils/send.mail');
+const MailService = require("../../utils/send.mail");
 const USER_SERVICE = require("../../service/user/user.service");
-const {upload} = require("../azure/azure.controller")
+const { upload } = require("../azure/azure.controller");
 // const {sendForgotPasswordEmail, verifyOTP} = require("../../utils/send.mail")
-const MailQueue = require("../../utils/send.mail")
-const {storeMetadata} =require('../../service/azure/azure.Service')
-
+const MailQueue = require("../../utils/send.mail");
+const { storeMetadata } = require("../../service/azure/azure.Service");
 
 const {
   registerValidate,
   updateUserValidate,
   loginValidate,
   validateUserId,
-  validateOrganizationId
+  validateOrganizationId,
 } = require("../../models/user/validate/index");
 const { response } = require("express");
 class USER_CONTROLLER {
@@ -20,14 +19,13 @@ class USER_CONTROLLER {
     const payload = req.body;
     const { error, value } = registerValidate.validate(payload);
 
-
     if (error) {
       return res.status(400).json({ message: error.details[0].message });
     }
 
     const { USERNAME, EMAIL } = value;
 
-    const otpType = 'create_account';
+    const otpType = "create_account";
 
     try {
       const existingUser = await USER_SERVICE.checkUsernameExists(USERNAME);
@@ -46,10 +44,14 @@ class USER_CONTROLLER {
           throw new Error("Tải lên ảnh đại diện thất bại");
         }
 
-       
-        const avatarMetadata = await storeMetadata(req.file.originalname, "Avatar image", req.file.mimetype, avatarUrl);
+        const avatarMetadata = await storeMetadata(
+          req.file.originalname,
+          "Avatar image",
+          req.file.mimetype,
+          avatarUrl
+        );
 
-        payload.AVATAR = avatarMetadata._id; 
+        payload.AVATAR = avatarMetadata._id;
       }
       await USER_SERVICE.registerUser(payload);
       const sendMail = await MailQueue.sendVerifyEmail(EMAIL, otpType);
@@ -57,13 +59,10 @@ class USER_CONTROLLER {
         throw new Error("Gửi email xác minh thất bại");
       }
 
-
-
-
       return res.status(201).json({
-        message: "Đăng ký người dùng thành công. Vui lòng kiểm tra email để xác thực.",
+        message:
+          "Đăng ký người dùng thành công. Vui lòng kiểm tra email để xác thực.",
       });
-
     } catch (err) {
       return res.status(500).json({ message: "Đăng ký người dùng thất bại" });
     }
@@ -77,50 +76,79 @@ class USER_CONTROLLER {
         return res.status(404).json({ message: "Email not found!!" });
       }
       const sendMail = await MailQueue.sendForgotPasswordEmail(email);
-      // const otp = await MailQueue.randomOtp();
-      if (sendMail) {
-
-        await MailService.processMailQueue();
-
-        return res.status(200).json({ message: "Một email chứa mã OTP đã được gửi đến địa chỉ email của bạn." })
+      if (!sendMail) {
+        throw new Error("Gửi email xác minh thất bại");
       }
+
+      return res.status(201).json({
+        message:
+          "Vui lòng kiểm tra email để xác thực.",
+      });
 
     } catch (error) {
       console.error("Error handling forgot password request:", error);
-      return res.status(500).json({ message: "Đã xảy ra lỗi khi xử lý yêu cầu." });
+      return res
+        .status(500)
+        .json({ message: "Đã xảy ra lỗi khi xử lý yêu cầu." });
     }
-  }
+  };
 
   resetPassword = async (req, res) => {
     const { email, otp, newPassword } = req.body;
     try {
-      const isValid = await verifyOTP(email, otp);
+      const isValid = await MailService.verifyOTP(email, otp, "reset_password");
       if (!isValid) {
-        return res.status(500).json({ error: 'Invalid or expired OTP.' });
+        return res.status(500).json({ error: "Invalid or expired OTP." });
       }
       await USER_SERVICE.resetPassword(email, newPassword);
-      return res.status(200).json({ message: 'Password reset was successfully.' });
-
+      return res
+        .status(200)
+        .json({ message: "Password reset was successfully." });
     } catch (err) {
-      res.status(500).json({ error: 'Error resetting password' });
+      res.status(500).json({ error: "Error resetting password" });
     }
-  }
+  };
+
+  verifyOTPAndActivateUser = async (req, res) => {
+    const { email, otp } = req.body;
+
+    try {
+      // const { otpType } = req.body;
+      const user = await USER_SERVICE.verifyOTPAndActivateUser(email, otp);
+
+      if (!user) {
+        return res.status(404).json({ message: "Invalid OTP" });
+      }
+
+      // Kiểm tra thời hạn của mã OTP
+      const otpDetail = user.OTP.find((item) => item.CODE === otp);
+      const currentTime = Date.now();
+
+      if (otpDetail.EXP_TIME < currentTime) {
+        throw new Error("OTP expired");
+      }
+
+      res.status(200).json({ message: "User activated successfully", user });
+    } catch (error) {
+      console.error("Error verifying OTP and activating user:", error);
+      res.status(400).json({ message: error.message });
+    }
+  };
 
   getUsers = async (req, res) => {
     try {
-      const { tabStatus, page, limit, searchQuery } = req.query;
+      const { tabStatus, page, limit, search } = req.query;
       const users = await USER_SERVICE.getUsers(
-        tabStatus, 
-        parseInt(page), 
+        tabStatus,
+        parseInt(page),
         parseInt(limit),
-        searchQuery
-        );
+        search
+      );
       res.status(200).json(users);
     } catch (err) {
       res.status(400).json({ error: err.message });
     }
   };
-  
 
   getTotalUsers = async (req, res) => {
     try {
@@ -139,7 +167,9 @@ class USER_CONTROLLER {
       return res.status(401).json({ message: error.details[0].message });
     }
     // Check for exiting user
-    const existingUser = await USER_SERVICE.checkUsernameExists(payload.USERNAME);
+    const existingUser = await USER_SERVICE.checkUsernameExists(
+      payload.USERNAME
+    );
     if (!existingUser) {
       return res
         .status(401)
@@ -155,17 +185,14 @@ class USER_CONTROLLER {
         .json({ message: "Invalid account or password !!!" });
     }
     const data_sign = {
-      userId: existingUser._id
-    }
+      userId: existingUser._id,
+    };
     const accessToken = await USER_SERVICE.login(data_sign);
     return res.status(200).json({
       errorCode: 0,
       metadata: accessToken,
-      message: existingUser
+      message: existingUser,
     });
-
-
-
   };
   updateUser = async (req, res) => {
     const payload = req.body;
@@ -200,13 +227,12 @@ class USER_CONTROLLER {
     }
   };
 
-
   getUserInfoAdmin = async (req, res) => {
     try {
       const userInfo = req.user;
       const IS_ADMIN = userInfo.ROLE.IS_ADMIN;
       if (!IS_ADMIN) {
-        return res.status(400).json({ error: 'Invalid!!!' });
+        return res.status(400).json({ error: "Invalid!!!" });
       }
 
       res.json(userInfo);
@@ -214,7 +240,6 @@ class USER_CONTROLLER {
       res.status(500).json({ error: error.message });
     }
   };
-
 
   // checkAdmin = async (req, res, next) => {
   //   try {
@@ -241,10 +266,14 @@ class USER_CONTROLLER {
     }
 
     try {
-      const updatedUser = await USER_SERVICE.blockUser(userId, payload.IS_BLOCKED, blocked_byuserid);
+      const updatedUser = await USER_SERVICE.blockUser(
+        userId,
+        payload.IS_BLOCKED,
+        blocked_byuserid
+      );
 
       if (!updatedUser) {
-        return res.status(404).json({ error: 'User not found' });
+        return res.status(404).json({ error: "User not found" });
       }
 
       res.json(updatedUser);
@@ -256,10 +285,10 @@ class USER_CONTROLLER {
   async search(req, res) {
     const query = req.params.query;
     try {
-        const results = await USER_SERVICE.searchUsers(query);
-        res.json(results);
+      const results = await USER_SERVICE.searchUsers(query);
+      res.json(results);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+      res.status(500).json({ error: error.message });
     }
   }
 
@@ -274,18 +303,21 @@ class USER_CONTROLLER {
     }
 
     try {
-      const updatedOrganization = await USER_SERVICE.activeOrganization(organizationId, payload.ORGANIZATION_ACTIVE, active_byuserid);
+      const updatedOrganization = await USER_SERVICE.activeOrganization(
+        organizationId,
+        payload.ORGANIZATION_ACTIVE,
+        active_byuserid
+      );
 
       if (!updatedOrganization) {
-        return res.status(404).json({ error: 'Organization not found' });
+        return res.status(404).json({ error: "Organization not found" });
       }
 
       res.json(updatedOrganization);
-
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }
-  }
+  };
 
   approvedOrganizations = async (req, res) => {
     const payload = req.body;
@@ -298,7 +330,11 @@ class USER_CONTROLLER {
     }
 
     try {
-      const approvedOrganization = await USER_SERVICE.approvedOrganization(organizationId, payload.OBJECT_APPROVED, active_byuserid);
+      const approvedOrganization = await USER_SERVICE.approvedOrganization(
+        organizationId,
+        payload.OBJECT_APPROVED,
+        active_byuserid
+      );
 
       if (!approvedOrganization) {
         return res.status(500).json({ error: error.message });
@@ -309,7 +345,5 @@ class USER_CONTROLLER {
       return res.status(500).json({ error: error.message });
     }
   };
-
 }
 module.exports = new USER_CONTROLLER();
-
