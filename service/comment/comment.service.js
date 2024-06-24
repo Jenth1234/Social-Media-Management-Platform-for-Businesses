@@ -10,28 +10,28 @@ class COMMENT_SERVICE {
       LIST_COMMENT_MAX_NUMBER: { $lt: countCMT } 
     };
 
-    const comment_obj = {
-      "USER_ID": payload.USER_ID,
-      "CONTENT": payload.CONTENT,
-      "ATTACHMENTS": payload.ATTACHMENTS,
-      "FROM_DATE": Date.now(),
-      "THRU_DATE": null
-    };
+      const comment_obj = {
+        USER_ID: payload.USER_ID,
+        CONTENT: payload.CONTENT,
+        ATTACHMENTS: payload.ATTACHMENTS,
+        FROM_DATE: Date.now(),
+        THRU_DATE: null,
+      };
 
     await MetadataCmtProductService.updateCmtCount(payload.PRODUCT_ID, payload.ORGANIZATION_ID, 1);
 
-    await Comment.updateOne(
-      query,
-      {
-        $push: {
-          LIST_COMMENT: comment_obj
+      await Comment.updateOne(
+        query,
+        {
+          $push: {
+            LIST_COMMENT: comment_obj,
+          },
+          $inc: { LIST_COMMENT_MAX_NUMBER: 1 },
         },
-        $inc: { LIST_COMMENT_MAX_NUMBER: 1 }
-      },
-      { upsert: true }
-    );
+        { upsert: true }
+      );
 
-    return comment_obj;
+      return comment_obj;
   };
   
   getCommentsByUser = async (userId) => {
@@ -96,10 +96,11 @@ class COMMENT_SERVICE {
       throw new Error(`Error getting comments by product: ${error.message}`);
     }
   };
+
   updateCommentContent = async (commentId, content) => {
     try {
       const result = await Comment.findOneAndUpdate(
-        { "LIST_COMMENT._id": commentId },
+        { "LIST_COMMENT._id": Types.ObjectId(commentId) },
         {
           $set: { "LIST_COMMENT.$.CONTENT": content },
         },
@@ -138,8 +139,8 @@ class COMMENT_SERVICE {
             }
           },
           $inc: {
-            LIST_COMMENT_MAX_NUMBER: -1
-          }
+            LIST_COMMENT_MAX_NUMBER: -1,
+          },
         },
         { new: true }
       );
@@ -150,9 +151,29 @@ class COMMENT_SERVICE {
 
       return result;
     } catch (error) {
-      throw new Error(error.message);
+      throw new Error(`Error deleting comment: ${error.message}`);
+    }
+  };
+
+  createReply = async (commentId, payload) => {
+    try {
+      const replies_obj = {
+        USER_ID: payload.USER_ID,
+        CONTENT: payload.CONTENT,
+        ATTACHMENTS: payload.ATTACHMENTS,
+        FROM_DATE: Date.now(),
+        THRU_DATE: null,
+      };
+
+      const result = await Comment.updateOne(
+        { "LIST_COMMENT._id": new Types.ObjectId(commentId) },
+        { $push: { "LIST_COMMENT.$.REPLIES": replies_obj } }
+      );
+
+      return result;
+    } catch (error) {
+      throw new Error(`Error creating reply: ${error.message}`);
     }
   };
 }
-
 module.exports = new COMMENT_SERVICE();

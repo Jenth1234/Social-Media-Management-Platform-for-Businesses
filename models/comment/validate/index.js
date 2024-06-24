@@ -10,7 +10,7 @@ const createCommentValidate = Joi.object({
         'string.empty': 'Comment cannot be empty.',
         'string.min': 'Comment must be at least {#limit} characters long.',
         'string.max': 'Comment cannot exceed {#limit} characters.',
-        'string.pattern.base': 'Comment contains invalid characters.',
+ 
         'any.required': 'Comment is required.'
     }),
     ATTACHMENTS: Joi.array().items(Joi.object()).optional().messages({

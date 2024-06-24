@@ -7,6 +7,6 @@ const imgAzureSchema = new mongoose.Schema({
     imageUrl: String
 });
 
-const AzureBlobModel = mongoose.model('AzureImg', imgAzureSchema);
+const AzureBlobModel = mongoose.model('metadata_avatar', imgAzureSchema);
 
 module.exports = AzureBlobModel;

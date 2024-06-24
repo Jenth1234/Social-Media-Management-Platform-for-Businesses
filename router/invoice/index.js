@@ -9,7 +9,7 @@ router.post('/buy',verifyToken,InvoiceController.buyPackage);
 router.post('/ipn',InvoiceController.handleIPN);
 router.post('/callback',async(req,res)=>{
 
-    console.log('callback: ');
+    console.log('Thanh toán hoàn tất');
     console.log(req.body);
      return res.status(200).json(req.body);
 })

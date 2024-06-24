@@ -1,35 +1,40 @@
 const express = require("express");
 const axios = require('axios');
 const bodyParser = require("body-parser");
-const app = express();
 const multer = require("multer");
 const cors = require("cors");
 const dbConnect = require("./config/dbconnect");
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
-const { BlobServiceClient } = require("@azure/storage-blob");
+
 const route = require("./router");
-const port = process.env.PORT || 3000;
-app.use(
-  cors({
-    origin: ["http://localhost:3001", "http://127.0.0.1:3001"],
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    credentials: true, // enable passing of cookies and HTTP credentials
-    optionsSuccessStatus: 204,
-    allowedHeaders: "Content-Type,authorization,organization_id",
-  })
-);
+
+const app = express();
+const port = process.env.PORT || 3005;
 
 
-const { blobServiceClient } = require('./config/configAzure')
+// Cấu hình CORS
+app.use(cors({
+  origin: ["http://localhost:3001", "http://127.0.0.1:3001"],
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true,
+  optionsSuccessStatus: 204,
+  allowedHeaders: "Content-Type,authorization",
+}));
+
+// Cấu hình body parser
 app.use(bodyParser.json());
-app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-route(app);
+// Cấu hình multer
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+
 dbConnect();
 
+// Sử dụng router
+route(app);
 
+// Khởi động máy chủ
 app.listen(port, () => {
-  console.log(`Máy chủ đang chạy trên cổng ${port} `);
+  console.log(`Máy chủ đang chạy trên cổng ${port}`);
 });
