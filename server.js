@@ -5,9 +5,22 @@ const cors = require("cors");
 const dbConnect = require("./config/dbconnect");
 
 const route = require("./router");
+<<<<<<< HEAD
 
 const app = express();
 const port = process.env.PORT || 3005;
+=======
+const port = process.env.PORT || 3000;
+app.use(
+  cors({
+    origin: ["http://localhost:3001", "http://127.0.0.1:3001"],
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true, // enable passing of cookies and HTTP credentials
+    optionsSuccessStatus: 204,
+    allowedHeaders: "Content-Type,authorization,organization_id",
+  })
+);
+>>>>>>> aa92a68e53e2e4887ff00dbcc7d8a3bf49dd83cd
 
 // Cấu hình CORS
 app.use(cors({
