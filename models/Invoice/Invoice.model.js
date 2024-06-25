@@ -52,6 +52,9 @@ const InvoiceSchema = new Schema({
         type: Boolean,
         default: false
     },
+    TYPE_ORDER:{
+        type: String
+    },
     ORDER_ID: {
         type: String,
         required: true
