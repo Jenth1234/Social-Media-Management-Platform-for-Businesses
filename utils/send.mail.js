@@ -85,13 +85,33 @@ class MailQueue {
         
     }
 
-    async verifyOTP(email, otp) {
+    async verifyOTP(email, otp, otpType) {
         try {
-            await USER_SERVICE.updateOTPstatus(email, otp);
+          // Tìm người dùng với địa chỉ email và mã OTP truyền vào
+          const user = await USER_MODEL.findOne({ EMAIL: email, "OTP.CODE": otp });
+      
+          if (!user) {
+            throw new Error('Invalid OTP');
+          }
+      
+          // Kiểm tra loại và thời hạn của mã OTP
+          const otpDetail = user.OTP.find(item => item.CODE === otp && item.TYPE === otpType);
+          const currentTime = Date.now();
+      
+          if (!otpDetail) {
+            throw new Error('Invalid OTP type');
+          }
+      
+          if (otpDetail.EXP_TIME < currentTime) {
+            throw new Error('OTP expired');
+          }
+
+          return true; // Trả về true nếu OTP hợp lệ và chưa hết hạn
         } catch (error) {
-            console.error("Error verifying OTP:", error);
+          console.error('Error verifying OTP:', error);
+          throw error; 
         }
-    }
+      }
 
     async randomOtp() {
         const min = 100000;
