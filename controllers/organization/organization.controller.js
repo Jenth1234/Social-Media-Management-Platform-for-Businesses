@@ -214,9 +214,10 @@ class ORGANIZATION_CONTROLLER {
             const page = parseInt(req.query.page) || 1;
             const limit = parseInt(req.query.limit) || 10;
             const search = req.query.search;
-
-            const result = await organizationService.getUsersByOrganization(organizationId, page, limit, search);
-
+            const status = req.query.status || 'all';
+    
+            const result = await organizationService.getUsersByOrganization(organizationId, page, limit, search, status);
+    
             return res.status(200).json({
                 success: true,
                 data: result.users,
@@ -329,10 +330,12 @@ class ORGANIZATION_CONTROLLER {
     getOrganizations = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const perPage = parseInt(req.query.perPage) || 5;
-
+        const tab = req.query.tab || 'all';
+        const keyword = req.query.keyword || '';
+    
         try {
-            const result = await organizationService.getOrganizations(page, perPage);
-
+            const result = await organizationService.getOrganizations(page, perPage, tab, keyword);
+    
             return res.status(200).json({
                 success: true,
                 total: result.total,
@@ -348,6 +351,7 @@ class ORGANIZATION_CONTROLLER {
             });
         }
     };
+    
 
 
     getUserDetails = async (req, res) => {

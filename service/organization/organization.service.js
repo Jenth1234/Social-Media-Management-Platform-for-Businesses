@@ -120,10 +120,10 @@ class ORGANIZATION_SERVICE {
         };
     };
 
-    getUsersByOrganization = async (organizationId, page = 1, limit = 5, search = '') => {
+    getUsersByOrganization = async (organizationId, page = 1, limit = 5, search = '', status = 'all') => {
         const skip = (page - 1) * limit;
         let query = { ORGANIZATION_ID: organizationId };
-
+    
         if (search) {
             query.$or = [
                 { USERNAME: { $regex: new RegExp(search, 'i') } },
@@ -131,14 +131,22 @@ class ORGANIZATION_SERVICE {
             ];
         }
 
+        if (status === 'active') {
+            query.IS_ACTIVATED = true;
+            query['IS_BLOCKED.CHECK'] = false;
+        } else if (status === 'inactive') {
+            query.IS_ACTIVATED = false;
+        } else if (status === 'blocked') {
+            query['IS_BLOCKED.CHECK'] = true;
+        }
         const users = await User.find(query)
             .skip(skip)
             .limit(limit)
-            .select('USERNAME EMAIL FULLNAME ADDRESS GENDER IS_BLOCKED.CHECK');
-
+            .select('USERNAME EMAIL FULLNAME ADDRESS GENDER IS_BLOCKED.CHECK IS_ACTIVATED');
+    
         const totalUsers = await User.countDocuments(query);
         const totalPages = Math.ceil(totalUsers / limit);
-
+    
         return {
             users,
             totalUsers,
@@ -146,6 +154,7 @@ class ORGANIZATION_SERVICE {
             currentPage: page
         };
     };
+    
 
 
     editOrganization = async (organizationId, newData) => {
@@ -246,16 +255,43 @@ class ORGANIZATION_SERVICE {
         return productsWithComments;
     };
 
-    getOrganizations = async (page, perPage) => {
+    getOrganizations = async (page, perPage, tab, keyword) => {
         const skip = (page - 1) * perPage;
-
-        // Projection để chỉ lấy các trường mong muốn
-        const organizations = await Organization.find({})
+        let filter = {};
+    
+        switch (tab) {
+            case 'all':
+                break;
+            case 'unapproved':
+                filter['OBJECT_APPROVED.CHECK'] = false;
+                break;
+            case 'approved':
+                filter['OBJECT_APPROVED.CHECK'] = true;
+                break;
+            case 'active':
+                filter['ORGANIZATION_ACTIVE.CHECK'] = true;
+                break;
+            case 'unactive':
+                filter['ORGANIZATION_ACTIVE.CHECK'] = false;
+                break;
+            default:
+                break;
+        }
+    
+        if (keyword) {
+            filter.$or = [
+                { ORGANIZATION_NAME: { $regex: keyword, $options: 'i' } },
+                { ORGANIZATION_EMAIL: { $regex: keyword, $options: 'i' } },
+                { ORGANIZATION_PHONE: { $regex: keyword, $options: 'i' } }
+            ];
+        }
+    
+        const organizations = await Organization.find(filter)
             .select('_id ORGANIZATION_NAME ORGANIZATION_EMAIL ORGANIZATION_PHONE ORGANIZATION_ACTIVE.CHECK OBJECT_APPROVED.CHECK REGISTER_DATE PACKAGE')
             .skip(skip)
             .limit(perPage)
             .lean();
-
+    
         const organizationsWithUserCount = await Promise.all(
             organizations.map(async (org) => {
                 const userCount = await User.countDocuments({ ORGANIZATION_ID: org._id });
@@ -272,18 +308,17 @@ class ORGANIZATION_SERVICE {
                 };
             })
         );
-
+    
+        const total = await Organization.countDocuments(filter);
+    
         return {
-            total: await Organization.countDocuments(),
-            perPage: perPage,
+            total,
             currentPage: page,
+            perPage,
             data: organizationsWithUserCount
         };
     };
-
-
-
-
+    
 }
 
 module.exports = new ORGANIZATION_SERVICE();
