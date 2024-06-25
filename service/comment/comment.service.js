@@ -4,38 +4,40 @@ const MetadataCmtProductService = require("../../service/metadata_cmt_product/me
 const { Types } = require("mongoose");
 class COMMENT_SERVICE {
   createComment = async (payload) => {
-    const countCMT = 200;
-    const query = { 
-      PRODUCT_ID: payload.PRODUCT_ID, 
-      ORGANIZATION_ID: payload.ORGANIZATION_ID, 
-      LIST_COMMENT_MAX_NUMBER: { $lt: countCMT } 
-    };
-
-    const comment_obj = {
-      "USER_ID": payload.USER_ID,
-      "CONTENT": payload.CONTENT,
-      "ATTACHMENTS": payload.ATTACHMENTS,
-      "FROM_DATE": Date.now(),
-      "THRU_DATE": null
-    };
-
-    await MetadataCmtProductService.updateCmtCount(payload.PRODUCT_ID, payload.ORGANIZATION_ID, 1);
-
-    await Comment.updateOne(
-      query,
-      {
-        $push: {
-          LIST_COMMENT: comment_obj
-
+    try {
+      const countCMT = 200;
+      const query = { 
+        PRODUCT_ID: payload.PRODUCT_ID, 
+        ORGANIZATION_ID: payload.ORGANIZATION_ID, 
+        LIST_COMMENT_MAX_NUMBER: { $lt: countCMT } 
+      };
+  
+      const comment_obj = {
+        "USER_ID": payload.USER_ID,
+        "CONTENT": payload.CONTENT,
+        "ATTACHMENTS": payload.ATTACHMENTS,
+        "FROM_DATE": Date.now(),
+        "THRU_DATE": null
+      };
+  
+      await MetadataCmtProductService.updateCmtCount(payload.PRODUCT_ID, payload.ORGANIZATION_ID, 1);
+  
+      await Comment.updateOne(
+        query,
+        {
+          $push: {
+            LIST_COMMENT: comment_obj
+          }
         },
         { upsert: true }
       );
-
+  
       return comment_obj;
     } catch (error) {
       throw new Error(`Error creating comment: ${error.message}`);
     }
   };
+  
   
   getCommentsByUser = async (userId) => {
     try {
