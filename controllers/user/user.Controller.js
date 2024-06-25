@@ -71,7 +71,7 @@ class USER_CONTROLLER {
     }
   };
 
-  forgotPassword = async (req, res) => {
+ forgotPassword = async (req, res) => {
     try {
       const { email } = req.body;
       const existingEmail = await USER_SERVICE.checkEmailExists(email);
@@ -79,34 +79,64 @@ class USER_CONTROLLER {
         return res.status(404).json({ message: "Email not found!!" });
       }
       const sendMail = await MailQueue.sendForgotPasswordEmail(email);
-      // const otp = await MailQueue.randomOtp();
-      if (sendMail) {
-
-        await MailService.processMailQueue();
-
-        return res.status(200).json({ message: "Một email chứa mã OTP đã được gửi đến địa chỉ email của bạn." })
+      if (!sendMail) {
+        throw new Error("Gửi email xác minh thất bại");
       }
+
+      return res.status(201).json({
+        message:
+          "Vui lòng kiểm tra email để xác thực.",
+      });
 
     } catch (error) {
       console.error("Error handling forgot password request:", error);
-      return res.status(500).json({ message: "Đã xảy ra lỗi khi xử lý yêu cầu." });
+      return res
+        .status(500)
+        .json({ message: "Đã xảy ra lỗi khi xử lý yêu cầu." });
     }
-  }
+  };
 
   resetPassword = async (req, res) => {
     const { email, otp, newPassword } = req.body;
     try {
-      const isValid = await verifyOTP(email, otp);
+      const isValid = await MailService.verifyOTP(email, otp, "reset_password");
       if (!isValid) {
-        return res.status(500).json({ error: 'Invalid or expired OTP.' });
+        return res.status(500).json({ error: "Invalid or expired OTP." });
       }
       await USER_SERVICE.resetPassword(email, newPassword);
-      return res.status(200).json({ message: 'Password reset was successfully.' });
-
+      return res
+        .status(200)
+        .json({ message: "Password reset was successfully." });
     } catch (err) {
-      res.status(500).json({ error: 'Error resetting password' });
+      res.status(500).json({ error: "Error resetting password" });
     }
-  }
+  };
+
+  verifyOTPAndActivateUser = async (req, res) => {
+    const { email, otp } = req.body;
+
+    try {
+      // const { otpType } = req.body;
+      const user = await USER_SERVICE.verifyOTPAndActivateUser(email, otp);
+
+      if (!user) {
+        return res.status(404).json({ message: "Invalid OTP" });
+      }
+
+      // Kiểm tra thời hạn của mã OTP
+      const otpDetail = user.OTP.find((item) => item.CODE === otp);
+      const currentTime = Date.now();
+
+      if (otpDetail.EXP_TIME < currentTime) {
+        throw new Error("OTP expired");
+      }
+
+      res.status(200).json({ message: "User activated successfully", user });
+    } catch (error) {
+      console.error("Error verifying OTP and activating user:", error);
+      res.status(400).json({ message: error.message });
+    }
+  };
 
   getUsers = async (req, res) => {
     try {
