@@ -1,37 +1,41 @@
 const Invoice = require("../../models/Invoice/Invoice.model");
 const Organization_data = require("../../models/metadata_organization/metadata_organization");
-const PackageItem = require("../../models/package/package.model")
+const PackageItem = require("../../models/package/package.model");
 const payment = require("../../controllers/payment/payment.Controller");
 const express = require("express");
 const axios = require("axios");
 const crypto = require("crypto");
+const CryptoJS = require('crypto-js'); 
+const moment = require('moment');
+const { url } = require("inspector");
 
 const accessKey = process.env.accessKey;
 const secretKey = process.env.secretKey;
 
 class InvoiceService {
 
-
+  // Lưu dữ liệu hóa đơn và tổ chức vào cơ sở dữ liệu
   async buyPackage(data_invoice) {
     try {
       const invoice = new Invoice(data_invoice);
       const organization_data = new Organization_data(data_invoice);
       await invoice.save();
       await organization_data.save();
-      return invoice,organization_data;
+      return { invoice, organization_data };
     } catch (error) {
       console.error(error);
       throw new Error("Đã xảy ra lỗi khi mua gói");
     }
   }
 
+  // Tạo hóa đơn MoMo
   createBill = async (money, month) => {
     const accessKey = "F8BBA842ECF85";
     const secretKey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
     const orderInfo = "pay with MoMo";
     const partnerCode = "MOMO";
-    const redirectUrl = "https://webhook.site/b3088a6a-2d17-4f8d-a383-71389a6c600b";
-    const ipnUrl = "https://5812-14-230-62-193.ngrok-free.app/invoice/callback";
+    const redirectUrl = "http://localhost:3001/pages/menu";
+    const ipnUrl = "https://8fbd-113-170-51-144.ngrok-free.app/invoice/callback";
     const requestType = "payWithMethod";
     const amount = money.toString();
     const orderId = partnerCode + Date.now().toString();
@@ -64,6 +68,8 @@ class InvoiceService {
       extraData: extraData,
       orderGroupId: orderGroupId,
       signature: signature,
+    
+      
     };
 
     try {
@@ -78,6 +84,54 @@ class InvoiceService {
     }
   };
 
+  // Tạo hóa đơn ZaloPay
+  createBillZalopay = async (money, month) => {
+    const partnerCode = "ZALO";
+    const orderId = partnerCode + Date.now().toString();
+  
+    const config = {
+      app_id: '2553',
+      key1: 'PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL',
+      key2: 'kLtgPl8HHhfvMuDHPwKfgfsY4Ydm9eIz',
+      endpoint: 'https://sb-openapi.zalopay.vn/v2/create',
+    };
+    const items = [];
+    const transID = Math.floor(Math.random() * 1000000);
+    const embed_data = {};
+  
+    const order = {
+      app_id: config.app_id,
+      app_trans_id: `${moment().format('YYMMDD')}_${transID}`,
+      app_user: 'user123',
+      app_time: Date.now(),
+      item: JSON.stringify(items),
+      embed_data: JSON.stringify(embed_data),
+      amount: money.toString(),
+      callback_url: 'https://37be-113-170-51-144.ngrok-free.app/callback',
+      description: `Lazada - Payment for the order #${transID}`,
+      bank_code: '',
+    };
+  
+    const data = 
+      config.app_id + '|' +
+      order.app_trans_id + '|' +
+      order.app_user + '|' +
+      order.amount + '|' +
+      order.app_time + '|' +
+      order.embed_data + '|' +
+      order.item;
+    order.mac = CryptoJS.HmacSHA256(data, config.key1).toString();
+  
+    try {
+      const result = await axios.post(config.endpoint, null, { params: order });
+      return { orderId, ...result.data };
+    } catch (error) {
+      console.error(error);
+      throw new Error('Error creating ZaloPay bill');
+    }
+  };
+
+  // Cập nhật trạng thái đơn hàng
   async updateOrderStatus(orderId, months) {
     try {
       const due_date = new Date();
@@ -100,7 +154,9 @@ class InvoiceService {
       throw new Error("Failed to update order status");
     }
   }
-async updatePaidStatus(orderId, status) {
+
+  // Cập nhật trạng thái thanh toán
+  async updatePaidStatus(orderId, status) {
     try {
       await Invoice.findOneAndUpdate({ ORDER_ID: orderId }, { PAID: status });
     } catch (error) {
@@ -108,12 +164,11 @@ async updatePaidStatus(orderId, status) {
       throw error;
     }
   }
+
+  // Lấy tất cả hóa đơn
   async getOP() {
     return await Invoice.find({});
   }
- 
 }
 
-
- 
 module.exports = new InvoiceService();

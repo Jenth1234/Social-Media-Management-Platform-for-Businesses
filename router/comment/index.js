@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const commentController = require('../../controllers/comment/comment.controller');
+const commentController = require("../../controllers/comment/comment.Controller")
 // const verifyToken = require('../../middleware/verifyToken');
 const {verifyToken, verifyTokenAdmin} = require('../../middleware/verifyToken');
 
@@ -13,4 +13,5 @@ router.delete('/:commentId', verifyToken, commentController.deleteComment);
 
 router.put('/update/:commentId', verifyToken, commentController.updateComment);
 
+router.post('/:commentId/reply', verifyToken, commentController.createReply);
 module.exports = router;

@@ -73,6 +73,10 @@ class PackageValidate {
             'number.base': 'DISCOUNT must be a number',
             'number.min': 'DISCOUNT must be at least 10',
             'number.max': 'DISCOUNT must be at most 50',
+        }),
+        MONTH: Joi.number().integer().min(1).messages({
+            'number.base': 'MONTH must be a number',
+            'number.min': 'MONTH must be at least 1',
         })
     });
 }

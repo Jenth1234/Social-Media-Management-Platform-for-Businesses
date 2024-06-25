@@ -7,8 +7,7 @@ const connectDB = `mongodb://internship_group_2:${password}@dtuct.ddns.net:6969/
 const dbConnect = async () => {
     try {
         const conn = await mongoose.connect(connectDB, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true
+           
         });
         console.log('Kết nối cơ sở dữ liệu thành công!');
         return conn.connection; // Trả về đối tượng kết nối
