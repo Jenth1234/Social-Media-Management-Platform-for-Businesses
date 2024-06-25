@@ -16,7 +16,7 @@ router.get('/searchUser', verifyToken, user_controller.search);
 router.get('/getUsers',verifyToken,user_controller.getUsers);
 
 ////user không có quyền get
-// router.get('/getUsers',verifyToken,user_controller.getUsers);
+router.get('/getUsers',verifyToken,user_controller.getUsers);
 
 router.get('/totalUser',verifyToken,user_controller.getTotalUsers);
 router.get('/info',verifyToken,user_controller.getUserInfo);
