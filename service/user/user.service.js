@@ -71,9 +71,28 @@ class USER_SERVICE {
     }
   }
 
+  async verifyOTPAndActivateUser(email, otp) {
+
+      const updatedUser = await USER_MODEL.findOneAndUpdate(
+        { EMAIL: email, "OTP.CODE": otp },
+        { $set: 
+          { IS_ACTIVATED: true,
+            "OTP.$.CHECK_USING": true
+          } 
+        },
+        { new: true }
+      );
+  
+      return updatedUser;
+   
+  }
+
   async resetPassword(email, newPassword) {
     const hash = await this.hashPassword(newPassword);
-    const result = await USER_MODEL.updateOne({ EMAIL: email }, { PASSWORD: hash });
+    const result = await USER_MODEL.updateOne(
+      { EMAIL: email },
+      { $set: { PASSWORD: hash } }
+    );
 
     if (result.nModified === 0) {
       throw new Error("Failed to update password. User may not exist.");
