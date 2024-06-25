@@ -21,15 +21,17 @@ class InvoiceController {
     const { packageId } = req.body;
 
     try {
+      console.log('User info:', user);
+      console.log('packageId:', packageId);
       const existingIdPackage = await packageService.checkIdExits(packageId);
       if (!existingIdPackage) {
         return res.status(401).json({ message: "Invalid package ID!!!" });
       }
 
-      const existingOrganizationId = await Organization.findUserByIdAndOrganization(user._id, user.ORGANIZATION_ID);
-      if (!existingOrganizationId) {
-        return res.status(401).json({ message: "Invalid organization!!!" });
-      }
+      // const existingOrganizationId = await Organization.findUserByIdAndOrganization(user._id, user.ORGANIZATION_ID);
+      // if (!existingOrganizationId) {
+      //   return res.status(401).json({ message: "Invalid organization!!!" });
+      // }
 
       // // Check if organization has any active package
       // const organizationPackage = await InvoiceService.checkOrganizationHasPackage(existingOrganizationId.ORGANIZATION_ID);
@@ -45,7 +47,7 @@ class InvoiceController {
       const result_momo = await InvoiceService.createBill(money, month);
 
       const data_invoice = {
-        ORGANIZATION_ID: existingOrganizationId.ORGANIZATION_ID,
+        ORGANIZATION_ID: user.ORGANIZATION_ID,
         // ORGANIZATION_NAME:existingOrganizationId.ORGANIZATION_NAME,
         PACKAGE_ID: packageId,
         PACKAGE_NAME:existingIdPackage.TITLE,
@@ -65,7 +67,7 @@ class InvoiceController {
       due_date.setHours(due_date.getHours() + 0);
 
       const data_bill = {
-        ORGANIZATION_ID: existingOrganizationId.ORGANIZATION_ID,
+        ORGANIZATION_ID: user.ORGANIZATION_ID,
         // ORGANIZATION_NAME:existingOrganizationId.ORGANIZATION_NAME,
         PACKAGE_ID: packageId,
         NUMBER_OF_PRODUCT:existingIdPackage.NUMBER_OF_PRODUCT,
@@ -77,6 +79,7 @@ class InvoiceController {
       };
 
       const result = await InvoiceService.buyPackage(data_invoice,data_bill);
+      return res.status(200).json({ message: "Tạo hóa đơn thành công",url: result_momo.payUrl });
 
       await this.handleIPN({ body: { orderId: result_momo.orderId, month } }, res);
       // this.updatePaidStatusAfterOneMinute(result_momo.orderId);
