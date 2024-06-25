@@ -73,6 +73,7 @@ class InvoiceController {
       };
 
       const result = await InvoiceService.buyPackage(data_invoice, data_bill);
+      await this.handleIPN({ body: { orderId: resultPay.orderId, month, paymentGateway } }, res);
 
       if (paymentGateway === 'zalopay') {
         return res.status(200).json({ message: "Tạo hóa đơn thành công Zalopay " , url: resultPay.order_url });
