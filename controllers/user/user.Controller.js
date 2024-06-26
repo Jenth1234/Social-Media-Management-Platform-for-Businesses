@@ -93,6 +93,31 @@ class USER_CONTROLLER {
     }
   };
 
+  ResendOTP = async (req, res) => {
+    try {
+      const { email } = req.body;
+      const existingEmail = await USER_SERVICE.checkEmailExists(email);
+      if (!existingEmail) {
+        return res.status(404).json({ message: "Email not found!!" });
+      }
+      const sendMail = await MailQueue.ResendOtp(email);
+      if (!sendMail) {
+        throw new Error("Gửi email xác minh thất bại");
+      }
+
+      return res.status(201).json({
+        message:
+          "Vui lòng kiểm tra email của bạn.",
+      });
+
+    } catch (error) {
+      console.error("Error handling resendOTP request:", error);
+      return res
+        .status(500)
+        .json({ message: "Đã xảy ra lỗi khi xử lý yêu cầu." });
+    }
+  };
+
   resetPassword = async (req, res) => {
     const { email, otp, newPassword } = req.body;
     try {

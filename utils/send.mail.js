@@ -86,6 +86,10 @@ class MailQueue {
         
     }
 
+    async ResendOtp(email) {
+        return this.sendVerifyEmail(email, "Resend_Otp");       
+    }   
+
     // async verifyOTP(email, otp) {
     //     try {
     //         await USER_SERVICE.updateOTPstatus(email, otp);
