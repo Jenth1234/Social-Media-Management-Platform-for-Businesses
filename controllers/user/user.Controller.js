@@ -68,7 +68,7 @@ class USER_CONTROLLER {
     }
   };
 
-  forgotPassword = async (req, res) => {
+ forgotPassword = async (req, res) => {
     try {
       const { email } = req.body;
       const existingEmail = await USER_SERVICE.checkEmailExists(email);

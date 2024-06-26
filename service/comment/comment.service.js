@@ -11,11 +11,11 @@ class COMMENT_SERVICE {
     };
 
       const comment_obj = {
-        USER_ID: payload.USER_ID,
-        CONTENT: payload.CONTENT,
-        ATTACHMENTS: payload.ATTACHMENTS,
-        FROM_DATE: Date.now(),
-        THRU_DATE: null,
+        "USER_ID": payload.USER_ID,
+        "CONTENT": payload.CONTENT,
+        "ATTACHMENTS": payload.ATTACHMENTS,
+        "FROM_DATE": Date.now(),
+        "THRU_DATE": null
       };
 
     await MetadataCmtProductService.updateCmtCount(payload.PRODUCT_ID, payload.ORGANIZATION_ID, 1);
@@ -24,15 +24,15 @@ class COMMENT_SERVICE {
         query,
         {
           $push: {
-            LIST_COMMENT: comment_obj,
-          },
-          $inc: { LIST_COMMENT_MAX_NUMBER: 1 },
+            LIST_COMMENT: comment_obj
+          }
         },
         { upsert: true }
       );
-
+  
       return comment_obj;
   };
+  
   
   getCommentsByUser = async (userId) => {
     try {

@@ -4,6 +4,8 @@ const Organization = require('../../service/organization/organization.service');
 const moment = require('moment');
 const crypto = require("crypto");
 const axios = require("axios");
+const CryptoJS = require('crypto-js');
+const qs = require('qs');
 
 const accessKey = process.env.accessKey;
 const secretKey = process.env.secretKey;
@@ -12,13 +14,12 @@ class InvoiceController {
   constructor() {
     this.buyPackage = this.buyPackage.bind(this);
     this.handleIPN = this.handleIPN.bind(this);
-    // this.updatePaidStatusAfterOneMinute = this.updatePaidStatusAfterOneMinute.bind(this);
     this.checkOrganizationPackage = this.checkOrganizationPackage.bind(this);
   }
 
   async buyPackage(req, res) {
     const user = req.user._doc;
-    const { packageId } = req.body;
+    const { packageId, paymentGateway } = req.body;
 
     try {
       console.log('User info:', user);
@@ -33,32 +34,32 @@ class InvoiceController {
       //   return res.status(401).json({ message: "Invalid organization!!!" });
       // }
 
-      // // Check if organization has any active package
-      // const organizationPackage = await InvoiceService.checkOrganizationHasPackage(existingOrganizationId.ORGANIZATION_ID);
-      // if (organizationPackage) {
-      //   // If organization has a package, check if the new package level is higher
-      //   if (existingIdPackage.LEVEL <= organizationPackage.LEVEL) {
-      //     return res.status(401).json({ message: "Bạn chỉ có thể mua gói có cấp độ cao hơn gói hiện tại." });
-      //   }
-      // }
-
       const money = existingIdPackage.COST - (existingIdPackage.COST * existingIdPackage.DISCOUNT / 100);
       const month = existingIdPackage.MONTH;
-      const result_momo = await InvoiceService.createBill(money, month);
+      
+      let resultPay;
+      if (paymentGateway === 'zalopay') {
+        resultPay = await InvoiceService.createBillZalopay(money, month);
+      } else if (paymentGateway === 'momo') {
+        resultPay = await InvoiceService.createBill(money, month);
+      } else {
+        return res.status(400).json({ message: "Invalid payment gateway!!!" });
+      }
 
       const data_invoice = {
         ORGANIZATION_ID: user.ORGANIZATION_ID,
         // ORGANIZATION_NAME:existingOrganizationId.ORGANIZATION_NAME,
         PACKAGE_ID: packageId,
-        PACKAGE_NAME:existingIdPackage.TITLE,
+        PACKAGE_NAME: existingIdPackage.TITLE,
         LEVEL: existingIdPackage.LEVEL,
-        COST:existingIdPackage.COST,
-        MONTH:existingIdPackage.MONTH,
-        NUMBER_OF_PRODUCT:existingIdPackage.NUMBER_OF_PRODUCT,
-        NUMBER_OF_COMMENT:existingIdPackage.NUMBER_OF_COMMENT,
-        DISCOUNT:existingIdPackage.DISCOUNT,
+        COST: existingIdPackage.COST,
+        MONTH: existingIdPackage.MONTH,
+        NUMBER_OF_PRODUCT: existingIdPackage.NUMBER_OF_PRODUCT,
+        NUMBER_OF_COMMENT: existingIdPackage.NUMBER_OF_COMMENT,
+        DISCOUNT: existingIdPackage.DISCOUNT,
         AMOUNT: money,
-        ORDER_ID: result_momo.orderId,
+        ORDER_ID: resultPay.orderId,
+        TYPE_ORDER: resultPay.partnerCode,
         PAID: null
       };
 
@@ -70,19 +71,19 @@ class InvoiceController {
         ORGANIZATION_ID: user.ORGANIZATION_ID,
         // ORGANIZATION_NAME:existingOrganizationId.ORGANIZATION_NAME,
         PACKAGE_ID: packageId,
-        NUMBER_OF_PRODUCT:existingIdPackage.NUMBER_OF_PRODUCT,
-        NUMBER_OF_COMMENT:existingIdPackage.NUMBER_OF_COMMENT,
+        NUMBER_OF_PRODUCT: existingIdPackage.NUMBER_OF_PRODUCT,
+        NUMBER_OF_COMMENT: existingIdPackage.NUMBER_OF_COMMENT,
         ACTIVE_THRU_DATE: due_date,
-     
- 
-        // ORDER_ID: result_momo.orderId,
       };
 
       const result = await InvoiceService.buyPackage(data_invoice,data_bill);
       return res.status(200).json({ message: "Tạo hóa đơn thành công",url: result_momo.payUrl });
 
-      await this.handleIPN({ body: { orderId: result_momo.orderId, month } }, res);
-      // this.updatePaidStatusAfterOneMinute(result_momo.orderId);
+      if (paymentGateway === 'zalopay') {
+        return res.status(200).json({ message: "Tạo hóa đơn thành công Zalopay " , url: resultPay.order_url });
+      } else if (paymentGateway === 'momo') {
+        return res.status(200).json({ message: "Tạo hóa đơn thành công " + resultPay.partnerCode, url: resultPay.payUrl });
+      }
     } catch (error) {
       console.error(error.message);
       return res.status(500).json({ message: 'Đã xảy ra lỗi khi mua gói' });
@@ -90,53 +91,83 @@ class InvoiceController {
   }
 
   async handleIPN(req, res) {
-    const { orderId, month } = req.body;
+    const { orderId, month, paymentGateway, app_trans_id } = req.body;
 
-    try {
-      const rawSignature = `accessKey=${accessKey}&orderId=${orderId}&partnerCode=MOMO&requestId=${orderId}`;
-      const signature = crypto.createHmac('sha256', secretKey)
-        .update(rawSignature)
-        .digest('hex');
-
-      const requestBody = JSON.stringify({
-        partnerCode: 'MOMO',
-        requestId: orderId,
-        orderId: orderId,
-        signature: signature,
-        lang: 'vi',
-      });
-
-      const options = {
-        method: 'POST',
-        url: 'https://test-payment.momo.vn/v2/gateway/api/query',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        data: requestBody,
+    if (paymentGateway === 'zalopay') {
+      const config = {
+        app_id: '2553',
+        key1: 'PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL',
+        key2: 'kLtgPl8HHhfvMuDHPwKfgfsY4Ydm9eIz',
       };
 
-      const result = await axios(options);
-      if (result.data.resultCode === 0) {
-        await InvoiceService.updateOrderStatus(orderId, month);
-      }
+      const postData = {
+        app_id: config.app_id,
+        app_trans_id, // ID giao dịch của ứng dụng
+      };
 
-      res.status(200).json(result.data);
-    } catch (error) {
-      console.error(error.message);
-      res.status(500).json({ message: 'Đã xảy ra lỗi khi xử lý IPN' });
+      const data = postData.app_id + '|' + postData.app_trans_id + '|' + config.key1; // appid|app_trans_id|key1
+      postData.mac = CryptoJS.HmacSHA256(data, config.key1).toString();
+
+      const postConfig = {
+        method: 'post',
+        url: 'https://sb-openapi.zalopay.vn/v2/query',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        data: qs.stringify(postData),
+      };
+
+      try {
+        const result = await axios(postConfig);
+        console.log(result.data);
+
+        if (result.data.return_code === 1) {
+          await InvoiceService.updateOrderStatus(orderId, month);
+        }
+
+        return res.status(200).json(result.data);
+      } catch (error) {
+        console.error('ZaloPay IPN error:', error);
+        return res.status(500).json({ message: 'Đã xảy ra lỗi khi xử lý IPN từ ZaloPay' });
+      }
+    } else if (paymentGateway === 'momo') {
+      try {
+        const rawSignature = `accessKey=${accessKey}&orderId=${orderId}&partnerCode=MOMO&requestId=${orderId}`;
+        const signature = crypto.createHmac('sha256', secretKey)
+          .update(rawSignature)
+          .digest('hex');
+
+        const requestBody = JSON.stringify({
+          partnerCode: 'MOMO',
+          requestId: orderId,
+          orderId: orderId,
+          signature: signature,
+          lang: 'vi',
+        });
+
+        const options = {
+          method: 'POST',
+          url: 'https://test-payment.momo.vn/v2/gateway/api/query',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          data: requestBody,
+        };
+
+        const result = await axios(options);
+        if (result.data.resultCode === 0) {
+          await InvoiceService.updateOrderStatus(orderId, month);
+        }
+
+        return res.status(200).json(result.data);
+      } catch (error) {
+        console.error('MoMo IPN error:', error.message);
+        return res.status(500).json({ message: 'Đã xảy ra lỗi khi xử lý IPN từ MoMo' });
+      }
+    } else {
+      return res.status(400).json({ message: 'Invalid payment gateway' });
     }
   }
-
-  // async updatePaidStatusAfterOneMinute(orderId) {
-  //   setTimeout(async () => {
-  //     try {
-  //       await InvoiceService.updatePaidStatus(orderId, false);
-  //       console.log('Updated paid status for invoice after 1 minute:', orderId);
-  //     } catch (error) {
-  //       console.error('Error updating paid status:', error);
-  //     }
-  //   }, 1 * 30 * 1000); // 1 phút
-  // }
 
   async checkOrganizationPackage(req, res) {
     const user = req.user._doc;
@@ -147,7 +178,6 @@ class InvoiceController {
         return res.status(401).json({ message: "Invalid organization!!!" });
       }
 
-      // Check if organization has any active package
       const organizationPackage = await InvoiceService.checkOrganizationHasPackage(existingOrganizationId.ORGANIZATION_ID);
 
       if (!organizationPackage) {
