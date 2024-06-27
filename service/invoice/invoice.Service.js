@@ -35,7 +35,7 @@ class InvoiceService {
     const orderInfo = "pay with MoMo";
     const partnerCode = "MOMO";
     const redirectUrl = "http://localhost:3001/pages/menu";
-    const ipnUrl = "https://8fbd-113-170-51-144.ngrok-free.app/invoice/callback";
+    const ipnUrl = " https://471d-113-170-51-144.ngrok-free.app/invoice/callback";
     const requestType = "payWithMethod";
     const amount = money.toString();
     const orderId = partnerCode + Date.now().toString();
@@ -99,15 +99,16 @@ class InvoiceService {
     const transID = Math.floor(Math.random() * 1000000);
     const embed_data = {};
   
+    const app_trans_id = `${moment().format('YYMMDD')}_${transID}`;
     const order = {
       app_id: config.app_id,
-      app_trans_id: `${moment().format('YYMMDD')}_${transID}`,
+      app_trans_id: app_trans_id,
       app_user: 'user123',
       app_time: Date.now(),
       item: JSON.stringify(items),
       embed_data: JSON.stringify(embed_data),
       amount: money.toString(),
-      callback_url: 'https://37be-113-170-51-144.ngrok-free.app/callback',
+      callback_url: 'https://7375-113-170-51-144.ngrok-free.app/invoice/callbackzalo',
       description: `Lazada - Payment for the order #${transID}`,
       bank_code: '',
     };
@@ -124,7 +125,8 @@ class InvoiceService {
   
     try {
       const result = await axios.post(config.endpoint, null, { params: order });
-      return { orderId, ...result.data };
+      // Trả về app_trans_id cùng với các thông tin khác
+      return { orderId, app_trans_id, ...result.data };
     } catch (error) {
       console.error(error);
       throw new Error('Error creating ZaloPay bill');
