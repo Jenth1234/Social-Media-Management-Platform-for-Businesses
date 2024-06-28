@@ -19,8 +19,10 @@ class InvoiceService {
     try {
       const invoice = new Invoice(data_invoice);
       const organization_data = new Organization_data(data_invoice);
-      await invoice.save();
-      await organization_data.save();
+      await Promise.all([
+        invoice.save(),
+        organization_data.save()
+      ]);
       return { invoice, organization_data };
     } catch (error) {
       console.error(error);
@@ -35,7 +37,7 @@ class InvoiceService {
     const orderInfo = "pay with MoMo";
     const partnerCode = "MOMO";
     const redirectUrl = "http://localhost:3001/pages/menu";
-    const ipnUrl = " https://471d-113-170-51-144.ngrok-free.app/invoice/callback";
+    const ipnUrl = "https://tough-words-design.loca.lt/invoice/callback";
     const requestType = "payWithMethod";
     const amount = money.toString();
     const orderId = partnerCode + Date.now().toString();
@@ -108,9 +110,11 @@ class InvoiceService {
       item: JSON.stringify(items),
       embed_data: JSON.stringify(embed_data),
       amount: money.toString(),
-      callback_url: 'https://7375-113-170-51-144.ngrok-free.app/invoice/callbackzalo',
+      orderId:orderId,
+      callback_url: 'https://828a-113-170-51-144.ngrok-free.app/invoice/callback',
       description: `Lazada - Payment for the order #${transID}`,
       bank_code: '',
+      // orderId:orderId
     };
   
     const data = 
@@ -120,7 +124,9 @@ class InvoiceService {
       order.amount + '|' +
       order.app_time + '|' +
       order.embed_data + '|' +
+    
       order.item;
+      
     order.mac = CryptoJS.HmacSHA256(data, config.key1).toString();
   
     try {
@@ -134,14 +140,14 @@ class InvoiceService {
   };
 
   // Cập nhật trạng thái đơn hàng
-  async updateOrderStatus(orderId, months) {
+  async updateOrderStatus(app_trans_id, months) {
     try {
       const due_date = new Date();
       due_date.setMonth(due_date.getMonth() + months);
       due_date.setHours(due_date.getHours() + 0);
-
+  
       const invoice = await Invoice.findOneAndUpdate(
-        { ORDER_ID: orderId },
+        { APP_TRANS_ID: app_trans_id },
         {
           $set: {
             THRU_DATE: due_date,
@@ -153,9 +159,10 @@ class InvoiceService {
       return invoice;
     } catch (error) {
       console.error(error);
-      throw new Error("Failed to update order status");
+      throw new Error("Cập nhật trạng thái đơn hàng thất bại");
     }
   }
+  
 
   // Cập nhật trạng thái thanh toán
   async updatePaidStatus(orderId, status) {

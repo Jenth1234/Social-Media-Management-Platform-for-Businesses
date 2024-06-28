@@ -1,38 +1,45 @@
-const axios = require('axios');
-const qs = require('qs');
-const crypto = require('crypto');
-const CryptoJS = require('crypto-js');
-const moment = require('moment');
 const InvoiceService = require('../../service/invoice/invoice.Service');
 const PackageService = require('../../service/package/package.Service');
 const OrganizationService = require('../../service/organization/organization.Service');
-const { accessKey, secretKey } = process.env;
+const CryptoJS = require('crypto-js'); 
+const qs = require('qs');
+const axios = require('axios');
+
+const config = {
+  app_id: '2553',
+  key1: 'PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL',
+  key2: 'kLtgPl8HHhfvMuDHPwKfgfsY4Ydm9eIz',
+  endpoint: 'https://sb-openapi.zalopay.vn/v2/create',
+};
 
 class InvoiceController {
   constructor() {
+    // ... Khai báo các service và cấu hình khác
+    this.data_invoice = null; // Khởi tạo data_invoice là một thuộc tính của InvoiceController
+    // Bind các phương thức để duy trì ngữ cảnh của this
+    this.checkOrderStatus = this.checkOrderStatus.bind(this);
     this.buyPackage = this.buyPackage.bind(this);
-    this.checkOrganizationPackage = this.checkOrganizationPackage.bind(this);
-    // this.handleCallback = this.handleCallback.bind(this);
+    this.handleCallback = this.handleCallback.bind(this);
   }
 
   async buyPackage(req, res) {
     const user = req.user._doc;
     const { packageId, paymentGateway } = req.body;
-
+  
     try {
       const existingIdPackage = await PackageService.checkIdExits(packageId);
       if (!existingIdPackage) {
         return res.status(401).json({ message: "Mã gói không hợp lệ!!!" });
       }
-
+  
       const existingOrganizationId = await OrganizationService.findUserByIdAndOrganization(user._id, user.ORGANIZATION_ID);
       if (!existingOrganizationId) {
         return res.status(401).json({ message: "Tổ chức không hợp lệ!!!" });
       }
-
+  
       const money = existingIdPackage.COST - (existingIdPackage.COST * existingIdPackage.DISCOUNT / 100);
       const month = existingIdPackage.MONTH;
-
+  
       let resultPay;
       if (paymentGateway === 'zalopay') {
         resultPay = await InvoiceService.createBillZalopay(money, month);
@@ -41,8 +48,8 @@ class InvoiceController {
       } else {
         return res.status(400).json({ message: "Cổng thanh toán không hợp lệ!!!" });
       }
-
-      const data_invoice = {
+  
+      this.data_invoice = {
         ORGANIZATION_ID: existingOrganizationId.ORGANIZATION_ID,
         PACKAGE_ID: packageId,
         PACKAGE_NAME: existingIdPackage.TITLE,
@@ -53,15 +60,17 @@ class InvoiceController {
         NUMBER_OF_COMMENT: existingIdPackage.NUMBER_OF_COMMENT,
         DISCOUNT: existingIdPackage.DISCOUNT,
         AMOUNT: money,
+        URL: resultPay.order_url,
         ORDER_ID: resultPay.orderId,
+        APP_TRANS_ID: resultPay.app_trans_id,  // Sửa lỗi chính tả ở đây
         TYPE_ORDER: resultPay.partnerCode,
         PAID: null
       };
-
+  
       const due_date = new Date();
       due_date.setMonth(due_date.getMonth() + month);
       due_date.setHours(due_date.getHours() + 0);
-
+  
       const data_bill = {
         ORGANIZATION_ID: existingOrganizationId.ORGANIZATION_ID,
         PACKAGE_ID: packageId,
@@ -69,134 +78,91 @@ class InvoiceController {
         NUMBER_OF_COMMENT: existingIdPackage.NUMBER_OF_COMMENT,
         ACTIVE_THRU_DATE: due_date,
       };
-
-      await InvoiceService.buyPackage(data_invoice, data_bill);
-
+  
+      await InvoiceService.buyPackage(this.data_invoice, data_bill); // Đảm bảo data_bill được truyền đúng cách
+  
       let responseMessage, responseUrl;
       if (paymentGateway === 'zalopay') {
         responseMessage = "Tạo hóa đơn Zalopay thành công";
         responseUrl = resultPay.order_url;
       } else if (paymentGateway === 'momo') {
         responseMessage = "Tạo hóa đơn Momo thành công";
-        responseUrl = resultPay.payUrl;
+        responseUrl = resultPay.redirectUrl; // Sửa tên thuộc tính thành redirectUrl
       }
-
+  
       res.status(200).json({ message: responseMessage, url: responseUrl });
     } catch (error) {
       console.error(error.message);
       res.status(500).json({ message: 'Đã xảy ra lỗi khi mua gói' });
     }
   }
+  
 
   async handleCallback(req, res) {
-    const { orderId, month, paymentGateway, app_trans_id, mac } = req.body;
-
+    let result = {};
+    console.log(req.body);
     try {
-      const result = await this.processPaymentCallback(orderId, month, paymentGateway, app_trans_id,mac);
-      console.log(result); // Log kết quả từ xử lý callback
-      res.sendStatus(200); // Trả về mã HTTP 200 OK để xác nhận đã nhận được thông báo callback thành công
-    } catch (error) {
-      console.error(error.message);
-      res.status(500).json({ message: 'Đã xảy ra lỗi khi xử lý thông báo callback' });
-    }
-  }
+      let dataStr = req.body.data;
+      let reqMac = req.body.mac;
 
-  async processPaymentCallback(orderId, month, paymentGateway, app_trans_id) {
-    try {
-      let result;
+      let mac = CryptoJS.HmacSHA256(dataStr, config.key2).toString();
+      console.log('mac =', mac);
 
-      if (paymentGateway === 'zalopay') {
-        const config = {
-          app_id: '2553',
-          key1: 'PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL',
-          key2: 'kLtgPl8HHhfvMuDHPwKfgfsY4Ydm9eIz',
-        };
-        if (!verifyCallback(app_trans_id, mac, config)) {
-          return res.status(400).json({ message: 'Invalid MAC' });
-        }
-        const postData = {
-          app_id: config.app_id,
-          app_trans_id,
-        };
-
-        const data = postData.app_id + '|' + postData.app_trans_id + '|' + config.key1;
-        postData.mac = CryptoJS.HmacSHA256(data, config.key1).toString();
-
-        const postConfig = {
-          method: 'post',
-          url: 'https://sb-openapi.zalopay.vn/v2/query',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          data: qs.stringify(postData),
-        };
-
-        const response = await axios(postConfig);
-        result = response.data;
-      } else if (paymentGateway === 'momo') {
-        const rawSignature = `accessKey=${accessKey}&orderId=${orderId}&partnerCode=MOMO&requestId=${orderId}`;
-        const signature = crypto.createHmac('sha256', secretKey)
-          .update(rawSignature)
-          .digest('hex');
-
-        const requestBody = JSON.stringify({
-          partnerCode: 'MOMO',
-          requestId: orderId,
-          orderId: orderId,
-          signature: signature,
-          lang: 'vi',
-        });
-
-        const options = {
-          method: 'POST',
-          url: 'https://test-payment.momo.vn/v2/gateway/api/query',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          data: requestBody,
-        };
-
-        const response = await axios(options);
-        result = response.data;
+      // Kiểm tra callback hợp lệ từ ZaloPay server
+      if (reqMac !== mac) {
+        // Callback không hợp lệ
+        result.return_code = -1;
+        result.return_message = 'mac not equal';
       } else {
-        throw new Error('Invalid payment gateway');
-      }
+        let dataJson = JSON.parse(dataStr);
+        console.log("update order's status = success where app_trans_id =", dataJson['app_trans_id']);
 
-      console.log('Trạng thái thanh toán:', result);
-      if (result.return_code === 1) {
-        await InvoiceService.updateOrderStatus(orderId, month);
-        // Thực hiện các hành động cần thiết sau khi xác nhận thanh toán thành công
-      }
+        // Gọi hàm kiểm tra trạng thái đơn hàng và cập nhật
+        await this.checkOrderStatus(dataJson['app_trans_id'], this.data_invoice.MONTH);
 
-      return result;
-    } catch (error) {
-      console.error('Lỗi xử lý callback:', error);
-      throw error;
+        result.return_code = 1;
+        result.return_message = 'success';
+      }
+    } catch (ex) {
+      console.log('Lỗi: ' + ex.message);
+      result.return_code = 0; // ZaloPay server sẽ callback lại (tối đa 3 lần)
+      result.return_message = ex.message;
     }
+
+    // Trả về kết quả cho ZaloPay server
+    res.json(result);
   }
 
-  async checkOrganizationPackage(req, res) {
-    const user = req.user._doc;
+  async checkOrderStatus(app_trans_id, month) {
+    let postData = {
+      app_id: config.app_id,
+      app_trans_id, // Input your app_trans_id
+    };
+
+    let data = postData.app_id + '|' + postData.app_trans_id + '|' + config.key1; // appid|app_trans_id|key1
+    postData.mac = CryptoJS.HmacSHA256(data, config.key1).toString();
+
+    let postConfig = {
+      method: 'post',
+      url: 'https://sb-openapi.zalopay.vn/v2/query',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      data: qs.stringify(postData),
+    };
 
     try {
-      const existingOrganizationId = await OrganizationService.findUserByIdAndOrganization(user._id, user.ORGANIZATION_ID);
-      if (!existingOrganizationId) {
-        return res.status(401).json({ message: "Invalid organization!!!" });
+      const result = await axios(postConfig);
+      console.log(result.data);
+      if (result.data.return_code === 1) {
+        console.log('Payment confirmed for app_trans_id:', app_trans_id);
+        await InvoiceService.updateOrderStatus(app_trans_id, month); // Assuming InvoiceService has this method
       }
-
-      const organizationPackage = await InvoiceService.checkOrganizationHasPackage(existingOrganizationId.ORGANIZATION_ID);
-
-      if (!organizationPackage) {
-        return res.status(404).json({ message: "Tổ chức chưa mua gói nào." });
-      }
-
-      res.status(200).json({ organizationPackage });
-
     } catch (error) {
-      console.error(error.message);
-      return res.status(500).json({ message: 'Đã xảy ra lỗi khi kiểm tra gói mua của tổ chức' });
+      console.log('Error checking order status:', error);
     }
   }
 }
 
 module.exports = new InvoiceController();
+
