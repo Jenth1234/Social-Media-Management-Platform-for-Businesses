@@ -4,16 +4,12 @@ const Schema = mongoose.Schema;
 const InvoiceSchema = new Schema({
     ORGANIZATION_ID: {
         type: Schema.Types.ObjectId,
-        ref: 'Organization', // Tham chiếu tới mô hình Organization
+        ref: 'Organization',
         required: true
     },
-    // ORGANIZATION_NAME: {
-    //     type: String,
-    //     required: true
-    // },
     PACKAGE_ID: {
         type: Schema.Types.ObjectId,
-        ref: 'Package', // Tham chiếu tới mô hình Package
+        ref: 'Package', 
         required: true
     },
     PACKAGE_NAME: {
@@ -48,18 +44,26 @@ const InvoiceSchema = new Schema({
         type: Number,
         required: true
     },
+    URL: {
+        type: String,
+        required: true
+    },
     PAID: {
         type: Boolean,
         default: false
     },
-    TYPE_ORDER:{
+    TYPE_ORDER: {
         type: String
+    },
+    APP_TRANS_ID: {
+        type: String,
+        required: true
     },
     ORDER_ID: {
         type: String,
         required: true
     },
-    DATE_ISSUED: {
+    created_at: {
         type: Date,
         default: Date.now
     },
