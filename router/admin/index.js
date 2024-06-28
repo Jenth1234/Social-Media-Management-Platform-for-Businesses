@@ -8,7 +8,7 @@ const {verifyToken, verifyTokenAdmin} = require("../../middleware/verifyToken");
 
 router.post('/create', packageController.createPackage);
 router.put('/update/:level', packageController.updatePackage);
-router.delete('/delete/:level', packageController.deletePackage);
+// router.delete('/delete/:level', packageController.deletePackage);
 router.get('/', packageController.getPackage);
 
 router.post('/approvedOrganizations', verifyTokenAdmin, user_controller.approvedOrganizations);

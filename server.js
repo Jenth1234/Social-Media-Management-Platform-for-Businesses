@@ -34,7 +34,7 @@ dbConnect();
 // Sử dụng router
 route(app);
 
-// Khởi động máy chủ
+
 app.listen(port, () => {
   console.log(`Máy chủ đang chạy trên cổng ${port}`);
 });

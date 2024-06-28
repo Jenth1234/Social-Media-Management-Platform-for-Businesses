@@ -8,6 +8,6 @@ const PackageController = require("../../controllers/package/package.controller"
 router.post('/create', PackageController.createPackage);
 router.put('/update/:id',PackageController.updatePackage);
 router.get('/getData',PackageController.getPackage);
-router.delete('/delete/:id',PackageController.deletePackage);
+// router.delete('/delete/:id',PackageController.deletePackage);
 
 module.exports = router;
