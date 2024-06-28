@@ -52,6 +52,10 @@ const InvoiceSchema = new Schema({
         type: Boolean,
         default: false
     },
+    URL: {
+        type:String,
+        require:true
+    },
     TYPE_ORDER:{
         type: String
     },

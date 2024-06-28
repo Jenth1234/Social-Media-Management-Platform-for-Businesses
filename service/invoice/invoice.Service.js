@@ -88,6 +88,11 @@ class InvoiceService {
   createBillZalopay = async (money, month) => {
     const partnerCode = "ZALO";
     const orderId = partnerCode + Date.now().toString();
+
+    const embed_data = {
+      //sau khi hoàn tất thanh toán sẽ đi vào link này (thường là link web thanh toán thành công của mình)
+      redirecturl: 'http://localhost:3001/pages/history',
+    };
   
     const config = {
       app_id: '2553',
@@ -97,7 +102,6 @@ class InvoiceService {
     };
     const items = [];
     const transID = Math.floor(Math.random() * 1000000);
-    const embed_data = {};
   
     const order = {
       app_id: config.app_id,
@@ -107,7 +111,7 @@ class InvoiceService {
       item: JSON.stringify(items),
       embed_data: JSON.stringify(embed_data),
       amount: money.toString(),
-      callback_url: 'https://37be-113-170-51-144.ngrok-free.app/callback',
+      callback_url: 'https://2153-113-170-51-144.ngrok-free.app/callback',
       description: `Lazada - Payment for the order #${transID}`,
       bank_code: '',
     };
@@ -168,6 +172,11 @@ class InvoiceService {
   // Lấy tất cả hóa đơn
   async getOP() {
     return await Invoice.find({});
+  }
+
+  async getInvoicebyOrgan (OrganizationId) {
+    const invoices = await Invoice.find({ ORGANIZATION_ID: OrganizationId });
+    return invoices;
   }
 }
 

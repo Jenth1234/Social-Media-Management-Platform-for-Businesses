@@ -5,6 +5,7 @@ const {verifyToken, verifyTokenAdmin} = require("../../middleware/verifyToken");
 const axios = require('axios');
 const crypto = require("crypto");
 
+router.post('/getInvoicebyOrgan', verifyToken, InvoiceController.getInvoicesByOrganization);
 router.post('/buy',verifyToken,InvoiceController.buyPackage);
 router.post('/ipn',InvoiceController.handleIPN);
 router.post('/callback',async(req,res)=>{

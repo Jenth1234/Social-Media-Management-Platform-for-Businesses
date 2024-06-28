@@ -29,10 +29,10 @@ class InvoiceController {
         return res.status(401).json({ message: "Invalid package ID!!!" });
       }
 
-      // const existingOrganizationId = await Organization.findUserByIdAndOrganization(user._id, user.ORGANIZATION_ID);
-      // if (!existingOrganizationId) {
-      //   return res.status(401).json({ message: "Invalid organization!!!" });
-      // }
+      const existingOrganizationId = await Organization.findUserByIdAndOrganization(user._id, user.ORGANIZATION_ID);
+      if (!existingOrganizationId) {
+        return res.status(401).json({ message: "Invalid organization!!!" });
+      }
 
       const money = existingIdPackage.COST - (existingIdPackage.COST * existingIdPackage.DISCOUNT / 100);
       const month = existingIdPackage.MONTH;
@@ -47,8 +47,7 @@ class InvoiceController {
       }
 
       const data_invoice = {
-        ORGANIZATION_ID: user.ORGANIZATION_ID,
-        // ORGANIZATION_NAME:existingOrganizationId.ORGANIZATION_NAME,
+        ORGANIZATION_ID: existingOrganizationId.ORGANIZATION_ID,
         PACKAGE_ID: packageId,
         PACKAGE_NAME: existingIdPackage.TITLE,
         LEVEL: existingIdPackage.LEVEL,
@@ -58,6 +57,7 @@ class InvoiceController {
         NUMBER_OF_COMMENT: existingIdPackage.NUMBER_OF_COMMENT,
         DISCOUNT: existingIdPackage.DISCOUNT,
         AMOUNT: money,
+        URL: resultPay.order_url,
         ORDER_ID: resultPay.orderId,
         TYPE_ORDER: resultPay.partnerCode,
         PAID: null
@@ -77,7 +77,7 @@ class InvoiceController {
       };
 
       const result = await InvoiceService.buyPackage(data_invoice,data_bill);
-      return res.status(200).json({ message: "Tạo hóa đơn thành công",url: result_momo.payUrl });
+      // return res.status(200).json({ message: "Tạo hóa đơn thành công",url: resultPay.payUrl });
 
       if (paymentGateway === 'zalopay') {
         return res.status(200).json({ message: "Tạo hóa đơn thành công Zalopay " , url: resultPay.order_url });
@@ -188,6 +188,18 @@ class InvoiceController {
     } catch (error) {
       console.error(error.message);
       return res.status(500).json({ message: 'Đã xảy ra lỗi khi kiểm tra gói mua của tổ chức' });
+    }
+  }
+
+  async getInvoicesByOrganization(req, res) {
+    const user = req.user._doc;;
+  
+    try {
+      const invoices = await InvoiceService.getInvoicebyOrgan(user.ORGANIZATION_ID);
+      return res.json(invoices);
+    } catch (error) {
+      console.error('Error fetching invoices:', error);
+      res.status(500).json({ error: 'Failed to fetch invoices' });
     }
   }
 }
