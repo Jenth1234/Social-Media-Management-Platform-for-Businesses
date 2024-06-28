@@ -9,7 +9,7 @@ router.post('/create',verifyToken,commentController.createComment);
 router.get('/commentUserinfo', verifyTokenAdmin, commentController.getCommentWithUserInfo);
 router.get('/user/:userId', verifyTokenAdmin, commentController.getCommentsByUser);
 router.get('/product/:productId/comments', verifyToken, commentController.getCommentsByProduct);
-router.delete('/:commentId', verifyToken, commentController.deleteComment);
+
 
 router.put('/update/:commentId', verifyToken, commentController.updateComment);
 
