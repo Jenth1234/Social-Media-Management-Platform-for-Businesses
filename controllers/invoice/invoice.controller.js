@@ -29,12 +29,12 @@ class InvoiceController {
     try {
       console.log('User info:', user);
       console.log('packageId:', packageId);
-      const existingIdPackage = await packageService.checkIdExits(packageId);
+      const existingIdPackage = await PackageService.checkIdExits(packageId);
       if (!existingIdPackage) {
         return res.status(401).json({ message: "Mã gói không hợp lệ!!!" });
       }
 
-      const existingOrganizationId = await Organization.findUserByIdAndOrganization(user._id, user.ORGANIZATION_ID);
+      const existingOrganizationId = await OrganizationService.findUserByIdAndOrganization(user._id, user.ORGANIZATION_ID);
       if (!existingOrganizationId) {
         return res.status(401).json({ message: "Tổ chức không hợp lệ!!!" });
       }
@@ -82,9 +82,9 @@ class InvoiceController {
         ACTIVE_THRU_DATE: due_date,
       };
 
-      const result = await InvoiceService.buyPackage(data_invoice,data_bill);
-      // return res.status(200).json({ message: "Tạo hóa đơn thành công",url: resultPay.payUrl });
-
+      await InvoiceService.buyPackage(this.data_invoice, data_bill); // Đảm bảo data_bill được truyền đúng cách
+  
+      let responseMessage, responseUrl;
       if (paymentGateway === 'zalopay') {
         responseMessage = "Tạo hóa đơn Zalopay thành công";
         responseUrl = resultPay.order_url;
