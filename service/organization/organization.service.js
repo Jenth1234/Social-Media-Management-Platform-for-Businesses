@@ -65,7 +65,9 @@ class ORGANIZATION_SERVICE {
                 PASSWORD: hash,
                 FULLNAME: body.FULLNAME,
                 EMAIL: body.EMAIL,
-                IS_BLOCKED: null,
+                IS_BLOCKED: {
+                    CHECK: false,
+                },
                 ROLE: {
                     IS_ADMIN: false,
                     IS_ORGANIZATION: false,
@@ -122,7 +124,9 @@ class ORGANIZATION_SERVICE {
 
     getUsersByOrganization = async (organizationId, page = 1, limit = 5, search = '', status = 'all') => {
         const skip = (page - 1) * limit;
-        let query = { ORGANIZATION_ID: organizationId };
+        let query = { ORGANIZATION_ID: organizationId,
+            "ROLE.IS_ORGANIZATION": false
+        };
     
         if (search) {
             query.$or = [
@@ -294,7 +298,7 @@ class ORGANIZATION_SERVICE {
     
         const organizationsWithUserCount = await Promise.all(
             organizations.map(async (org) => {
-                const userCount = await User.countDocuments({ ORGANIZATION_ID: org._id });
+                const userCount = await User.countDocuments({ ORGANIZATION_ID: org._id, "ROLE.IS_ORGANIZATION":false});
                 return {
                     _id: org._id,
                     ORGANIZATION_NAME: org.ORGANIZATION_NAME,
