@@ -7,7 +7,7 @@ router.post('/approvedOrganizations', verifyTokenAdmin, user_controller.approved
 router.post('/activeOrganization', verifyTokenAdmin, user_controller.activeOrganization);
 router.post('/blockUser', verifyTokenAdmin, user_controller.blockUser);
 router.post('/forgotPassword', verifyToken, user_controller.forgotPassword);
-
+router.post('/verifyOTPAndActivateUser', user_controller.verifyOTPAndActivateUser);
 
 router.post('/resetPassword', verifyToken, user_controller.resetPassword);
 router.put('/updateUser', verifyToken, user_controller.updateUser);
@@ -22,7 +22,7 @@ router.get('/totalUser',verifyToken,user_controller.getTotalUsers);
 router.get('/info',verifyToken,user_controller.getUserInfo);
 router.post("/register", user_controller.registerUser);
 router.post("/loginUser", user_controller.login);
-
+router.post('/resendOTP', user_controller.ResendOTP);
 
 
 
