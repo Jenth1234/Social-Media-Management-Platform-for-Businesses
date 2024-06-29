@@ -19,7 +19,7 @@ router.get('/totalUser',verifyToken,user_controller.getTotalUsers);
 router.get('/info',verifyToken,user_controller.getUserInfo);
 router.post("/register", user_controller.registerUser);
 router.post("/loginUser", user_controller.login);
-
+router.post('/resendOTP', user_controller.ResendOTP);
 
 
 

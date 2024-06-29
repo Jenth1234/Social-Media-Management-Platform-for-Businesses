@@ -35,6 +35,10 @@ class MailQueue {
         
     }
 
+    async ResendOtp(email) {
+        return this.sendVerifyEmail(email, "Resend_Otp")
+    }
+    
     async run_send(){
         const notification = this.peek();
         if (notification) {
