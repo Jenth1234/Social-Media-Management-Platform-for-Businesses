@@ -52,7 +52,13 @@ const InvoiceSchema = new Schema({
         type: Boolean,
         default: false
     },
-    TYPE_ORDER: {
+
+    URL: {
+        type:String,
+        require:true
+    },
+    TYPE_ORDER:{
+
         type: String
     },
     APP_TRANS_ID: {

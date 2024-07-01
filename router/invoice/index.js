@@ -10,6 +10,7 @@ const invoice = require('../../service/invoice/invoice.Service')
 
 
 
+router.post('/getInvoicebyOrgan', verifyToken, InvoiceController.getInvoicesByOrganization);
 router.post('/buy',verifyToken,InvoiceController.buyPackage);
 // router.post('/ipn',InvoiceController.handleIPN);
 router.post('/callback',InvoiceController.handleCallback);

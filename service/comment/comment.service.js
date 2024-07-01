@@ -1,17 +1,15 @@
 const Comment = require("../../models/comment/comment.model");
-
 const MetadataCmtProductService = require("../../service/metadata_cmt_product/metadatacmtproduct.service");
 const { Types } = require("mongoose");
 class COMMENT_SERVICE {
   createComment = async (payload) => {
-    try {
-      const countCMT = 200;
-      const query = { 
-        PRODUCT_ID: payload.PRODUCT_ID, 
-        ORGANIZATION_ID: payload.ORGANIZATION_ID, 
-        LIST_COMMENT_MAX_NUMBER: { $lt: countCMT } 
-      };
-  
+    const countCMT = 200;
+    const query = { 
+      PRODUCT_ID: payload.PRODUCT_ID, 
+      ORGANIZATION_ID: payload.ORGANIZATION_ID, 
+      LIST_COMMENT_MAX_NUMBER: { $lt: countCMT } 
+    };
+
       const comment_obj = {
         "USER_ID": payload.USER_ID,
         "CONTENT": payload.CONTENT,
@@ -19,9 +17,9 @@ class COMMENT_SERVICE {
         "FROM_DATE": Date.now(),
         "THRU_DATE": null
       };
-  
-      await MetadataCmtProductService.updateCmtCount(payload.PRODUCT_ID, payload.ORGANIZATION_ID, 1);
-  
+
+    await MetadataCmtProductService.updateCmtCount(payload.PRODUCT_ID, payload.ORGANIZATION_ID, 1);
+
       await Comment.updateOne(
         query,
         {
@@ -33,9 +31,6 @@ class COMMENT_SERVICE {
       );
   
       return comment_obj;
-    } catch (error) {
-      throw new Error(`Error creating comment: ${error.message}`);
-    }
   };
   
   
@@ -49,7 +44,6 @@ class COMMENT_SERVICE {
   };
 
   getCommentWithUserInfo = async (page, limit, userId) => {
-
     // const userIdOb = new Types.ObjectId(userId);
 
     const skips = page ? (page - 1) * limit : 0;
@@ -132,7 +126,6 @@ class COMMENT_SERVICE {
         {
           LIST_COMMENT: {
             $elemMatch: {
-
               '_id': commentIdOb,
               'USER_ID': userIdOb
             }
@@ -144,8 +137,6 @@ class COMMENT_SERVICE {
               _id: commentIdOb,
               USER_ID: userIdOb
             }
-
-
           },
           $inc: {
             LIST_COMMENT_MAX_NUMBER: -1,
@@ -185,5 +176,4 @@ class COMMENT_SERVICE {
     }
   };
 }
-
 module.exports = new COMMENT_SERVICE();

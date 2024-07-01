@@ -31,11 +31,9 @@ class PackageService {
     const result = await newPackage.save();
     return result._doc;
   }
-
   
   async updatePackage(packageId, packageDataToUpdate) {
     const foundPackage = await PACKAGE_MODEL.findById(packageId);
-
     if (!foundPackage) {
       throw new Error("Package does not exist");
     }
@@ -51,7 +49,7 @@ class PackageService {
     }
   }
   async getPackage() {
-    return await PACKAGE_MODEL.find({IS_DELETE:true});
+    return await PACKAGE_MODEL.find({});
   }
 }
 

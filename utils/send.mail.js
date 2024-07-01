@@ -1,5 +1,6 @@
 const nodemailer = require("nodemailer");
 const USER_SERVICE = require('../service/user/user.service');
+const USER_MODEL = require('../models/user/user.model')
 const dotenv = require('dotenv');
 dotenv.config();
 
@@ -89,6 +90,18 @@ class MailQueue {
         
     }
 
+    async ResendOtp(email) {
+        return this.sendVerifyEmail(email, "Resend_Otp");       
+    }   
+
+    // async verifyOTP(email, otp) {
+    //     try {
+    //         await USER_SERVICE.updateOTPstatus(email, otp);
+    //     } catch (error) {
+    //         console.error("Error verifying OTP:", error);
+    //     }
+    // }
+
     async verifyOTP(email, otp, otpType) {
         try {
           // Tìm người dùng với địa chỉ email và mã OTP truyền vào
@@ -116,6 +129,7 @@ class MailQueue {
           throw error; 
         }
       }
+      
 
     async randomOtp() {
         const min = 100000;
