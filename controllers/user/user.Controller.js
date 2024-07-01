@@ -20,10 +20,15 @@ class USER_CONTROLLER {
     const { error, value } = registerValidate.validate(payload);
 
     if (error) {
-      return res.status(400).json({ message: error.details[0].message });
+      const errors = error.details.reduce((acc, current) => {
+        acc[current.context.key] = current.message;
+        return acc;
+      }, {});
+      return res.status(400).json({ errors });
     }
-
+  
     const { USERNAME, EMAIL } = value;
+
 
     const otpType = "create_account";
 
@@ -31,18 +36,21 @@ class USER_CONTROLLER {
       const existingUser = await USER_SERVICE.checkUsernameExists(USERNAME);
       if (existingUser) {
         return res.status(400).json({ message: "Username đã tồn tại" });
-      }
 
+      }
+  
       const existingEmail = await USER_SERVICE.checkEmailExists(EMAIL);
       if (existingEmail) {
-        return res.status(400).json({ message: "Email đã tồn tại" });
+        return res.status(400).json({ errors: { EMAIL: "Email đã tồn tại" } });
       }
+  
       // Tải lên ảnh đại diện nếu tồn tại
       if (req.file) {
         const avatarUrl = await upload(req.file);
         if (!avatarUrl) {
           throw new Error("Tải lên ảnh đại diện thất bại");
         }
+
 
         const avatarMetadata = await storeMetadata(
           req.file.originalname,
@@ -52,22 +60,31 @@ class USER_CONTROLLER {
         );
 
         payload.AVATAR = avatarMetadata._id;
+
+  
+        const avatarMetadata = await storeMetadata(req.file.originalname, "Avatar image", req.file.mimetype, avatarUrl);
+  
+        payload.AVATAR = avatarMetadata._id; 
+
       }
+  
       await USER_SERVICE.registerUser(payload);
       const sendMail = await MailQueue.sendVerifyEmail(EMAIL, otpType);
       if (!sendMail) {
         throw new Error("Gửi email xác minh thất bại");
       }
 
+
       return res.status(201).json({
         message:
           "Đăng ký người dùng thành công. Vui lòng kiểm tra email để xác thực.",
       });
+
     } catch (err) {
-      return res.status(500).json({ message: "Đăng ký người dùng thất bại" });
+      return res.status(500).json({ errors: { general: "Đăng ký người dùng thất bại" } });
     }
   };
-
+  
  forgotPassword = async (req, res) => {
     try {
       const { email } = req.body;
@@ -136,29 +153,28 @@ class USER_CONTROLLER {
 
   verifyOTPAndActivateUser = async (req, res) => {
     const { email, otp } = req.body;
-
+  
     try {
-      // const { otpType } = req.body;
       const user = await USER_SERVICE.verifyOTPAndActivateUser(email, otp);
-
+  
       if (!user) {
-        return res.status(404).json({ message: "Invalid OTP" });
+        return res.status(404).json({ errors: { otp: "Mã OTP không chính xác" } });
       }
-
-      // Kiểm tra thời hạn của mã OTP
+  
       const otpDetail = user.OTP.find((item) => item.CODE === otp);
       const currentTime = Date.now();
-
+  
       if (otpDetail.EXP_TIME < currentTime) {
-        throw new Error("OTP expired");
+        return res.status(400).json({ errors: { otp: "Mã OTP đã hết hạn" } });
       }
-
-      res.status(200).json({ message: "User activated successfully", user });
+  
+      res.status(200).json({ message: "Kích hoạt người dùng thành công!", user });
     } catch (error) {
       console.error("Error verifying OTP and activating user:", error);
-      res.status(400).json({ message: error.message });
+      res.status(400).json({ errors: { otp: error.message } });
     }
   };
+  
 
   getUsers = async (req, res) => {
     try {
@@ -370,5 +386,35 @@ class USER_CONTROLLER {
       return res.status(500).json({ error: error.message });
     }
   };
+
+  
+
+  
+  ResendOTP = async (req, res) => {
+    try {
+      const { email } = req.body;
+      const existingEmail = await USER_SERVICE.checkEmailExists(email);
+      if (!existingEmail) {
+        return res.status(404).json({ message: "Email not found!!" });
+      }
+      const sendMail = await MailQueue.ResendOtp(email);
+      if (!sendMail) {
+        throw new Error("Gửi email xác minh thất bại");
+      }
+
+      return res.status(201).json({
+        success: true,
+        message:
+          "Vui lòng kiểm tra email của bạn.",
+      });
+
+    } catch (error) {
+      console.error("Error handling resendOTP request:", error);
+      return res
+        .status(500)
+        .json({ message: "Đã xảy ra lỗi khi xử lý yêu cầu." });
+    }
+  };
+
 }
 module.exports = new USER_CONTROLLER();
