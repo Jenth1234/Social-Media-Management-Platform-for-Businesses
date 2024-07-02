@@ -1,6 +1,6 @@
 const InvoiceService = require('../../service/invoice/invoice.Service');
-const PackageService = require('../../service/package/package.Service');
-const OrganizationService = require('../../service/organization/organization.Service');
+const PackageService = require('../../service/package/package.service')
+const OrganizationService = require('../../service/organization/organization.service');
 const CryptoJS = require('crypto-js'); 
 const qs = require('qs');
 const axios = require('axios');
@@ -14,9 +14,7 @@ const config = {
 
 class InvoiceController {
   constructor() {
-    // ... Khai báo các service và cấu hình khác
-    this.data_invoice = null; // Khởi tạo data_invoice là một thuộc tính của InvoiceController
-    // Bind các phương thức để duy trì ngữ cảnh của this
+    this.data_invoice = null; 
     this.checkOrderStatus = this.checkOrderStatus.bind(this);
     this.buyPackage = this.buyPackage.bind(this);
     this.handleCallback = this.handleCallback.bind(this);
@@ -41,6 +39,7 @@ class InvoiceController {
       if (!existingOrganizationId) {
         return res.status(401).json({ message: "Tổ chức không hợp lệ!!!" });
       }
+      
   
       const money = existingIdPackage.COST - (existingIdPackage.COST * existingIdPackage.DISCOUNT / 100);
       const month = existingIdPackage.MONTH;
@@ -67,7 +66,7 @@ class InvoiceController {
         AMOUNT: money,
         URL: resultPay.order_url,
         ORDER_ID: resultPay.orderId,
-        APP_TRANS_ID: resultPay.app_trans_id,  // Sửa lỗi chính tả ở đây
+        APP_TRANS_ID: resultPay.app_trans_id,  
         TYPE_ORDER: resultPay.partnerCode,
         PAID: null
       };
@@ -85,17 +84,17 @@ class InvoiceController {
         ACTIVE_THRU_DATE: due_date,
       };
 
-
-      const result = await InvoiceService.buyPackage(data_invoice,data_bill);
-      // return res.status(200).json({ message: "Tạo hóa đơn thành công",url: resultPay.payUrl });
-
+  
+      await InvoiceService.buyPackage(this.data_invoice, data_bill); 
+  
+      let responseMessage, responseUrl;
 
       if (paymentGateway === 'zalopay') {
         responseMessage = "Tạo hóa đơn Zalopay thành công";
         responseUrl = resultPay.order_url;
       } else if (paymentGateway === 'momo') {
         responseMessage = "Tạo hóa đơn Momo thành công";
-        responseUrl = resultPay.redirectUrl; // Sửa tên thuộc tính thành redirectUrl
+        responseUrl = resultPay.redirectUrl; 
       }
   
       res.status(200).json({ message: responseMessage, url: responseUrl });

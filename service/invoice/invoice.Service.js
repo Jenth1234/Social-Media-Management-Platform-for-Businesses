@@ -115,7 +115,8 @@ class InvoiceService {
       embed_data: JSON.stringify(embed_data),
       amount: money.toString(),
 
-      callback_url: 'https://2153-113-170-51-144.ngrok-free.app/callback',
+      orderId:orderId,
+      callback_url: 'https://45e3-113-170-51-144.ngrok-free.app/invoice/callback',
 
       description: `Lazada - Payment for the order #${transID}`,
       bank_code: '',
