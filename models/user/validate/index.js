@@ -126,7 +126,7 @@ const updateUserValidate = Joi.object({
 });
 
 const loginValidate = Joi.object({
-  USERNAME: Joi.string().trim().alphanum().min(5).max(32).required()
+  USERNAME: Joi.string().trim().min(5).max(32).required()
     .messages({
       "string.base": "Tên người dùng phải là một chuỗi ký tự.",
       "string.empty": "Tên người dùng không được để trống.",
