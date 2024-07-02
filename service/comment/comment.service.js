@@ -130,19 +130,36 @@ async getCommentsByProduct(productId) {
 
   async deleteComment(commentId, userId) {
     try {
-        const comment = await Comment.findOneAndUpdate(
-            { 'LIST_COMMENT._id': commentId, 'LIST_COMMENT.USER_ID': userId },
-            { $set: { 'LIST_COMMENT.$.IS_DELETED': true } },
-            { new: true }
-        );
-        if (!comment) {
-            throw new Error('Comment not found or user not authorized');
-        }
-        return {
-            success: true,
-            message: 'Comment has been deleted successfully.',
-            data: comment
-        };
+
+      const result = await Comment.findOneAndUpdate(
+        {
+          LIST_COMMENT: {
+            $elemMatch: {
+              '_id': commentIdOb,
+              'USER_ID': userIdOb
+            }
+          }
+        },
+        {
+          $pull: {
+            'LIST_COMMENT': {
+              _id: commentIdOb,
+              USER_ID: userIdOb
+            }
+          },
+          $inc: {
+            LIST_COMMENT_MAX_NUMBER: -1,
+          },
+        },
+        { new: true }
+      );
+      
+      if (result) {
+        await  MetadataCmtProductService.updateCmtCount(result.PRODUCT_ID, result.ORGANIZATION_ID, -1);
+    }
+
+      return result;
+
     } catch (error) {
         throw error;
     }
@@ -204,5 +221,7 @@ async deleteReply(commentId, replyId, userId) {
   }
 }
 
+
 }
 module.exports = new COMMENT_SERVICE();
+
