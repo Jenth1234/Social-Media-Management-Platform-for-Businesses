@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-
 const ReplySchema = new Schema({
     USER_ID: {
         type: Schema.Types.ObjectId,
@@ -18,11 +17,19 @@ const ReplySchema = new Schema({
     THRU_DATE: {
         type: Date,
         default: null
+    },
+    IS_DELETED: {
+        type: Boolean,
+        default: false
     }
 });
 
-// Định nghĩa schema cho comment (bình luận)
+// Định nghĩa schema 
 const CommentSchema = new Schema({
+    USER_ID: {
+        type: Schema.Types.ObjectId,
+        required: true
+    },
     ORGANIZATION_ID: {
         type: Schema.Types.ObjectId,
         required: true
@@ -47,6 +54,10 @@ const CommentSchema = new Schema({
         THRU_DATE: {
             type: Date,
             default: null
+        },
+        IS_DELETED: {
+            type: Boolean,
+            default: false
         },
         REPLIES: [ReplySchema]
     }],

@@ -1,17 +1,15 @@
 const Comment = require("../../models/comment/comment.model");
-
 const MetadataCmtProductService = require("../../service/metadata_cmt_product/metadatacmtproduct.service");
 const { Types } = require("mongoose");
 class COMMENT_SERVICE {
   createComment = async (payload) => {
-    try {
-      const countCMT = 200;
-      const query = { 
-        PRODUCT_ID: payload.PRODUCT_ID, 
-        ORGANIZATION_ID: payload.ORGANIZATION_ID, 
-        LIST_COMMENT_MAX_NUMBER: { $lt: countCMT } 
-      };
-  
+    const countCMT = 200;
+    const query = { 
+      PRODUCT_ID: payload.PRODUCT_ID, 
+      ORGANIZATION_ID: payload.ORGANIZATION_ID, 
+      LIST_COMMENT_MAX_NUMBER: { $lt: countCMT } 
+    };
+
       const comment_obj = {
         "USER_ID": payload.USER_ID,
         "CONTENT": payload.CONTENT,
@@ -19,9 +17,9 @@ class COMMENT_SERVICE {
         "FROM_DATE": Date.now(),
         "THRU_DATE": null
       };
-  
-      await MetadataCmtProductService.updateCmtCount(payload.PRODUCT_ID, payload.ORGANIZATION_ID, 1);
-  
+
+    await MetadataCmtProductService.updateCmtCount(payload.PRODUCT_ID, payload.ORGANIZATION_ID, 1);
+
       await Comment.updateOne(
         query,
         {
@@ -33,23 +31,23 @@ class COMMENT_SERVICE {
       );
   
       return comment_obj;
-    } catch (error) {
-      throw new Error(`Error creating comment: ${error.message}`);
-    }
   };
   
   
-  getCommentsByUser = async (userId) => {
-    try {
-      const comments = await Comment.find({ "LIST_COMMENT.USER_ID": userId });
+// Hàm lấy các comments của một người dùng mà chưa bị xóa mềm
+async getCommentsByUser(userId) {
+  try {
+      const comments = await Comment.find({ USER_ID: userId }).lean();
+      comments.forEach(comment => {
+          comment.LIST_COMMENT = comment.LIST_COMMENT.filter(c => !c.IS_DELETED);
+      });
       return comments;
-    } catch (error) {
-      throw new Error(`Error getting comments by user: ${error.message}`);
-    }
-  };
+  } catch (error) {
+      throw error;
+  }
+}
 
   getCommentWithUserInfo = async (page, limit, userId) => {
-
     // const userIdOb = new Types.ObjectId(userId);
 
     const skips = page ? (page - 1) * limit : 0;
@@ -94,14 +92,18 @@ class COMMENT_SERVICE {
     return cmtWithUserInfo;
   };
 
-  getCommentsByProduct = async (productId) => {
-    try {
-      const comments = await Comment.find({ PRODUCT_ID: productId });
+// Hàm lấy các comments của một sản phẩm mà chưa bị xóa mềm
+async getCommentsByProduct(productId) {
+  try {
+      const comments = await Comment.find({ PRODUCT_ID: productId }).lean();
+      comments.forEach(comment => {
+          comment.LIST_COMMENT = comment.LIST_COMMENT.filter(c => !c.IS_DELETED);
+      });
       return comments;
-    } catch (error) {
-      throw new Error(`Error getting comments by product: ${error.message}`);
-    }
-  };
+  } catch (error) {
+      throw error;
+  }
+}
 
   updateCommentContent = async (commentId, content) => {
     try {
@@ -126,43 +128,25 @@ class COMMENT_SERVICE {
     }
   };
 
-  deleteComment = async (commentIdOb, userIdOb) => {
+  async deleteComment(commentId, userId) {
     try {
-      const result = await Comment.findOneAndUpdate(
-        {
-          LIST_COMMENT: {
-            $elemMatch: {
-
-              '_id': commentIdOb,
-              'USER_ID': userIdOb
-            }
-          }
-        },
-        {
-          $pull: {
-            'LIST_COMMENT': {
-              _id: commentIdOb,
-              USER_ID: userIdOb
-            }
-
-
-          },
-          $inc: {
-            LIST_COMMENT_MAX_NUMBER: -1,
-          },
-        },
-        { new: true }
-      );
-      
-      if (result) {
-        await  MetadataCmtProductService.updateCmtCount(result.PRODUCT_ID, result.ORGANIZATION_ID, -1);
-    }
-
-      return result;
+        const comment = await Comment.findOneAndUpdate(
+            { 'LIST_COMMENT._id': commentId, 'LIST_COMMENT.USER_ID': userId },
+            { $set: { 'LIST_COMMENT.$.IS_DELETED': true } },
+            { new: true }
+        );
+        if (!comment) {
+            throw new Error('Comment not found or user not authorized');
+        }
+        return {
+            success: true,
+            message: 'Comment has been deleted successfully.',
+            data: comment
+        };
     } catch (error) {
-      throw new Error(`Error deleting comment: ${error.message}`);
+        throw error;
     }
-  };
+}
 
   createReply = async (commentId, payload) => {
     try {
@@ -184,6 +168,41 @@ class COMMENT_SERVICE {
       throw new Error(`Error creating reply: ${error.message}`);
     }
   };
+  async getReplies(commentId) {
+    try {
+        const comment = await Comment.findOne({ 'LIST_COMMENT._id': commentId, 'LIST_COMMENT.IS_DELETED': false });
+        if (!comment) {
+            throw new Error('Comment not found');
+        }
+        const replies = comment.LIST_COMMENT[0].REPLIES.filter(reply => !reply.IS_DELETED);
+        return replies;
+    } catch (error) {
+        throw error;
+    }
+}
+// Hàm xóa mềm reply
+async deleteReply(commentId, replyId, userId) {
+  try {
+      const comment = await Comment.findOneAndUpdate(
+          { 'LIST_COMMENT._id': commentId, 'LIST_COMMENT.REPLIES._id': replyId, 'LIST_COMMENT.REPLIES.USER_ID': userId },
+          { $set: { 'LIST_COMMENT.$.REPLIES.$[elem].IS_DELETED': true } },
+          {
+              arrayFilters: [{ 'elem._id': replyId }],
+              new: true
+          }
+      );
+      if (!comment) {
+          throw new Error('Reply not found or user not authorized');
+      }
+      return {
+          success: true,
+          message: 'Reply has been deleted successfully.',
+          data: comment
+      };
+  } catch (error) {
+      throw error;
+  }
 }
 
+}
 module.exports = new COMMENT_SERVICE();
