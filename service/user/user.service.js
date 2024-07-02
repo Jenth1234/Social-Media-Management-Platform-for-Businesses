@@ -8,7 +8,13 @@ const crypto = require('crypto');
 
 class USER_SERVICE {
   async checkUsernameExists(username) {
-    return await USER_MODEL.findOne({ USERNAME: username }).lean();
+    return await USER_MODEL.findOne({ $or: [
+      {
+        EMAIL: username
+      }, {
+        USERNAME: username
+      }
+    ]}).lean();
   }
 
   async checkEmailExists(email) {
