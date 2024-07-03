@@ -17,7 +17,7 @@ app.use(cors({
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
   optionsSuccessStatus: 204,
-  allowedHeaders: "Content-Type,authorization",
+  allowedHeaders: "Content-Type,authorization,organization_id",
 }));
 
 // Cấu hình body parser
