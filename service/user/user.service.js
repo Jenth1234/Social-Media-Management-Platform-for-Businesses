@@ -1,10 +1,12 @@
 const USER_MODEL = require("../../models/user/user.model");
 const MailService = require("../../utils/send.mail");
 const ORGANIZATION_MODEL = require("../../models/organization/organization.model");
+const PACKAGE_MODEL = require("../../models/package/package.model");
+const INVOICE_MODEL = require("../../models/Invoice/Invoice.model")
 const { Types } = require("mongoose");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const crypto = require('crypto');
+const crypto = require("crypto");
 
 class USER_SERVICE {
   async checkUsernameExists(username) {
@@ -78,19 +80,13 @@ class USER_SERVICE {
   }
 
   async verifyOTPAndActivateUser(email, otp) {
+    const updatedUser = await USER_MODEL.findOneAndUpdate(
+      { EMAIL: email, "OTP.CODE": otp },
+      { $set: { IS_ACTIVATED: true, "OTP.$.CHECK_USING": true } },
+      { new: true }
+    );
 
-      const updatedUser = await USER_MODEL.findOneAndUpdate(
-        { EMAIL: email, "OTP.CODE": otp },
-        { $set: 
-          { IS_ACTIVATED: true,
-            "OTP.$.CHECK_USING": true
-          } 
-        },
-        { new: true }
-      );
-  
-      return updatedUser;
-   
+    return updatedUser;
   }
 
   async resetPassword(email, newPassword) {
@@ -141,6 +137,36 @@ class USER_SERVICE {
     return foundUser;
   }
 
+//   async updateUser(userId, userDataToUpdate) {
+//     const condition = { _id: userId };
+//     const allowedFields = ['USERNAME', 'FULLNAME', 'EMAIL', 'ADDRESS', 'GENDER'];
+//     const data = {};
+
+//     allowedFields.forEach(field => {
+//         if (userDataToUpdate[field]) {
+//             data[field] = userDataToUpdate[field];
+//         }
+//     });
+
+//     // if (data.PASSWORD) {
+//     //     data.PASSWORD = await this.hashPassword(data.PASSWORD);
+//     // }
+
+//     const options = { new: true };
+//     const foundUser = await USER_MODEL.findOneAndUpdate(
+//         condition,
+//         data,
+//         options
+//     );
+
+//     if (!foundUser) {
+//         throw new Error("Không tìm thấy người dùng");
+//     }
+
+//     return foundUser;
+// }
+
+
   async getUsers(tabStatus, page, limit, search = "") {
     let query = {};
 
@@ -178,7 +204,7 @@ class USER_SERVICE {
       if (users.length === 0) {
         throw new Error("Không tìm thấy người dùng");
       }
-  
+
       return {
         users,
         totalPages,
@@ -314,6 +340,35 @@ class USER_SERVICE {
 
     return foundOrganization;
   }
+
+  async getDashboardData() {
+    const [totalUserCount, totalOrganizationCount, totalPackagesCount, totalRevenueResult] = await Promise.all([
+      USER_MODEL.countDocuments(), // Đếm tất cả người dùng
+      ORGANIZATION_MODEL.countDocuments(), // Đếm tất cả tổ chức
+      PACKAGE_MODEL.countDocuments({ IS_DELETE: false }), // Đếm tất cả gói không bị xóa
+      INVOICE_MODEL.aggregate([
+        {
+          $match: { PAID: true }
+        },
+        {
+          $group: {
+            _id: null,
+            totalAmount: { $sum: '$AMOUNT' }
+          }
+        }
+      ])
+    ]);
+  
+    const response = {
+      totalUser: totalUserCount,
+      totalOrganization: totalOrganizationCount, // Tổng số tổ chức
+      totalPackages: totalPackagesCount,
+      totalRevenue: totalRevenueResult[0] ? totalRevenueResult[0].totalAmount : 0
+    };
+  
+    return response;
+  }
+  
 }
 
 module.exports = new USER_SERVICE();

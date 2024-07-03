@@ -27,15 +27,12 @@ class InvoiceController {
     try {
       console.log('User info:', user);
       console.log('packageId:', packageId);
-      const existingIdPackage = await packageService.checkIdExits(packageId);
-
+      const existingIdPackage = await PackageService.checkIdExits(packageId);
       if (!existingIdPackage) {
         return res.status(401).json({ message: "Mã gói không hợp lệ!!!" });
       }
 
-
-      const existingOrganizationId = await Organization.findUserByIdAndOrganization(user._id, user.ORGANIZATION_ID);
-
+      const existingOrganizationId = await OrganizationService.findUserByIdAndOrganization(user._id, user.ORGANIZATION_ID);
       if (!existingOrganizationId) {
         return res.status(401).json({ message: "Tổ chức không hợp lệ!!!" });
       }
