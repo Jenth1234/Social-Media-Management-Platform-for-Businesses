@@ -14,5 +14,5 @@ router.get('/', packageController.getPackage);
 router.post('/approvedOrganizations', verifyTokenAdmin, user_controller.approvedOrganizations);
 router.post('/activeOrganization', verifyTokenAdmin, user_controller.activeOrganization);
 router.put('/blockUser', verifyTokenAdmin, user_controller.blockUser);
-router.post("/getUserInfoAdmin",verifyToken, user_controller.getUserInfoAdmin);
+router.get("/getUserInfoAdmin",verifyToken, user_controller.getUserInfoAdmin);
 module.exports = router;

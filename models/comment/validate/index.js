@@ -23,8 +23,21 @@ const createCommentValidate = Joi.object({
     
 });
 
+
+const updateCommentValidate = Joi.object({
+    CONTENT: Joi.string().min(1).required().messages({
+        'string.base': `"CONTENT" phải là một chuỗi`,
+        'string.empty': `"CONTENT" không được để trống`,
+        'any.required': `"CONTENT" là bắt buộc`
+    })
+});
+
+
+
+
 module.exports = {
-    createCommentValidate
+    createCommentValidate,
+    updateCommentValidate
 
 };
 

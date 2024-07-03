@@ -13,7 +13,7 @@ const port = process.env.PORT || 3005;
 
 // Cấu hình CORS
 app.use(cors({
-  origin: ["http://localhost:3001", "http://127.0.0.1:3001"],
+  origin: ["http://192.168.56.1:3000", "http://127.0.0.1:3001"],
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
   optionsSuccessStatus: 204,
