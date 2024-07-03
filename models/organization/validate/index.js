@@ -13,18 +13,18 @@ const registerOrganization = Joi.object({
             'string.max': 'Organization name cannot exceed {#limit} characters.',
             'any.required': 'Organization name is required.'
         }),
-    ORGANIZATION_EMAIL: Joi.string()
-        .email({
-            minDomainSegments: 2,
-            tlds: { allow: ["com", "net"] }
-        })
-        .required()
-        .messages({
-            'string.base': 'Email must be a string.',
-            'string.empty': 'Email cannot be empty.',
-            'string.email': 'Please provide a valid email address.',
-            'any.required': 'Organization email is required.'
-        }),
+    // ORGANIZATION_EMAIL: Joi.string()
+    //     .email({
+    //         minDomainSegments: 2,
+    //         tlds: { allow: ["com", "net"] }
+    //     })
+    //     .required()
+    //     .messages({
+    //         'string.base': 'Email must be a string.',
+    //         'string.empty': 'Email cannot be empty.',
+    //         'string.email': 'Please provide a valid email address.',
+    //         'any.required': 'Organization email is required.'
+    //     }),
     ORGANIZATION_PHONE: Joi.string()
         .pattern(/^\d{10,15}$/)
         .required()
