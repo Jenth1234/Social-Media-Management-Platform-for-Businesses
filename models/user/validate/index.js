@@ -89,22 +89,22 @@ const updateUserValidate = Joi.object({
       "string.max": "Họ và tên phải có nhiều nhất {#limit} ký tự."
     }),
 
-  PASSWORD: Joi.string()
-    .trim()
-    .min(8)
-    .max(32)
-    .pattern(
-      new RegExp(
-        "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\\$%\\^&\\*])(?!.*\\s).*$"
-      )
-    )
-    .optional()
-    .messages({
-      "string.pattern.base":
-        "Mật khẩu phải bao gồm ít nhất một chữ cái viết hoa, một chữ cái viết thường, một số và một ký tự đặc biệt, và không được chứa khoảng trắng.",
-      "string.min": "Mật khẩu phải có độ dài ít nhất là {#limit} ký tự.",
-      "string.max": "Mật khẩu phải có độ dài nhiều nhất là {#limit} ký tự."
-    }),
+  // PASSWORD: Joi.string()
+  //   .trim()
+  //   .min(8)
+  //   .max(32)
+  //   .pattern(
+  //     new RegExp(
+  //       "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\\$%\\^&\\*])(?!.*\\s).*$"
+  //     )
+  //   )
+  //   .optional()
+  //   .messages({
+  //     "string.pattern.base":
+  //       "Mật khẩu phải bao gồm ít nhất một chữ cái viết hoa, một chữ cái viết thường, một số và một ký tự đặc biệt, và không được chứa khoảng trắng.",
+  //     "string.min": "Mật khẩu phải có độ dài ít nhất là {#limit} ký tự.",
+  //     "string.max": "Mật khẩu phải có độ dài nhiều nhất là {#limit} ký tự."
+  //   }),
 
   EMAIL: Joi.string().email({
     minDomainSegments: 2,

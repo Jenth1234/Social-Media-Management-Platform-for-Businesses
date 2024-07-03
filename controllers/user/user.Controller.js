@@ -237,6 +237,35 @@ class USER_CONTROLLER {
     }
   };
 
+//   updateUser = async (req, res) => {
+//     const payload = req.body;
+
+//     // Lọc bỏ các trường không hợp lệ
+//     const allowedFields = ['USERNAME', 'FULLNAME', 'EMAIL', 'ADDRESS', 'GENDER'];
+//     const filteredPayload = Object.keys(payload)
+//         .filter(key => allowedFields.includes(key))
+//         .reduce((obj, key) => {
+//             obj[key] = payload[key];
+//             return obj;
+//         }, {});
+
+//     const { error, value } = updateUserValidate.validate(filteredPayload);
+
+//     if (error) {
+//         return res.status(400).json({ message: error.details[0].message });
+//     }
+
+//     try {
+//         const userId = req.user;
+//         const updatedUser = await USER_SERVICE.updateUser(userId, value);
+//         res.status(200).json(updatedUser);
+//     } catch (err) {
+//       console.error("Lỗi khi cập nhật người dùng:", err);
+//         res.status(400).json({ message: "Cập nhật người dùng thất bại" });
+//     }
+// };
+
+
   login_admin = async (req, res) => {
     try {
     } catch (err) {
@@ -371,5 +400,22 @@ class USER_CONTROLLER {
       return res.status(500).json({ error: error.message });
     }
   };
+
+  getDashboardData = async (req, res) => {
+    try {
+      const dashboardData = await USER_SERVICE.getDashboardData();
+      res.json(dashboardData);
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+      res.status(500).send('Internal server error');
+    }
+  };
+
+  // checkUsernameExists = async (req, res) => {
+  //   const existingUser = await USER_SERVICE.checkUsernameExists(USERNAME);
+  //     if (existingUser) {
+  //       return res.json(existingUser);
+  //     }
+  // }
 }
 module.exports = new USER_CONTROLLER();

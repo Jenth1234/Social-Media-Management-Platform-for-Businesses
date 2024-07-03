@@ -6,9 +6,10 @@ const {verifyToken, verifyTokenAdmin} = require('../../middleware/verifyToken');
 
 router.post('/create',verifyToken,commentController.createComment);
 
-router.get('/commentUserinfo', verifyTokenAdmin, commentController.getCommentWithUserInfo);
-router.get('/user/:userId', verifyTokenAdmin, commentController.getCommentsByUser);
-router.get('/product/:productId/comments', verifyToken, commentController.getCommentsByProduct);
+router.get('/commentUserinfo', verifyToken, commentController.getCommentWithUserInfo);
+router.get('/user/:userId', verifyToken, commentController.getCommentsByUser);
+// router.get('/product/:productId/comments', verifyToken, commentController.getCommentsByProduct);
+router.get('/product/:productId', verifyToken, commentController.getCommentsByProduct);
 
 
 router.put('/update/:commentId', verifyToken, commentController.updateComment);
