@@ -31,7 +31,7 @@ const registerValidate = Joi.object({
 
   FULLNAME: Joi.string()
     .trim()
-    .pattern(/^[A-Za-z\s]+$/)
+    // .pattern(/^[A-Za-z\s]+$/)
     .min(5)
     .max(100)
     .custom((value, helpers) => {
@@ -43,7 +43,7 @@ const registerValidate = Joi.object({
     .required()
     .messages({
       "string.base": "Họ và tên phải là một chuỗi ký tự.",
-      "string.pattern.base": "Họ và tên chỉ được chứa các chữ cái và khoảng trắng.",
+      // "string.pattern.base": "Họ và tên chỉ được chứa các chữ cái và khoảng trắng.",
       "string.empty": "Họ và tên không được để trống.",
       "string.min": "Họ và tên phải có ít nhất {#limit} ký tự.",
       "string.max": "Họ và tên phải có nhiều nhất {#limit} ký tự.",
@@ -72,7 +72,7 @@ const registerValidate = Joi.object({
 const updateUserValidate = Joi.object({
   FULLNAME: Joi.string()
     .trim()
-    .pattern(/^[A-Za-z\s]+$/)
+    // .pattern(/^[A-Za-z\s]+$/)
     .min(5)
     .max(100)
     .custom((value, helpers) => {
@@ -83,7 +83,7 @@ const updateUserValidate = Joi.object({
     })
     .messages({
       "string.base": "Họ và tên phải là một chuỗi ký tự.",
-      "string.pattern.base": "Họ và tên chỉ được chứa các chữ cái và khoảng trắng.",
+      // "string.pattern.base": "Họ và tên chỉ được chứa các chữ cái và khoảng trắng.",
       "string.empty": "Họ và tên không được để trống.",
       "string.min": "Họ và tên phải có ít nhất {#limit} ký tự.",
       "string.max": "Họ và tên phải có nhiều nhất {#limit} ký tự."
