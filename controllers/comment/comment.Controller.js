@@ -163,7 +163,54 @@ class COMMENT_CONTROLLER {
             res.status(500).json({ message: 'Lỗi khi thêm phản hồi', error: err.message });
         }
     }
-       
+    async getReplies(req, res) {
+        try {
+            const { commentId } = req.params;
+            const replies = await commentService.getReplies(commentId);
+    
+            if (!replies || replies.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'No replies found for this comment'
+                });
+            }
+    
+            return res.status(200).json({
+                success: true,
+                data: replies
+            });
+        } catch (err) {
+            return res.status(500).json({
+                success: false,
+                message: 'Internal server error',
+                error: err.message
+            });
+        }
+    }
+    async deleteComment(req, res) {
+        const { commentId } = req.params;
+        const userId = req.user_id;
+
+        try {
+            const response = await commentService.deleteComment(commentId, userId);
+            res.status(200).json(response);
+        } catch (error) {
+            res.status(400).json({ message: error.message });
+        }
+    }
+
+    async deleteReply(req, res) {
+        const { commentId, replyId } = req.params;
+        const userId = req.user_id;
+
+        try {
+            const response = await commentService.deleteReply(commentId, replyId, userId);
+            res.status(200).json(response);
+        } catch (error) {
+            res.status(400).json({ message: error.message });
+        }
+    }
+    
      
     
 

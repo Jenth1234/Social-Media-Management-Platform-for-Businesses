@@ -34,14 +34,18 @@ class COMMENT_SERVICE {
   };
   
   
-  getCommentsByUser = async (userId) => {
-    try {
-      const comments = await Comment.find({ "LIST_COMMENT.USER_ID": userId });
+// Hàm lấy các comments của một người dùng mà chưa bị xóa mềm
+async getCommentsByUser(userId) {
+  try {
+      const comments = await Comment.find({ USER_ID: userId }).lean();
+      comments.forEach(comment => {
+          comment.LIST_COMMENT = comment.LIST_COMMENT.filter(c => !c.IS_DELETED);
+      });
       return comments;
-    } catch (error) {
-      throw new Error(`Error getting comments by user: ${error.message}`);
-    }
-  };
+  } catch (error) {
+      throw error;
+  }
+}
 
   getCommentWithUserInfo = async (page, limit) => {
     const skips = page ? (page - 1) * limit : 0;
@@ -81,14 +85,18 @@ class COMMENT_SERVICE {
     return cmtWithUserInfo;
   };
 
-  getCommentsByProduct = async (productId) => {
-    try {
-      const comments = await Comment.find({ PRODUCT_ID: productId });
+// Hàm lấy các comments của một sản phẩm mà chưa bị xóa mềm
+async getCommentsByProduct(productId) {
+  try {
+      const comments = await Comment.find({ PRODUCT_ID: productId }).lean();
+      comments.forEach(comment => {
+          comment.LIST_COMMENT = comment.LIST_COMMENT.filter(c => !c.IS_DELETED);
+      });
       return comments;
-    } catch (error) {
-      throw new Error(`Error getting comments by product: ${error.message}`);
-    }
-  };
+  } catch (error) {
+      throw error;
+  }
+}
 
   updateCommentContent = async (commentId, content) => {
     try {
@@ -113,8 +121,9 @@ class COMMENT_SERVICE {
     }
   };
 
-  deleteComment = async (commentIdOb, userIdOb) => {
+  async deleteComment(commentId, userId) {
     try {
+
       const result = await Comment.findOneAndUpdate(
         {
           LIST_COMMENT: {
@@ -143,10 +152,11 @@ class COMMENT_SERVICE {
     }
 
       return result;
+
     } catch (error) {
-      throw new Error(`Error deleting comment: ${error.message}`);
+        throw error;
     }
-  };
+}
 
   createReply = async (commentId, payload) => {
     try {
@@ -168,5 +178,43 @@ class COMMENT_SERVICE {
       throw new Error(`Error creating reply: ${error.message}`);
     }
   };
+  async getReplies(commentId) {
+    try {
+        const comment = await Comment.findOne({ 'LIST_COMMENT._id': commentId, 'LIST_COMMENT.IS_DELETED': false });
+        if (!comment) {
+            throw new Error('Comment not found');
+        }
+        const replies = comment.LIST_COMMENT[0].REPLIES.filter(reply => !reply.IS_DELETED);
+        return replies;
+    } catch (error) {
+        throw error;
+    }
+}
+// Hàm xóa mềm reply
+async deleteReply(commentId, replyId, userId) {
+  try {
+      const comment = await Comment.findOneAndUpdate(
+          { 'LIST_COMMENT._id': commentId, 'LIST_COMMENT.REPLIES._id': replyId, 'LIST_COMMENT.REPLIES.USER_ID': userId },
+          { $set: { 'LIST_COMMENT.$.REPLIES.$[elem].IS_DELETED': true } },
+          {
+              arrayFilters: [{ 'elem._id': replyId }],
+              new: true
+          }
+      );
+      if (!comment) {
+          throw new Error('Reply not found or user not authorized');
+      }
+      return {
+          success: true,
+          message: 'Reply has been deleted successfully.',
+          data: comment
+      };
+  } catch (error) {
+      throw error;
+  }
+}
+
+
 }
 module.exports = new COMMENT_SERVICE();
+

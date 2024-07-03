@@ -19,6 +19,7 @@ class USER_CONTROLLER {
     const payload = req.body;
     const { error, value } = registerValidate.validate(payload);
   
+
     if (error) {
       const errors = error.details.reduce((acc, current) => {
         acc[current.context.key] = current.message;
@@ -28,13 +29,15 @@ class USER_CONTROLLER {
     }
   
     const { USERNAME, EMAIL } = value;
-  
-    const otpType = 'create_account';
-  
+
+
+    const otpType = "create_account";
+
     try {
       const existingUser = await USER_SERVICE.checkUsernameExists(USERNAME);
       if (existingUser) {
-        return res.status(400).json({ errors: { USERNAME: "Username đã tồn tại" } });
+        return res.status(400).json({ message: "Username đã tồn tại" });
+
       }
   
       const existingEmail = await USER_SERVICE.checkEmailExists(EMAIL);
@@ -48,10 +51,21 @@ class USER_CONTROLLER {
         if (!avatarUrl) {
           throw new Error("Tải lên ảnh đại diện thất bại");
         }
+
+
+        const avatarMetadata = await storeMetadata(
+          req.file.originalname,
+          "Avatar image",
+          req.file.mimetype,
+          avatarUrl
+        );
+
+        payload.AVATAR = avatarMetadata._id;
+
   
-        const avatarMetadata = await storeMetadata(req.file.originalname, "Avatar image", req.file.mimetype, avatarUrl);
+        // const avatarMetadata = await storeMetadata(req.file.originalname, "Avatar image", req.file.mimetype, avatarUrl);
   
-        payload.AVATAR = avatarMetadata._id; 
+        // payload.AVATAR = avatarMetadata._id; 
       }
   
       await USER_SERVICE.registerUser(payload);
@@ -59,12 +73,13 @@ class USER_CONTROLLER {
       if (!sendMail) {
         throw new Error("Gửi email xác minh thất bại");
       }
-  
+
+
       return res.status(201).json({
-        success: true,
-        message: "Đăng ký người dùng thành công. Vui lòng kiểm tra email để xác thực.",
+        message:
+          "Đăng ký người dùng thành công. Vui lòng kiểm tra email để xác thực.",
       });
-  
+
     } catch (err) {
       return res.status(500).json({ errors: { general: "Đăng ký người dùng thất bại" } });
     }
@@ -411,11 +426,5 @@ class USER_CONTROLLER {
     }
   };
 
-  // checkUsernameExists = async (req, res) => {
-  //   const existingUser = await USER_SERVICE.checkUsernameExists(USERNAME);
-  //     if (existingUser) {
-  //       return res.json(existingUser);
-  //     }
-  // }
 }
 module.exports = new USER_CONTROLLER();
