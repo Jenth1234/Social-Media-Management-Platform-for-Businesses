@@ -4,9 +4,9 @@ const ORGANIZATION_MODEL = require("../../models/organization/organization.model
 const { Types } = require("mongoose");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const crypto = require('crypto');
 
 class USER_SERVICE {
-
   async checkUsernameExists(username) {
     return await USER_MODEL.findOne({ $or: [
       {
@@ -33,7 +33,7 @@ class USER_SERVICE {
         IS_ADMIN: false,
         IS_ORGANIZATION: false,
       },
-      AVATAR:body.AVATAR,
+      AVATAR: body.AVATAR,
       ADDRESS: body.ADDRESS,
       GENDER: body.GENDER,
       IS_ACTIVATED: false,
@@ -141,54 +141,64 @@ class USER_SERVICE {
     return foundUser;
   }
 
-  async getUsers(tabStatus, page, limit, searchQuery ) {
+  async getUsers(tabStatus, page, limit, search = "") {
     let query = {};
-    
+
     switch (tabStatus) {
-      case '1':
+      case "1":
         query = { $or: [{ IS_ACTIVATED: false }, { IS_BLOCKED: null }] };
         break;
-      case '2':
-        query = { IS_ACTIVATED: true, 'IS_BLOCKED.CHECK': false };
+      case "2":
+        query = { IS_ACTIVATED: true, "IS_BLOCKED.CHECK": false };
         break;
-      case '3':
-        query = { 'IS_BLOCKED.CHECK': true };
+      case "3":
+        query = { "IS_BLOCKED.CHECK": true };
         break;
-      case '4':
+      case "4":
         query = {};
         break;
       default:
-        throw new Error('Invalid tab status');
+        throw new Error("Invalid tab status");
     }
 
-    if (searchQuery) {
-      const regex = new RegExp(searchQuery, 'i'); // 'i' cho phép tìm kiếm không phân biệt chữ hoa/chữ thường
-      query.USERNAME = regex;
+    if (search) {
+      query.$or = [
+        { USERNAME: { $regex: new RegExp(search, "i") } },
+        { FULLNAME: { $regex: new RegExp(search, "i") } },
+      ];
     }
-  
+
     try {
       const totalCount = await USER_MODEL.countDocuments(query);
       const totalPages = Math.ceil(totalCount / limit);
       const offset = (page - 1) * limit;
-  
-      const users = await USER_MODEL.find(query)
-        .skip(offset)
-        .limit(limit);
+
+      const users = await USER_MODEL.find(query).skip(offset).limit(limit);
+
+      if (users.length === 0) {
+        throw new Error("Không tìm thấy người dùng");
+      }
   
       return {
         users,
         totalPages,
-        totalCount
+        totalCount,
       };
     } catch (error) {
-      throw new Error('Error retrieving users');
+      if (error.message === "Không tìm thấy người dùng") {
+        return {
+          users: [],
+          totalPages: 0,
+          totalCount: 0,
+        };
+      }
+      throw new Error("Lỗi khi truy vấn người dùng");
     }
   }
-  
 
   async countUsers() {
     return await USER_MODEL.countDocuments();
-  };
+  }
 
   hashPassword = async (password) => {
     const saltRounds = 10;
@@ -256,7 +266,11 @@ class USER_SERVICE {
   //   return foundUser;
   // }
 
-  async activeOrganization(organizationId, organizationActive, active_byuserid) {
+  async activeOrganization(
+    organizationId,
+    organizationActive,
+    active_byuserid
+  ) {
     const condition = { _id: organizationId };
     const data = {
       ORGANIZATION_ACTIVE: {
@@ -276,17 +290,20 @@ class USER_SERVICE {
     return foundOrganization;
   }
 
-  async approvedOrganization(organizationId, objectApproved, approved_byuserid) {
+  async approvedOrganization(
+    organizationId,
+    objectApproved,
+    approved_byuserid
+  ) {
     const condition = { _id: organizationId };
 
     const data = {
-
       OBJECT_APPROVED: {
-        "CHECK": objectApproved,
-        "TIME": Date.now(),
-        "APPROVED_BY_USER_ID": approved_byuserid
-      }
-    }
+        CHECK: objectApproved,
+        TIME: Date.now(),
+        APPROVED_BY_USER_ID: approved_byuserid,
+      },
+    };
 
     const options = { new: true };
     const foundOrganization = await ORGANIZATION_MODEL.findOneAndUpdate(

@@ -19,8 +19,10 @@ class InvoiceService {
     try {
       const invoice = new Invoice(data_invoice);
       const organization_data = new Organization_data(data_invoice);
-      await invoice.save();
-      await organization_data.save();
+      await Promise.all([
+        invoice.save(),
+        organization_data.save()
+      ]);
       return { invoice, organization_data };
     } catch (error) {
       console.error(error);
@@ -35,7 +37,7 @@ class InvoiceService {
     const orderInfo = "pay with MoMo";
     const partnerCode = "MOMO";
     const redirectUrl = "http://localhost:3001/pages/menu";
-    const ipnUrl = "https://8fbd-113-170-51-144.ngrok-free.app/invoice/callback";
+    const ipnUrl = "https://tough-words-design.loca.lt/invoice/callback";
     const requestType = "payWithMethod";
     const amount = money.toString();
     const orderId = partnerCode + Date.now().toString();
@@ -88,6 +90,11 @@ class InvoiceService {
   createBillZalopay = async (money, month) => {
     const partnerCode = "ZALO";
     const orderId = partnerCode + Date.now().toString();
+
+    const embed_data = {
+      //sau khi hoàn tất thanh toán sẽ đi vào link này (thường là link web thanh toán thành công của mình)
+      redirecturl: 'http://localhost:3001/pages/history',
+    };
   
     const config = {
       app_id: '2553',
@@ -97,19 +104,23 @@ class InvoiceService {
     };
     const items = [];
     const transID = Math.floor(Math.random() * 1000000);
-    const embed_data = {};
   
+    const app_trans_id = `${moment().format('YYMMDD')}_${transID}`;
     const order = {
       app_id: config.app_id,
-      app_trans_id: `${moment().format('YYMMDD')}_${transID}`,
+      app_trans_id: app_trans_id,
       app_user: 'user123',
       app_time: Date.now(),
       item: JSON.stringify(items),
       embed_data: JSON.stringify(embed_data),
       amount: money.toString(),
-      callback_url: 'https://37be-113-170-51-144.ngrok-free.app/callback',
+
+      orderId:orderId,
+      callback_url: 'https://45e3-113-170-51-144.ngrok-free.app/invoice/callback',
+
       description: `Lazada - Payment for the order #${transID}`,
       bank_code: '',
+      // orderId:orderId
     };
   
     const data = 
@@ -119,12 +130,15 @@ class InvoiceService {
       order.amount + '|' +
       order.app_time + '|' +
       order.embed_data + '|' +
+    
       order.item;
+      
     order.mac = CryptoJS.HmacSHA256(data, config.key1).toString();
   
     try {
       const result = await axios.post(config.endpoint, null, { params: order });
-      return { orderId, ...result.data };
+      // Trả về app_trans_id cùng với các thông tin khác
+      return { orderId, app_trans_id, ...result.data };
     } catch (error) {
       console.error(error);
       throw new Error('Error creating ZaloPay bill');
@@ -132,14 +146,14 @@ class InvoiceService {
   };
 
   // Cập nhật trạng thái đơn hàng
-  async updateOrderStatus(orderId, months) {
+  async updateOrderStatus(app_trans_id, months) {
     try {
       const due_date = new Date();
       due_date.setMonth(due_date.getMonth() + months);
       due_date.setHours(due_date.getHours() + 0);
-
+  
       const invoice = await Invoice.findOneAndUpdate(
-        { ORDER_ID: orderId },
+        { APP_TRANS_ID: app_trans_id },
         {
           $set: {
             THRU_DATE: due_date,
@@ -151,9 +165,10 @@ class InvoiceService {
       return invoice;
     } catch (error) {
       console.error(error);
-      throw new Error("Failed to update order status");
+      throw new Error("Cập nhật trạng thái đơn hàng thất bại");
     }
   }
+  
 
   // Cập nhật trạng thái thanh toán
   async updatePaidStatus(orderId, status) {
@@ -168,6 +183,11 @@ class InvoiceService {
   // Lấy tất cả hóa đơn
   async getOP() {
     return await Invoice.find({});
+  }
+
+  async getInvoicebyOrgan (OrganizationId) {
+    const invoices = await Invoice.find({ ORGANIZATION_ID: OrganizationId });
+    return invoices;
   }
 }
 

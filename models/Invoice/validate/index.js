@@ -5,10 +5,6 @@ const invoiceValidationSchema = Joi.object({
         'string.base': 'Organization ID must be a string.',
         'any.required': 'Organization ID is required.'
     }),
-    // ORGANIZATION_NAME: Joi.string().required().messages({
-    //     'string.base': 'Organization Name must be a string.',
-    //     'any.required': 'Organization Name is required.'
-    // }),
     PACKAGE_ID: Joi.string().required().messages({
         'string.base': 'Package ID must be a string.',
         'any.required': 'Package ID is required.'
@@ -62,6 +58,10 @@ const invoiceValidationSchema = Joi.object({
         'boolean.base': 'Paid must be a boolean.',
         'any.required': 'Paid is required.'
     }),
+    APP_TRANS_ID: Joi.string().required().messages({
+        'string.base': 'Order ID must be a string.',
+        'any.required': 'Order ID is required.'
+    }),
     ORDER_ID: Joi.string().required().messages({
         'string.base': 'Order ID must be a string.',
         'any.required': 'Order ID is required.'
@@ -73,6 +73,11 @@ const invoiceValidationSchema = Joi.object({
     THRU_DATE: Joi.date().required().messages({
         'date.base': 'Thru Date must be a valid date.',
         'any.required': 'Thru Date is required.'
+    }),
+    paymentGateway: Joi.string().valid('zalopay', 'momo').required().messages({
+        'string.base': 'Payment Gateway must be a string.',
+        'any.only': 'Payment Gateway must be either "zalopay" or "momo".',
+        'any.required': 'Payment Gateway is required.'
     })
 });
 
