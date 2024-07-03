@@ -115,10 +115,6 @@ class USER_SERVICE {
       data.FULLNAME = userDataToUpdate.FULLNAME;
     }
 
-    if (userDataToUpdate.PASSWORD) {
-      data.PASSWORD = await this.hashPassword(userDataToUpdate.PASSWORD);
-    }
-
     if (userDataToUpdate.EMAIL) {
       data.EMAIL = userDataToUpdate.EMAIL;
     }
