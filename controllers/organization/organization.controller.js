@@ -72,7 +72,7 @@ class ORGANIZATION_CONTROLLER {
 
     registerAccountOfOrganization = async (req, res) => {
         try {
-            // const organizationId = req.header('ORGANIZATION_ID');
+            const organizationId = req.header('ORGANIZATION_ID');
 
             // const organizationStatus = await organizationService.checkOrganizationStatus(organizationId);
             // if (!organizationStatus.exists) {
@@ -124,11 +124,11 @@ class ORGANIZATION_CONTROLLER {
                 organizationId
             });
 
-            // Gửi email xác nhận
+
             const sendMail = await MailService.sendVerifyEmail(EMAIL);
 
-            // Xử lý hàng đợi gửi email
-            await MailService.processMailQueue();
+
+            await MailService.addToMailQueue();
 
             return res.status(201).json({
                 success: true,

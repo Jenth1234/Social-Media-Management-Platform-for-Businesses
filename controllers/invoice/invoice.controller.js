@@ -25,12 +25,17 @@ class InvoiceController {
     const { packageId, paymentGateway } = req.body;
   
     try {
-      const existingIdPackage = await PackageService.checkIdExits(packageId);
+      console.log('User info:', user);
+      console.log('packageId:', packageId);
+      const existingIdPackage = await packageService.checkIdExits(packageId);
+
       if (!existingIdPackage) {
         return res.status(401).json({ message: "Mã gói không hợp lệ!!!" });
       }
-  
-      const existingOrganizationId = await OrganizationService.findUserByIdAndOrganization(user._id, user.ORGANIZATION_ID);
+
+
+      const existingOrganizationId = await Organization.findUserByIdAndOrganization(user._id, user.ORGANIZATION_ID);
+
       if (!existingOrganizationId) {
         return res.status(401).json({ message: "Tổ chức không hợp lệ!!!" });
       }
@@ -71,16 +76,19 @@ class InvoiceController {
       due_date.setHours(due_date.getHours() + 0);
   
       const data_bill = {
-        ORGANIZATION_ID: existingOrganizationId.ORGANIZATION_ID,
+        ORGANIZATION_ID: user.ORGANIZATION_ID,
+        // ORGANIZATION_NAME:existingOrganizationId.ORGANIZATION_NAME,
         PACKAGE_ID: packageId,
         NUMBER_OF_PRODUCT: existingIdPackage.NUMBER_OF_PRODUCT,
         NUMBER_OF_COMMENT: existingIdPackage.NUMBER_OF_COMMENT,
         ACTIVE_THRU_DATE: due_date,
       };
+
   
       await InvoiceService.buyPackage(this.data_invoice, data_bill); 
   
       let responseMessage, responseUrl;
+
       if (paymentGateway === 'zalopay') {
         responseMessage = "Tạo hóa đơn Zalopay thành công";
         responseUrl = resultPay.order_url;
@@ -159,6 +167,18 @@ class InvoiceController {
       }
     } catch (error) {
       console.log('Error checking order status:', error);
+    }
+  }
+
+  async getInvoicesByOrganization(req, res) {
+    const user = req.user._doc;;
+  
+    try {
+      const invoices = await InvoiceService.getInvoicebyOrgan(user.ORGANIZATION_ID);
+      return res.json(invoices);
+    } catch (error) {
+      console.error('Error fetching invoices:', error);
+      res.status(500).json({ error: 'Failed to fetch invoices' });
     }
   }
 }

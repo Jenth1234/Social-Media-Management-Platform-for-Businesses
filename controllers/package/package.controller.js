@@ -37,7 +37,6 @@ class PACKAGE {
   //   const payload = req.body;
   //   const { error, value } = PackageValidate.updatePackage.validate(payload);
 
-
   //   if (error) {
   //     return res.status(400).json({
   //       success: false,
@@ -99,6 +98,21 @@ class PACKAGE {
 }
 
 
+
+  deletePackage = async (req, res) => {
+    try {
+      const packageId = req.params.id;
+      await packageService.deletePackage(packageId);
+      return res.status(200).json({ success: true, message: "Package deleted successfully" });
+  } catch (error) {
+      return res.status(500).json({
+          success: false,
+          message: "An error occurred while deleting the package",
+          error: error.message,
+      });
+  }
+  };
+
   // deletePackage = async (req, res) => {
   //   try {
   //     const packageId = req.params.id;
@@ -139,6 +153,7 @@ class PACKAGE {
 //       });
 //   }
 //   };
+
 
   getPackage = async (req, res) => {
     try {

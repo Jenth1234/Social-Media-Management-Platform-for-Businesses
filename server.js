@@ -1,5 +1,5 @@
-
 const express = require("express");
+const axios = require('axios');
 const bodyParser = require("body-parser");
 const multer = require("multer");
 const cors = require("cors");
@@ -8,7 +8,7 @@ const dbConnect = require("./config/dbconnect");
 const route = require("./router");
 
 const app = express();
-const port = process.env.PORT || 3005;
+const port = process.env.PORT || 3000;
 
 
 // Cấu hình CORS
@@ -38,4 +38,3 @@ route(app);
 app.listen(port, () => {
   console.log(`Máy chủ đang chạy trên cổng ${port}`);
 });
-
