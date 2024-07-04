@@ -43,10 +43,13 @@ class PackageService {
   }
 
   async deletePackage(id) {
-    const deletePackage = await PACKAGE_MODEL.findByIdAndDelete(id);
+    const deletePackage = await PACKAGE_MODEL.findById(id);
     if (!deletePackage) {
       throw new Error("package not found");
     }
+    deletePackage.IS_DELETE = true;
+    await deletePackage.save();
+    return deletePackage;
   }
   async getPackage() {
     return await PACKAGE_MODEL.find({});

@@ -11,6 +11,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // Cấu hình CORS
+
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', 'http://172.16.125.56:3000');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
@@ -18,6 +19,7 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Credentials', true);
   next();
 });
+
 
 // Cấu hình body parser
 app.use(bodyParser.json());
