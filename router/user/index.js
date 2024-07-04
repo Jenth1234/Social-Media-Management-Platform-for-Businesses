@@ -17,6 +17,7 @@ router.post('/resetPassword', user_controller.resetPassword);
 router.put('/updateUser', verifyToken, user_controller.updateUser);
 router.get('/searchUser', verifyToken, user_controller.search);
 router.get('/getUsers',verifyToken,user_controller.getUsers);
+
 router.get('/totalUser',verifyToken,user_controller.getTotalUsers);
 // router.post('/checkUsernameExists',verifyToken,user_controller.checkUsernameExists);
 router.get('/getDashboardData',verifyToken,user_controller.getDashboardData);
