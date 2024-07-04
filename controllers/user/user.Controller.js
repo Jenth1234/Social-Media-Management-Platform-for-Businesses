@@ -52,17 +52,17 @@ class USER_CONTROLLER {
         }
 
 
-        const avatarMetadata = await storeMetadata(
-          req.file.originalname,
-          "Avatar image",
-          req.file.mimetype,
-          avatarUrl
-        );
+        // const avatarMetadata = await storeMetadata(
+        //   req.file.originalname,
+        //   "Avatar image",
+        //   req.file.mimetype,
+        //   avatarUrl
+        // );
 
         payload.AVATAR = avatarMetadata._id;
 
   
-        const avatarMetadata = await storeMetadata(req.file.originalname, "Avatar image", req.file.mimetype, avatarUrl);
+        const avatarMetadata  = await storeMetadata(req.file.originalname, "Avatar image", req.file.mimetype, avatarUrl);
   
         payload.AVATAR = avatarMetadata._id; 
 
