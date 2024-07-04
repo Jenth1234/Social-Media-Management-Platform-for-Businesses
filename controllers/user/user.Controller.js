@@ -76,6 +76,7 @@ class USER_CONTROLLER {
 
 
       return res.status(201).json({
+        success: true,
         message:
           "Đăng ký người dùng thành công. Vui lòng kiểm tra email để xác thực.",
       });
